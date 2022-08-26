@@ -1,35 +1,13 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
+import styles from '../../../../styles/Home.module.css'
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useEffect } from 'react'
-
-import SwapRuleService from '../services/swapRule.service'
-import { setAccessToken } from '../http-common'
-import styles from '../styles/Home.module.css'
 
 
-
-const Home: NextPage = () => {
-  const { data: sessionData, status: sessionStatus } = useSession();
-  console.log('index', sessionData, sessionStatus)
-
-  useEffect(() => {
-    if ( sessionData?.token?.id ) {
-      console.log('setAccessToken', sessionData?.token?.access_token)
-      setAccessToken( sessionData?.token?.access_token )
-      onLoadSwapRules()
-    }
-  }, [sessionData?.token?.id])
-
-  const onLoadSwapRules = async () => {
-    if ( !sessionData ) {
-      return
-    }
-    const rules = await SwapRuleService.getRulesByDiscord( (sessionData?.token?.id || '') as string )
-    console.log( 'onLoadSwapRules', rules )
-  }
-
+const DiscordAuth: NextPage = () => {
+  const sessionData = useSession();
+  console.log('DiscordAuth', sessionData)
   return (
     <div className={styles.container}>
       <Head>
@@ -77,23 +55,6 @@ const Home: NextPage = () => {
             </p>
           </a>
         </div>
-        { !sessionData &&
-          <button onClick={async () => {
-            const signInResp = await signIn("discord", { redirect: false })
-            console.log('signInResp', signInResp)
-          }}>
-            Sign In
-          </button>
-        }
-
-        { sessionData &&
-          <button onClick={async () => {
-            await signOut()
-          }}>
-            Sign Out
-          </button>
-        }
-        
       </main>
 
       <footer className={styles.footer}>
@@ -112,4 +73,4 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+export default DiscordAuth

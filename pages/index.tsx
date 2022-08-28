@@ -1,19 +1,51 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Image from 'next/image'
-import { signIn, signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useEffect } from 'react'
+import {
+  Accordion,
+  AccordionIcon,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  Box,
+  Button,
+  Text,
+  FormControl,
+  FormLabel,
+  Input,
+  Stack,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Checkbox,
+  useDisclosure,
+} from '@chakra-ui/react';
+import { toast } from 'react-toastify';
 
 import SwapRuleService from '../services/swapRule.service'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar';
+import { ISwapRule, IUpdateSwapRule } from '../types/swapRules'
 
+import { useState } from 'react'
 
 
 const Home: NextPage = () => {
   const { data: sessionData, status: sessionStatus } = useSession();
+  const [swapRules, setSwapRules] = useState([] as ISwapRule[])
+  const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
+  const {
+    isOpen: isUpdating,
+    onOpen: onUpdating,
+    onClose: onUpdated,
+  } = useDisclosure()
+
   console.log('index', sessionData, sessionStatus)
+  console.log('update', swapRuleUpdate)
 
   useEffect(() => {
     if ( sessionData?.token?.id ) {
@@ -28,7 +60,36 @@ const Home: NextPage = () => {
       return
     }
     const rules = await SwapRuleService.getRulesByDiscord( (sessionData?.token?.id || '') as string )
+    if ( rules ) {
+      setSwapRules( rules )
+    }
     console.log( 'onLoadSwapRules', rules )
+  }
+
+  const onUpdateSwapRule = async () => {
+    onUpdating()
+    const updatedRule = await SwapRuleService.update( swapRuleUpdate._id, swapRuleUpdate )
+    if ( updatedRule ) {
+      onLoadSwapRules()
+      setSwapRuleUpdate({} as IUpdateSwapRule)
+      toast.success('Updated Swap Rule!', {
+        position: toast.POSITION.TOP_CENTER,
+      })
+    }
+    onUpdated()
+  }
+
+  const onChangeSwapRule = ( idx: number, key: string ) => (value: any) => {
+    const swapRule = swapRules[idx]
+
+    let update = { ...swapRuleUpdate }
+
+    if ( swapRuleUpdate._id !== swapRule._id) {
+      update = { _id: swapRule._id }
+    }
+
+    update[key] = value
+    setSwapRuleUpdate( update )
   }
 
   return (
@@ -43,75 +104,142 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
 
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <Text fontSize='lg' marginY="4" fontWeight="bold" textDecoration="underline">
+          Swap Rules
+        </Text>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
-        </p>
+        <Accordion allowMultiple minWidth="full">
+          { swapRules.map( (swapRule, idx) => {
+            const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate} : swapRule
+            return(
+              <AccordionItem key={swapRule._id}>
+                <h2>
+                  <AccordionButton _expanded={{ bg: 'blue.400', color: 'white' }}>
+                    <Box flex='1' textAlign='left'>
+                      { `${ swapRule.inputAmount } ${ swapRule.inputToken.symbol} -> ${ swapRule.targetAmount } ${ swapRule.targetToken.symbol}` }
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                </h2>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+                <AccordionPanel py={8}>
+                  <FormControl>
+                    <Stack direction="row">
+                      <FormLabel>Active?</FormLabel>
+                      <Checkbox checked={ combined.active } onChange={ e => onChangeSwapRule( idx, 'active' )( e.target.checked ) }/>
+                    </Stack>
+                  </FormControl>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+                  <FormControl>
+                    <FormLabel>Input Token</FormLabel>
+                    <Input type='text'
+                      value={ combined.inputTokenSym }
+                      onChange={ e => onChangeSwapRule( idx, 'inputTokenSym' )( e.target.value ) }
+                    />
+                  </FormControl>
 
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+                  <FormControl>
+                    <FormLabel>Input Amount</FormLabel>
+                    <NumberInput precision={2}
+                      step={1.0}
+                      value={ combined.inputAmount }
+                      onChange={ value => onChangeSwapRule( idx, 'inputAmount' )( parseFloat( value )) }
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </FormControl>
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-        { !sessionData &&
-          <button onClick={async () => {
-            const signInResp = await signIn("discord", { redirect: false })
-            console.log('signInResp', signInResp)
-          }}>
-            Sign In
-          </button>
-        }
+                  <FormControl>
+                    <FormLabel>Target Token</FormLabel>
+                    <Input type='text'
+                      value={ combined.targetTokenSym }
+                      onChange={  e => onChangeSwapRule( idx, 'targetTokenSym' )( e.target.value ) }
+                    />
+                  </FormControl>
 
-        { sessionData &&
-          <button onClick={async () => {
-            await signOut()
-          }}>
-            Sign Out
-          </button>
-        }
-        
+                  <FormControl>
+                    <FormLabel>Target Amount</FormLabel>
+                    <NumberInput precision={2}
+                      step={1.0}
+                      value={ combined.targetAmount }
+                      onChange={ value => onChangeSwapRule( idx, 'targetAmount' )( parseFloat( value )) }
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Decimals</FormLabel>
+                    <NumberInput
+                      step={1.0}
+                      value={ combined.decimals }
+                      onChange={ e => onChangeSwapRule( idx, 'decimals' )( parseFloat( e.target.value )) }
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Slippage %</FormLabel>
+                    <NumberInput
+                      step={1.0}
+                      value={ combined.slippage }
+                      onChange={ e => onChangeSwapRule( idx, 'slippage' )( parseFloat( e.target.value )) }
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </FormControl>
+
+                  <Stack direction="row" my={4}>
+                    <FormControl>
+                      <Stack direction="row">
+                        <FormLabel>Invert Price?</FormLabel>
+                        <Checkbox checked={ combined.invTargetAmount } onChange={ e => onChangeSwapRule( idx, 'invTargetAmount' )( e.target.checked ) }/>
+                      </Stack>
+                    </FormControl>
+
+                    <FormControl>
+                      <Stack direction="row">
+                        <FormLabel>Unit Price?</FormLabel>
+                        <Checkbox checked={ combined.unitPrice } onChange={ e => onChangeSwapRule( idx, 'unitPrice' )( e.target.checked ) }/>
+                      </Stack>
+                    </FormControl>
+                  </Stack>
+
+                  { swapRuleUpdate._id &&
+                    <Button
+                      isLoading={isUpdating}
+                      loadingText='Saving...'
+                      colorScheme='teal'
+                      variant='solid'
+                      onClick={onUpdateSwapRule}
+                    >
+                      Save
+                    </Button>
+                  }
+
+                </AccordionPanel>
+              </AccordionItem>
+            )
+          })}
+        </Accordion>
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
   )
 }

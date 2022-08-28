@@ -11,6 +11,8 @@ export interface ISwapRule {
   decimals: number,
   slippage: number,
   active: boolean,
+  inputTokenSym: string,
+  targetTokenSym: string,
 }
 
 export interface IUpdateSwapRule {
@@ -24,4 +26,6 @@ export interface IUpdateSwapRule {
   decimals?: number,
   slippage?: number,
   active?: boolean,
+  inputTokenSym?: string,
+  targetTokenSym?: string,
 }

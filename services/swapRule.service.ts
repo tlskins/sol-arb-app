@@ -1,13 +1,18 @@
 import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
 import { ISwapRule, IUpdateSwapRule } from '../types/swapRules'
+import { pResponseSwapRule } from '../presenters/swapRules'
+
+interface SwapRulesResp {
+  swapRules: ISwapRule[]
+}
 
 class SwapRuleService {
   getRulesByDiscord = async ( discordId: string ): Promise<ISwapRule[] | undefined> => {
     try {
-      const resp: IResponse<ISwapRule[]> = await http.get( `swap-rule/by-discord-id/${discordId}` )
+      const resp: IResponse<SwapRulesResp> = await http.get( `swap-rule/by-discord-id/${discordId}` )
 
-      return resp.data
+      return resp.data.swapRules.map( rule => pResponseSwapRule(rule))
     } catch( err ) {
       handleError("Error getting swap rules", err)
     }

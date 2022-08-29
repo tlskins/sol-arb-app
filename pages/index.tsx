@@ -23,13 +23,15 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react';
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
-import { toast } from 'react-toastify';
+import { toast } from 'react-toastify'
+import DatePicker from "react-datepicker"
+import Moment from "moment-timezone"
 
 import SwapRuleService from '../services/swapRule.service'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar';
-import { ISwapRule, IUpdateSwapRule, ITokenSwapRules } from '../types/swapRules'
+import { IUpdateSwapRule, ITokenSwapRules } from '../types/swapRules'
 
 import { useState } from 'react'
 
@@ -114,7 +116,7 @@ const Home: NextPage = () => {
           Swap Rules
         </Text>
 
-        <Accordion allowMultiple minWidth="full">
+        <Accordion allowMultiple minWidth="full" defaultIndex={[]}>
           { tokenSwapRules.map( (tokenSwapRule, idx) => {
             return(
               <AccordionItem key={tokenSwapRule.swapTokenSymbol}>
@@ -130,7 +132,11 @@ const Home: NextPage = () => {
                   { tokenSwapRule.swapRules.map( swapRule => {
                     const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
                     return(
-                      <Accordion allowMultiple minWidth="full" key={swapRule._id}>
+                      <Accordion allowMultiple
+                        key={swapRule._id}
+                        minWidth="full"
+                        defaultIndex={[]}
+                      >
 
                         {/* Header */}
 
@@ -145,31 +151,66 @@ const Home: NextPage = () => {
                           {/* Panel */}
 
                           <AccordionPanel>
+
                             <SimpleGrid columns={2} spacing={2} alignItems="center" marginY="2">
 
                               {/* Row 1 */}
 
-                              <FormControl>
+                              <Stack direction="column">
                                 <Stack direction="row">
-                                  <FormLabel>Active?</FormLabel>
-                                  <Checkbox
-                                    isChecked={ combined.active }
-                                    onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
-                                  />
+                                  <FormControl>
+                                    <FormLabel>Active?</FormLabel>
+                                    <Checkbox
+                                      isChecked={ combined.active }
+                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
+                                    />
+                                  </FormControl>
                                 </Stack>
-                              </FormControl>
+                              </Stack>
 
-                              <FormControl>
-                                <FormLabel>Slippage %</FormLabel>
-                                <NumberInput
-                                  size="sm"
-                                  step={1.0}
-                                  value={ combined.slippage }
-                                  onChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'slippage', parseFloat( value )) }
-                                >
-                                  <NumberInputField />
-                                </NumberInput>
-                              </FormControl>
+                              <Stack direction="column">
+                                <FormControl>
+                                  <FormLabel>Slippage %</FormLabel>
+                                  <NumberInput
+                                    size="sm"
+                                    step={1.0}
+                                    value={ combined.slippage }
+                                    onChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'slippage', parseFloat( value )) }
+                                  >
+                                    <NumberInputField />
+                                  </NumberInput>
+                                </FormControl>
+                              </Stack>
+
+                              {/* Inactive Dates */}
+
+                              <Stack direction="column">
+                                <FormLabel>Inactive Before </FormLabel>
+                                <DatePicker
+                                  className="filter-calendar"
+                                  selected={combined.inactiveBefore ? Moment( combined.inactiveBefore ).toDate() : null }
+                                  dateFormat="Pp"
+                                  onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveBefore', date?.toISOString() ) }
+                                  showTimeSelect
+                                  timeFormat="HH:mm"
+                                  timeIntervals={15}
+                                  timeCaption="time"
+                                />
+                              </Stack>
+
+                              <Stack direction="column">
+                                <FormLabel>Inactive After </FormLabel>
+                                <DatePicker
+                                  className="filter-calendar"
+                                  selected={combined.inactiveAfter ? Moment( combined.inactiveAfter ).toDate() : null }
+                                  dateFormat="Pp"
+                                  onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveAfter', date?.toISOString() ) }
+                                  showTimeSelect
+                                  timeFormat="HH:mm"
+                                  timeIntervals={15}
+                                  timeCaption="time"
+                                />
+                              </Stack>
 
                               {/* Enable / Disable Row */}
 

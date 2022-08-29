@@ -10,7 +10,7 @@ interface SwapRulesResp {
 class SwapRuleService {
   getRulesByDiscord = async ( discordId: string ): Promise<ITokenSwapRules[] | undefined> => {
     try {
-      const resp: IResponse<SwapRulesResp> = await http.get( `swap-rule/by-discord-id/${discordId}` )
+      const resp: IResponse<SwapRulesResp> = await http.get( `swap-rule` )
       const rules = resp.data.swapRules.map( rule => pResponseSwapRule(rule))
       const out = pResponseTokenSwapRules( rules )
 

@@ -15,9 +15,11 @@
     "@emotion/styled": "^11.10.0",
     "axios": "^0.27.2",
     "framer-motion": "^7.2.1",
+    "moment-timezone": "^0.5.37",
     "next": "12.2.3",
     "next-auth": "^4.10.2",
     "react": "18.2.0",
+    "react-datepicker": "^4.8.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.4.0",
     "react-toastify": "^9.0.7"
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@types/node": "18.6.3",
     "@types/react": "18.0.15",
+    "@types/react-datepicker": "^4.4.2",
     "@types/react-dom": "18.0.6",
     "eslint": "8.20.0",
     "eslint-config-next": "12.2.3",

@@ -1,4 +1,5 @@
 import '../styles/globals.css'
+import '../styles/react-datepicker.css'
 import theme from '../components/theme'
 
 import 'react-toastify/dist/ReactToastify.css'

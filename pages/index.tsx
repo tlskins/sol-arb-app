@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionButton,
   AccordionPanel,
+  IconButton,
   Box,
   Button,
   Text,
@@ -17,26 +18,25 @@ import {
   Stack,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   Checkbox,
   useDisclosure,
+  SimpleGrid,
 } from '@chakra-ui/react';
+import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify';
 
 import SwapRuleService from '../services/swapRule.service'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar';
-import { ISwapRule, IUpdateSwapRule } from '../types/swapRules'
+import { ISwapRule, IUpdateSwapRule, ITokenSwapRules } from '../types/swapRules'
 
 import { useState } from 'react'
 
 
 const Home: NextPage = () => {
   const { data: sessionData, status: sessionStatus } = useSession();
-  const [swapRules, setSwapRules] = useState([] as ISwapRule[])
+  const [tokenSwapRules, setSwapRules] = useState([] as ITokenSwapRules[])
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
   const {
     isOpen: isUpdating,
@@ -79,8 +79,10 @@ const Home: NextPage = () => {
     onUpdated()
   }
 
-  const onChangeSwapRule = ( idx: number, key: string ) => (value: any) => {
-    const swapRule = swapRules[idx]
+  const onChangeSwapRule = ( swapSymbol: string, idx: number, key: string, value: any ) => {
+    const swapRule = tokenSwapRules.find( tokenSwapRule => tokenSwapRule.swapTokenSymbol === swapSymbol)?.swapRules[idx]
+
+    if ( !swapRule ) return
 
     let update = { ...swapRuleUpdate }
 
@@ -91,6 +93,10 @@ const Home: NextPage = () => {
     update[key] = value
     setSwapRuleUpdate( update )
   }
+
+
+
+  console.log('swaps', tokenSwapRules)
 
   return (
     <div className={styles.container}>
@@ -109,131 +115,220 @@ const Home: NextPage = () => {
         </Text>
 
         <Accordion allowMultiple minWidth="full">
-          { swapRules.map( (swapRule, idx) => {
-            const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate} : swapRule
+          { tokenSwapRules.map( (tokenSwapRule, idx) => {
             return(
-              <AccordionItem key={swapRule._id}>
-                <h2>
-                  <AccordionButton _expanded={{ bg: 'blue.400', color: 'white' }}>
-                    <Box flex='1' textAlign='left'>
-                      { `${ swapRule.inputAmount } ${ swapRule.inputToken.symbol} -> ${ swapRule.targetAmount } ${ swapRule.targetToken.symbol}` }
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
+              <AccordionItem key={tokenSwapRule.swapTokenSymbol}>
 
-                <AccordionPanel py={8}>
-                  <FormControl>
-                    <Stack direction="row">
-                      <FormLabel>Active?</FormLabel>
-                      <Checkbox checked={ combined.active } onChange={ e => onChangeSwapRule( idx, 'active' )( e.target.checked ) }/>
-                    </Stack>
-                  </FormControl>
+                <AccordionButton _expanded={{ bg: 'blue.400', color: 'white' }} minWidth="full">
+                  <Box flex='1' textAlign='left'>
+                    { tokenSwapRule.swapTokenSymbol }
+                  </Box>
+                  <AccordionIcon />
+                </AccordionButton>
 
-                  <FormControl>
-                    <FormLabel>Input Token</FormLabel>
-                    <Input type='text'
-                      value={ combined.inputTokenSym }
-                      onChange={ e => onChangeSwapRule( idx, 'inputTokenSym' )( e.target.value ) }
-                    />
-                  </FormControl>
+                <AccordionPanel minWidth="full" padding="0.5">
+                  { tokenSwapRule.swapRules.map( swapRule => {
+                    const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
+                    return(
+                      <Accordion allowMultiple minWidth="full" key={swapRule._id}>
 
-                  <FormControl>
-                    <FormLabel>Input Amount</FormLabel>
-                    <NumberInput precision={2}
-                      step={1.0}
-                      value={ combined.inputAmount }
-                      onChange={ value => onChangeSwapRule( idx, 'inputAmount' )( parseFloat( value )) }
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
+                        {/* Header */}
 
-                  <FormControl>
-                    <FormLabel>Target Token</FormLabel>
-                    <Input type='text'
-                      value={ combined.targetTokenSym }
-                      onChange={  e => onChangeSwapRule( idx, 'targetTokenSym' )( e.target.value ) }
-                    />
-                  </FormControl>
+                        <AccordionItem>
+                          <AccordionButton _expanded={{ bg: 'blue.600', color: 'white' }}>
+                            <Box flex='1' textAlign='left'>
+                              { combined.baseToken.symbol }
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
 
-                  <FormControl>
-                    <FormLabel>Target Amount</FormLabel>
-                    <NumberInput precision={2}
-                      step={1.0}
-                      value={ combined.targetAmount }
-                      onChange={ value => onChangeSwapRule( idx, 'targetAmount' )( parseFloat( value )) }
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
+                          {/* Panel */}
 
-                  <FormControl>
-                    <FormLabel>Decimals</FormLabel>
-                    <NumberInput
-                      step={1.0}
-                      value={ combined.decimals }
-                      onChange={ e => onChangeSwapRule( idx, 'decimals' )( parseFloat( e.target.value )) }
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
+                          <AccordionPanel>
+                            <SimpleGrid columns={2} spacing={2} alignItems="center" marginY="2">
 
-                  <FormControl>
-                    <FormLabel>Slippage %</FormLabel>
-                    <NumberInput
-                      step={1.0}
-                      value={ combined.slippage }
-                      onChange={ e => onChangeSwapRule( idx, 'slippage' )( parseFloat( e.target.value )) }
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
+                              {/* Row 1 */}
 
-                  <Stack direction="row" my={4}>
-                    <FormControl>
-                      <Stack direction="row">
-                        <FormLabel>Invert Price?</FormLabel>
-                        <Checkbox checked={ combined.invTargetAmount } onChange={ e => onChangeSwapRule( idx, 'invTargetAmount' )( e.target.checked ) }/>
-                      </Stack>
-                    </FormControl>
+                              <FormControl>
+                                <Stack direction="row">
+                                  <FormLabel>Active?</FormLabel>
+                                  <Checkbox
+                                    isChecked={ combined.active }
+                                    onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
+                                  />
+                                </Stack>
+                              </FormControl>
 
-                    <FormControl>
-                      <Stack direction="row">
-                        <FormLabel>Unit Price?</FormLabel>
-                        <Checkbox checked={ combined.unitPrice } onChange={ e => onChangeSwapRule( idx, 'unitPrice' )( e.target.checked ) }/>
-                      </Stack>
-                    </FormControl>
-                  </Stack>
+                              <FormControl>
+                                <FormLabel>Slippage %</FormLabel>
+                                <NumberInput
+                                  size="sm"
+                                  step={1.0}
+                                  value={ combined.slippage }
+                                  onChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'slippage', parseFloat( value )) }
+                                >
+                                  <NumberInputField />
+                                </NumberInput>
+                              </FormControl>
 
-                  { swapRuleUpdate._id &&
-                    <Button
-                      isLoading={isUpdating}
-                      loadingText='Saving...'
-                      colorScheme='teal'
-                      variant='solid'
-                      onClick={onUpdateSwapRule}
-                    >
-                      Save
-                    </Button>
-                  }
+                              {/* Enable / Disable Row */}
 
+                              { combined.baseInput === 0 ?
+                                <Stack direction="row">
+                                  <IconButton aria-label='Enable Buy'
+                                    icon={<AddIcon />}
+                                    size="xs"
+                                    borderRadius="3xl"
+                                    backgroundColor="green.300"
+                                    onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', 1 ) }
+                                  />
+                                  <Text>Enable Buys</Text>
+                                </Stack>
+                                :
+                                <Stack direction="column">
+                                  <Stack direction="row">
+                                    <IconButton aria-label='Disable Buy'
+                                      icon={<CloseIcon />}
+                                      size="xs"
+                                      borderRadius="3xl"
+                                      backgroundColor="red.300"
+                                      onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', 0 ) }
+                                    />
+                                    <Text>Disable Buy</Text>
+                                  </Stack>
+
+                                  <Stack direction="row">
+                                    <FormLabel>Execute Buys</FormLabel>
+                                    <Checkbox
+                                      isChecked={ combined.isExecuteBuy }
+                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteBuy', e.target.checked ) }
+                                    />
+                                  </Stack>
+                                </Stack>
+                              }
+
+                              { combined.swapInput === 0 ?
+                                <Stack direction="row">
+                                  <IconButton aria-label='Enable Sell'
+                                    icon={<AddIcon />}
+                                    size="xs"
+                                    borderRadius="3xl"
+                                    backgroundColor="green.300"
+                                    onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', 1 ) }
+                                  />
+                                  <Text>Enable Sell</Text>
+                                </Stack>
+                                :
+                                <Stack direction="column">
+                                  <Stack direction="row">
+                                    <IconButton aria-label='Disable Sell'
+                                      icon={<CloseIcon />}
+                                      size="xs"
+                                      borderRadius="3xl"
+                                      backgroundColor="red.300"
+                                      onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', 0 ) }
+                                    />
+                                    <Text>Disable Sell</Text>
+                                  </Stack>
+
+                                  <Stack direction="row">
+                                    <FormLabel>Execute Sell</FormLabel>
+                                    <Checkbox
+                                      isChecked={ combined.isExecuteSell }
+                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteSell', e.target.checked ) }
+                                    />
+                                  </Stack>
+                                </Stack>
+                              }
+
+                              {/* Targets Row  */}
+
+                              { combined.baseInput !== 0 ?
+                                <FormControl>
+                                  <FormLabel>Buy Below</FormLabel>
+                                  <NumberInput precision={2}
+                                    size="sm"
+                                    step={1.0}
+                                    value={ combined.swapTarget }
+                                    onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapTarget', parseFloat(e.target.value)) }
+                                  >
+                                    <NumberInputField />
+                                  </NumberInput>
+                                </FormControl>
+                                :
+                                <Box/>
+                              }
+                              
+                              { combined.swapInput !== 0 ?
+                                <FormControl>
+                                  <FormLabel>Sell Above</FormLabel>
+                                  <NumberInput precision={2}
+                                    size="sm"
+                                    step={1.0}
+                                    value={ combined.baseTarget }
+                                    onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseTarget', parseFloat(e.target.value)) }
+                                  >
+                                    <NumberInputField />
+                                  </NumberInput>
+                                </FormControl>
+                                :
+                                <Box/>
+                              }
+                              
+                              {/* Amounts Row */}
+
+                              { combined.baseInput !== 0 ?
+                                <FormControl>
+                                  <FormLabel>Amount { combined.baseToken.symbol } </FormLabel>
+                                  <NumberInput precision={2}
+                                    size="sm"
+                                    step={1.0}
+                                    // value={ combined.baseInput }
+                                    defaultValue={ combined.baseInput }
+                                    onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', parseFloat(e.target.value)) }
+                                  >
+                                    <NumberInputField />
+                                  </NumberInput>
+                                </FormControl>
+                                :
+                                <Box />
+                              }
+
+                              { combined.swapInput !== 0 ?
+                                <FormControl>
+                                  <FormLabel>Amount { combined.swapToken.symbol } </FormLabel>
+                                  <NumberInput precision={2}
+                                    size="sm"
+                                    step={1.0}
+                                    // value={ combined.swapInput }
+                                    defaultValue={ combined.swapInput }
+                                    onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', parseFloat(e.target.value)) }
+                                  >
+                                    <NumberInputField />
+                                  </NumberInput>
+                                </FormControl>
+                                :
+                                <Box />
+                              }
+                              
+                            </SimpleGrid>
+
+                            { swapRuleUpdate._id &&
+                              <Button
+                                isLoading={isUpdating}
+                                loadingText='Saving...'
+                                colorScheme='teal'
+                                variant='solid'
+                                onClick={onUpdateSwapRule}
+                              >
+                                Save
+                              </Button>
+                            }
+                          </AccordionPanel>
+                        </AccordionItem>
+                      </Accordion>
+                    )
+                  })}
                 </AccordionPanel>
               </AccordionItem>
             )

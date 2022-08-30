@@ -307,7 +307,7 @@ const Home: NextPage = () => {
                               { combined.baseInput !== 0 ?
                                 <FormControl>
                                   <FormLabel>Buy { combined.invertPrice ? "Above" : "Below" }</FormLabel>
-                                  <NumberInput precision={2}
+                                  <NumberInput
                                     size="sm"
                                     step={1.0}
                                     defaultValue={ combined.swapTarget }
@@ -323,7 +323,7 @@ const Home: NextPage = () => {
                               { combined.swapInput !== 0 ?
                                 <FormControl>
                                   <FormLabel>Sell { combined.invertPrice ? "Below" : "Above" }</FormLabel>
-                                  <NumberInput precision={2}
+                                  <NumberInput
                                     size="sm"
                                     step={1.0}
                                     defaultValue={ combined.baseTarget }
@@ -341,7 +341,7 @@ const Home: NextPage = () => {
                               { combined.baseInput !== 0 ?
                                 <FormControl>
                                   <FormLabel>Amount { combined.baseToken.symbol } </FormLabel>
-                                  <NumberInput precision={2}
+                                  <NumberInput
                                     size="sm"
                                     step={1.0}
                                     defaultValue={ combined.baseInput }
@@ -357,7 +357,7 @@ const Home: NextPage = () => {
                               { combined.swapInput !== 0 ?
                                 <FormControl>
                                   <FormLabel>Amount { combined.swapToken.symbol } </FormLabel>
-                                  <NumberInput precision={2}
+                                  <NumberInput
                                     size="sm"
                                     step={1.0}
                                     defaultValue={ combined.swapInput }

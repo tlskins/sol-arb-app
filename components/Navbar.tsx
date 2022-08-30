@@ -49,7 +49,8 @@ const Navbar = () => {
     onClose: onCloseCreateModal,
   } = useDisclosure()
 
-  const { data: sessionData, status: sessionStatus } = useSession();
+  const { data: _sessionData, status: sessionStatus } = useSession();
+  const sessionData = _sessionData as any
   const isLoading = sessionStatus === "loading"
   const isSignedIn = !!sessionData?.token
   const userName = sessionData?.token?.username

@@ -36,7 +36,8 @@ import { useGlobalState } from '../services/gloablState'
 
 
 const Home: NextPage = () => {
-  const { data: sessionData, status: sessionStatus } = useSession();
+  const { data: _sessionData } = useSession();
+  const sessionData = _sessionData as any
   const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
   const {
@@ -94,6 +95,7 @@ const Home: NextPage = () => {
       update = { _id: swapRule._id }
     }
 
+    // @ts-ignore: dynamic access
     update[key] = value
     setSwapRuleUpdate( update )
   }

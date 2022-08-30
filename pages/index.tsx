@@ -139,6 +139,14 @@ const Home: NextPage = () => {
                 <AccordionPanel minWidth="full" padding="0.5">
                   { tokenSwapRule.swapRules.map( (swapRule, idx) => {
                     const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
+                    let margin = undefined as string | undefined
+                    if ( combined.baseTarget !== 0 && combined.swapTarget !== 0 ) {
+                      if ( combined.invertPrice ) {
+                        margin = `(${((combined.swapTarget - combined.baseTarget) / combined.baseTarget * 100).toFixed(0)}%)`
+                      } else {
+                        margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
+                      }
+                    }
                     return(
                       <Accordion
                         key={swapRule._id}
@@ -322,7 +330,12 @@ const Home: NextPage = () => {
                               
                               { combined.swapInput !== 0 ?
                                 <FormControl>
-                                  <FormLabel>Sell { combined.invertPrice ? "Below" : "Above" }</FormLabel>
+                                  <Stack direction="row">
+                                    <FormLabel>
+                                      Sell { combined.invertPrice ? "Below" : "Above" }
+                                    </FormLabel>
+                                    <Text color="blue.400">{ margin }</Text>
+                                  </Stack>
                                   <NumberInput
                                     size="sm"
                                     step={1.0}

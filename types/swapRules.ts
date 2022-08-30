@@ -23,6 +23,10 @@ export interface ISwapRule {
   active: boolean,
   inactiveBefore?: string,
   inactiveAfter?: string,
+  lastBuyCheckAt?: string,
+  lastBuyUnitPrice?: number,
+  lastSellCheckAt?: string,
+  lastSellUnitPrice?: number,
 }
 
 export interface IUpdateSwapRule {

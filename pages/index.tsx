@@ -159,9 +159,23 @@ const Home: NextPage = () => {
 
                         <AccordionItem>
                           <AccordionButton _expanded={{ bg: 'blue.600', color: 'white' }}>
-                            <Box flex='1' textAlign='left'>
-                              { combined.baseToken.symbol }
-                            </Box>
+                            <Stack flex='1' textAlign='left' direction="row">
+                              <Text marginRight="2">
+                                { combined.baseToken.symbol }
+                              </Text>
+                              <Text>
+                                { combined.lastBuyUnitPrice &&
+                                  `$${ combined.lastBuyUnitPrice } (${Moment(combined.lastBuyCheckAt).format("LT") })`
+                                }
+                                { (!combined.lastBuyUnitPrice && combined.lastSellUnitPrice) &&
+                                  `$${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT") })`
+                                }
+                                {/* { (combined.lastBuyUnitPrice && combined.lastSellUnitPrice) && " | " }
+                                { combined.lastSellUnitPrice &&
+                                  `Last Sell Price: ${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT") }) |`
+                                } */}
+                              </Text>
+                            </Stack>
                             <AccordionIcon />
                           </AccordionButton>
 

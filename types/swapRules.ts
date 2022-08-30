@@ -18,6 +18,7 @@ export interface ISwapRule {
   swapInput: number, // 100
   swapTarget: number, // 2.4 // swap to DUST if <= 2.55
   isExecuteBuy: boolean,
+  invertPrice: boolean,
   slippage: number,
   active: boolean,
   inactiveBefore?: string,
@@ -35,8 +36,14 @@ export interface IUpdateSwapRule {
   swapInput?: number, // 100
   swapTarget?: number, // 2.4
   isExecuteBuy?: boolean,
+  invertPrice?: boolean,
   slippage?: number,
   active?: boolean,
   inactiveBefore?: string,
   inactiveAfter?: string,
+}
+
+export interface ICreateSwapRule {
+  baseTokenSym: string, // USDC
+  swapTokenSym: string, // DUST
 }

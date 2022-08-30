@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import {
   Box,
   Flex,
@@ -15,12 +14,27 @@ import {
   useDisclosure,
   useColorModeValue,
   Center,
+  Text,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Stack,
+  FormControl,
+  FormLabel,
+  Input,
 } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { signIn, signOut, useSession } from "next-auth/react";
 
 import { setAccessToken } from '../http-common'
+import { ICreateSwapRule } from '../types/swapRules'
+import SwapRuleService from '../services/swapRule.service'
+import { useGlobalState } from '../services/gloablState'
 
 
 const Navbar = () => {
@@ -29,11 +43,22 @@ const Navbar = () => {
     onOpen: onOpenProfile,
     onClose: onCloseProfile,
   } = useDisclosure();
+  const {
+    isOpen: isCreateModalOpen,
+    onOpen: onOpenCreateModal,
+    onClose: onCloseCreateModal,
+  } = useDisclosure()
 
   const { data: sessionData, status: sessionStatus } = useSession();
   const isLoading = sessionStatus === "loading"
   const isSignedIn = !!sessionData?.token
   const userName = sessionData?.token?.username
+  const [isCreating, setIsCreating] = useState(false)
+  const [createSwapRule, setCreateSwapRule] = useState({
+    baseTokenSym: "",
+    swapTokenSym: "",
+  } as ICreateSwapRule)
+  const [, setTokenSwapRules] = useGlobalState('tokenSwapRules')
 
   useEffect(() => {
     if ( sessionStatus === "authenticated" ) {
@@ -47,8 +72,81 @@ const Navbar = () => {
     setAccessToken( "" )
   }
 
+  const onCreateSwapRule = async () => {
+    setIsCreating(true)
+    const resp = await SwapRuleService.create(createSwapRule)
+    if ( resp ) {
+      SwapRuleService
+      setCreateSwapRule({
+        baseTokenSym: "",
+        swapTokenSym: "",
+      })
+      onCloseCreateModal()
+      const rules = await SwapRuleService.getRulesByDiscord()
+      if ( rules ) {
+        setTokenSwapRules( rules )
+      }
+    }
+    setIsCreating(false)
+  }
+
   return (
     <>
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={onCloseCreateModal}
+        motionPreset='slideInRight'
+        size="sm"
+        isCentered
+      >
+        <ModalOverlay
+          bg='none'
+          backdropFilter='auto'
+          backdropInvert='80%'
+          backdropBlur='2px'
+        />
+        <ModalContent>
+          <ModalHeader>Create Swap Rule</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack direction="column">
+              <FormControl>
+                <FormLabel>
+                  Swap Token
+                </FormLabel>
+                <Input type="text"
+                  value={ createSwapRule.swapTokenSym }
+                  onChange={ e => setCreateSwapRule({ ...createSwapRule, swapTokenSym: e.target.value }) }
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>
+                  Base Token
+                </FormLabel>
+                <Input type="text"
+                  value={ createSwapRule.baseTokenSym }
+                  onChange={ e => setCreateSwapRule({ ...createSwapRule, baseTokenSym: e.target.value }) }
+                />
+              </FormControl>
+            </Stack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              isLoading={isCreating}
+              loadingText='Saving...'
+              colorScheme='teal'
+              variant='solid'
+              onClick={onCreateSwapRule}
+            >
+              Save
+            </Button>
+            <Button variant='ghost' onClick={onCloseCreateModal}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
           <IconButton
@@ -109,6 +207,7 @@ const Navbar = () => {
                         background:"green.200",
                       }}
                       fontWeight="bold"
+                      onClick={onOpenCreateModal}
                     >
                       New Swap Rule
                     </MenuItem>
@@ -125,22 +224,7 @@ const Navbar = () => {
         </Flex>
       </Box>
     </>
-  );
+  )
 }
-  
-const NavLink = ({ children, url }: { children: ReactNode, url: string }) => (
-  <Link
-    px={2}
-    py={1}
-    rounded={'md'}
-    _hover={{
-      textDecoration: 'none',
-      bg: useColorModeValue('gray.200', 'gray.700'),
-    }}
-    href={url}
-  >
-    {children}
-  </Link>
-);
 
 export default Navbar

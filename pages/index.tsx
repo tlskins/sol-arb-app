@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { useSession } from "next-auth/react";
-import { useEffect } from 'react'
+import { useSession } from "next-auth/react"
+import { useEffect, useState } from 'react'
 import {
   Accordion,
   AccordionIcon,
@@ -21,7 +21,7 @@ import {
   Checkbox,
   useDisclosure,
   SimpleGrid,
-} from '@chakra-ui/react';
+} from '@chakra-ui/react'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify'
 import DatePicker from "react-datepicker"
@@ -30,24 +30,25 @@ import Moment from "moment-timezone"
 import SwapRuleService from '../services/swapRule.service'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
-import Navbar from '../components/Navbar';
-import { IUpdateSwapRule, ITokenSwapRules } from '../types/swapRules'
-
-import { useState } from 'react'
+import Navbar from '../components/Navbar'
+import { IUpdateSwapRule } from '../types/swapRules'
+import { useGlobalState } from '../services/gloablState'
 
 
 const Home: NextPage = () => {
   const { data: sessionData, status: sessionStatus } = useSession();
-  const [tokenSwapRules, setSwapRules] = useState([] as ITokenSwapRules[])
+  const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
   const {
     isOpen: isUpdating,
     onOpen: onUpdating,
     onClose: onUpdated,
   } = useDisclosure()
-
-  console.log('index', sessionData, sessionStatus)
-  console.log('update', swapRuleUpdate)
+  const {
+    isOpen: isChecking,
+    onOpen: onChecking,
+    onClose: onDoneChecking,
+  } = useDisclosure()
 
   useEffect(() => {
     if ( sessionData?.token?.id ) {
@@ -61,9 +62,9 @@ const Home: NextPage = () => {
     if ( !sessionData ) {
       return
     }
-    const rules = await SwapRuleService.getRulesByDiscord( (sessionData?.token?.id || '') as string )
+    const rules = await SwapRuleService.getRulesByDiscord()
     if ( rules ) {
-      setSwapRules( rules )
+      setTokenSwapRules( rules )
     }
     console.log( 'onLoadSwapRules', rules )
   }
@@ -82,6 +83,7 @@ const Home: NextPage = () => {
   }
 
   const onChangeSwapRule = ( swapSymbol: string, idx: number, key: string, value: any ) => {
+    console.log('onChangeSwapRule', swapSymbol, idx, key, value )
     const swapRule = tokenSwapRules.find( tokenSwapRule => tokenSwapRule.swapTokenSymbol === swapSymbol)?.swapRules[idx]
 
     if ( !swapRule ) return
@@ -96,7 +98,11 @@ const Home: NextPage = () => {
     setSwapRuleUpdate( update )
   }
 
-
+  const onCheckSwapRules = async () => {
+    onChecking()
+    await SwapRuleService.checkSwaps()
+    onDoneChecking()
+  }
 
   console.log('swaps', tokenSwapRules)
 
@@ -116,8 +122,8 @@ const Home: NextPage = () => {
           Swap Rules
         </Text>
 
-        <Accordion allowMultiple minWidth="full" defaultIndex={[]}>
-          { tokenSwapRules.map( (tokenSwapRule, idx) => {
+        <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]}>
+          { tokenSwapRules.map( (tokenSwapRule) => {
             return(
               <AccordionItem key={tokenSwapRule.swapTokenSymbol}>
 
@@ -129,12 +135,13 @@ const Home: NextPage = () => {
                 </AccordionButton>
 
                 <AccordionPanel minWidth="full" padding="0.5">
-                  { tokenSwapRule.swapRules.map( swapRule => {
+                  { tokenSwapRule.swapRules.map( (swapRule, idx) => {
                     const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
                     return(
-                      <Accordion allowMultiple
+                      <Accordion
                         key={swapRule._id}
                         minWidth="full"
+                        allowMultiple={true}
                         defaultIndex={[]}
                       >
 
@@ -156,13 +163,22 @@ const Home: NextPage = () => {
 
                               {/* Row 1 */}
 
-                              <Stack direction="column">
-                                <Stack direction="row">
+                              <Stack direction="row">
+                                <Stack direction="column">
                                   <FormControl>
                                     <FormLabel>Active?</FormLabel>
                                     <Checkbox
                                       isChecked={ combined.active }
                                       onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
+                                    />
+                                  </FormControl>
+                                </Stack>
+                                <Stack direction="column">
+                                  <FormControl>
+                                    <FormLabel>Invert?</FormLabel>
+                                    <Checkbox
+                                      isChecked={ combined.invertPrice }
+                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'invertPrice', e.target.checked ) }
                                     />
                                   </FormControl>
                                 </Stack>
@@ -185,30 +201,32 @@ const Home: NextPage = () => {
                               {/* Inactive Dates */}
 
                               <Stack direction="column">
-                                <FormLabel>Inactive Before </FormLabel>
+                                <FormLabel marginBottom="0">Inactive Before </FormLabel>
                                 <DatePicker
                                   className="filter-calendar"
                                   selected={combined.inactiveBefore ? Moment( combined.inactiveBefore ).toDate() : null }
                                   dateFormat="Pp"
-                                  onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveBefore', date?.toISOString() ) }
+                                  onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveBefore', date?.toISOString() || '' ) }
                                   showTimeSelect
                                   timeFormat="HH:mm"
                                   timeIntervals={15}
                                   timeCaption="time"
+                                  isClearable
                                 />
                               </Stack>
 
                               <Stack direction="column">
-                                <FormLabel>Inactive After </FormLabel>
+                                <FormLabel marginBottom="0">Inactive After </FormLabel>
                                 <DatePicker
                                   className="filter-calendar"
                                   selected={combined.inactiveAfter ? Moment( combined.inactiveAfter ).toDate() : null }
                                   dateFormat="Pp"
-                                  onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveAfter', date?.toISOString() ) }
+                                  onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveAfter', date?.toISOString() || '' ) }
                                   showTimeSelect
                                   timeFormat="HH:mm"
                                   timeIntervals={15}
                                   timeCaption="time"
+                                  isClearable
                                 />
                               </Stack>
 
@@ -286,11 +304,11 @@ const Home: NextPage = () => {
 
                               { combined.baseInput !== 0 ?
                                 <FormControl>
-                                  <FormLabel>Buy Below</FormLabel>
+                                  <FormLabel>Buy { combined.invertPrice ? "Above" : "Below" }</FormLabel>
                                   <NumberInput precision={2}
                                     size="sm"
                                     step={1.0}
-                                    value={ combined.swapTarget }
+                                    defaultValue={ combined.swapTarget }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapTarget', parseFloat(e.target.value)) }
                                   >
                                     <NumberInputField />
@@ -302,11 +320,11 @@ const Home: NextPage = () => {
                               
                               { combined.swapInput !== 0 ?
                                 <FormControl>
-                                  <FormLabel>Sell Above</FormLabel>
+                                  <FormLabel>Sell { combined.invertPrice ? "Below" : "Above" }</FormLabel>
                                   <NumberInput precision={2}
                                     size="sm"
                                     step={1.0}
-                                    value={ combined.baseTarget }
+                                    defaultValue={ combined.baseTarget }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseTarget', parseFloat(e.target.value)) }
                                   >
                                     <NumberInputField />
@@ -324,7 +342,6 @@ const Home: NextPage = () => {
                                   <NumberInput precision={2}
                                     size="sm"
                                     step={1.0}
-                                    // value={ combined.baseInput }
                                     defaultValue={ combined.baseInput }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', parseFloat(e.target.value)) }
                                   >
@@ -341,7 +358,6 @@ const Home: NextPage = () => {
                                   <NumberInput precision={2}
                                     size="sm"
                                     step={1.0}
-                                    // value={ combined.swapInput }
                                     defaultValue={ combined.swapInput }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', parseFloat(e.target.value)) }
                                   >
@@ -375,6 +391,17 @@ const Home: NextPage = () => {
             )
           })}
         </Accordion>
+
+        <Button
+          isLoading={isChecking}
+          loadingText='Checking...'
+          colorScheme="green"
+          variant='solid'
+          marginTop="8"
+          onClick={onCheckSwapRules}
+        >
+          Check Rules
+        </Button>
       </main>
     </div>
   )

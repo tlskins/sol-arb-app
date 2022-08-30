@@ -1,6 +1,6 @@
 import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
-import { ISwapRule, IUpdateSwapRule, ITokenSwapRules } from '../types/swapRules'
+import { ISwapRule, IUpdateSwapRule, ITokenSwapRules, ICreateSwapRule } from '../types/swapRules'
 import { pResponseSwapRule, pResponseTokenSwapRules } from '../presenters/swapRules'
 
 interface SwapRulesResp {
@@ -8,7 +8,7 @@ interface SwapRulesResp {
 }
 
 class SwapRuleService {
-  getRulesByDiscord = async ( discordId: string ): Promise<ITokenSwapRules[] | undefined> => {
+  getRulesByDiscord = async (): Promise<ITokenSwapRules[] | undefined> => {
     try {
       const resp: IResponse<SwapRulesResp> = await http.get( `swap-rule` )
       const rules = resp.data.swapRules.map( rule => pResponseSwapRule(rule))
@@ -20,9 +20,21 @@ class SwapRuleService {
     }
   }
 
-  create = async ( rule: ISwapRule ): Promise<ISwapRule | undefined> => {
+  create = async ( rule: ICreateSwapRule ): Promise<ISwapRule | undefined> => {
     try {
-      const resp: IResponse<ISwapRule> = await http.post( `swap-rule`, rule )
+      const resp: IResponse<ISwapRule> = await http.post( `swap-rule`, {
+        baseTokenSym: rule.baseTokenSym,
+        baseInput: 1,
+        baseTarget: 1,
+        isExecuteSell: false,
+        swapTokenSym: rule.swapTokenSym,
+        swapInput: 1,
+        swapTarget: 1,
+        isExecuteBuy: false,
+        invertPrice: false,
+        slippage: 5,
+        active: false,
+      } )
 
       return resp.data
     } catch( err ) {
@@ -37,6 +49,18 @@ class SwapRuleService {
       return resp.data
     } catch( err ) {
       handleError("Error updating swap rule", err)
+    }
+  }
+
+  checkSwaps = async (): Promise<boolean> => {
+    try {
+      const resp: IResponse<null> = await http.post( `check-swaps` )
+
+      return true
+    } catch( err ) {
+      handleError("Error checking swaps", err)
+
+      return false
     }
   }
 }

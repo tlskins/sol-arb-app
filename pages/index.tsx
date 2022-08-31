@@ -102,7 +102,9 @@ const Home: NextPage = () => {
 
   const onCheckSwapRules = async () => {
     onChecking()
-    await SwapRuleService.checkSwaps()
+    if ( await SwapRuleService.checkSwaps() ) {
+      onLoadSwapRules()
+    }
     onDoneChecking()
   }
 
@@ -129,7 +131,7 @@ const Home: NextPage = () => {
             return(
               <AccordionItem key={tokenSwapRule.swapTokenSymbol}>
 
-                <AccordionButton _expanded={{ bg: 'blue.400', color: 'white' }} minWidth="full">
+                <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }} minWidth="full">
                   <Box flex='1' textAlign='left'>
                     { tokenSwapRule.swapTokenSymbol }
                   </Box>
@@ -158,7 +160,7 @@ const Home: NextPage = () => {
                         {/* Header */}
 
                         <AccordionItem>
-                          <AccordionButton _expanded={{ bg: 'blue.600', color: 'white' }}>
+                          <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }}>
                             <Stack flex='1' textAlign='left' direction="row">
                               <Text marginRight="2">
                                 { combined.baseToken.symbol }
@@ -181,7 +183,7 @@ const Home: NextPage = () => {
 
                           {/* Panel */}
 
-                          <AccordionPanel>
+                          <AccordionPanel background="blue.50">
 
                             <SimpleGrid columns={2} spacing={2} alignItems="center" marginY="2">
 
@@ -190,42 +192,46 @@ const Home: NextPage = () => {
                               <Stack direction="row">
                                 <Stack direction="column">
                                   <FormControl>
-                                    <FormLabel>Active?</FormLabel>
+                                    <FormLabel fontSize="sm">Active?</FormLabel>
                                     <Checkbox
+                                      background="white"
                                       isChecked={ combined.active }
                                       onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
+                                      borderRadius="lg"
+                                      size="lg"
                                     />
                                   </FormControl>
                                 </Stack>
                                 <Stack direction="column">
                                   <FormControl>
-                                    <FormLabel>Invert?</FormLabel>
+                                    <FormLabel fontSize="sm">Invert?</FormLabel>
                                     <Checkbox
+                                      background="white"
                                       isChecked={ combined.invertPrice }
                                       onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'invertPrice', e.target.checked ) }
+                                      borderRadius="lg"
+                                      size="lg"
                                     />
                                   </FormControl>
                                 </Stack>
                               </Stack>
 
                               <Stack direction="column">
-                                <FormControl>
-                                  <FormLabel>Slippage %</FormLabel>
-                                  <NumberInput
-                                    size="sm"
-                                    step={1.0}
-                                    value={ combined.slippage }
-                                    onChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'slippage', parseFloat( value )) }
-                                  >
-                                    <NumberInputField />
-                                  </NumberInput>
-                                </FormControl>
+                                <FormLabel fontSize="sm" marginY="0">Slippage %</FormLabel>
+                                <NumberInput
+                                  size="sm"
+                                  step={1.0}
+                                  value={ combined.slippage }
+                                  onChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'slippage', parseFloat( value )) }
+                                >
+                                  <NumberInputField borderRadius="lg" background="white"/>
+                                </NumberInput>
                               </Stack>
 
                               {/* Inactive Dates */}
 
                               <Stack direction="column">
-                                <FormLabel marginBottom="0">Inactive Before </FormLabel>
+                                <FormLabel marginBottom="0" fontSize="sm">Inactive Before </FormLabel>
                                 <DatePicker
                                   className="filter-calendar"
                                   selected={combined.inactiveBefore ? Moment( combined.inactiveBefore ).toDate() : null }
@@ -240,7 +246,7 @@ const Home: NextPage = () => {
                               </Stack>
 
                               <Stack direction="column">
-                                <FormLabel marginBottom="0">Inactive After </FormLabel>
+                                <FormLabel marginBottom="0" fontSize="sm">Inactive After </FormLabel>
                                 <DatePicker
                                   className="filter-calendar"
                                   selected={combined.inactiveAfter ? Moment( combined.inactiveAfter ).toDate() : null }
@@ -257,85 +263,104 @@ const Home: NextPage = () => {
                               {/* Enable / Disable Row */}
 
                               { combined.baseInput === 0 ?
-                                <Stack direction="row">
+                                <Stack direction="row" marginTop="3">
                                   <IconButton aria-label='Enable Buy'
                                     icon={<AddIcon />}
                                     size="xs"
-                                    borderRadius="3xl"
+                                    borderRadius="md"
                                     backgroundColor="green.300"
                                     onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', 1 ) }
                                   />
-                                  <Text>Enable Buys</Text>
+                                  <Text fontSize="sm">Enable Buys</Text>
                                 </Stack>
                                 :
-                                <Stack direction="column">
-                                  <Stack direction="row">
-                                    <IconButton aria-label='Disable Buy'
-                                      icon={<CloseIcon />}
-                                      size="xs"
-                                      borderRadius="3xl"
-                                      backgroundColor="red.300"
-                                      onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', 0 ) }
-                                    />
-                                    <Text>Disable Buy</Text>
-                                  </Stack>
-
-                                  <Stack direction="row">
-                                    <FormLabel>Execute Buys</FormLabel>
-                                    <Checkbox
-                                      isChecked={ combined.isExecuteBuy }
-                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteBuy', e.target.checked ) }
-                                    />
-                                  </Stack>
+                                <Stack direction="row" marginTop="3">
+                                  <IconButton aria-label='Disable Buy'
+                                    icon={<CloseIcon />}
+                                    size="xs"
+                                    borderRadius="md"
+                                    backgroundColor="red.200"
+                                    onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', 0 ) }
+                                  />
+                                  <Text fontSize="sm">Disable Buy</Text>
                                 </Stack>
                               }
 
                               { combined.swapInput === 0 ?
-                                <Stack direction="row">
+                                <Stack direction="row" marginTop="3">
                                   <IconButton aria-label='Enable Sell'
                                     icon={<AddIcon />}
                                     size="xs"
-                                    borderRadius="3xl"
+                                    borderRadius="md"
                                     backgroundColor="green.300"
                                     onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', 1 ) }
                                   />
-                                  <Text>Enable Sell</Text>
+                                  <Text fontSize="sm">Enable Sell</Text>
                                 </Stack>
                                 :
-                                <Stack direction="column">
-                                  <Stack direction="row">
-                                    <IconButton aria-label='Disable Sell'
-                                      icon={<CloseIcon />}
-                                      size="xs"
-                                      borderRadius="3xl"
-                                      backgroundColor="red.300"
-                                      onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', 0 ) }
-                                    />
-                                    <Text>Disable Sell</Text>
-                                  </Stack>
-
-                                  <Stack direction="row">
-                                    <FormLabel>Execute Sell</FormLabel>
-                                    <Checkbox
-                                      isChecked={ combined.isExecuteSell }
-                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteSell', e.target.checked ) }
-                                    />
-                                  </Stack>
+                                <Stack direction="row" marginTop="3">
+                                  <IconButton aria-label='Disable Sell'
+                                    icon={<CloseIcon />}
+                                    size="xs"
+                                    borderRadius="md"
+                                    backgroundColor="red.200"
+                                    onClick={ () => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', 0 ) }
+                                  />
+                                  <Text fontSize="sm">Disable Sell</Text>
                                 </Stack>
+                              }
+
+                              {/* Execute Buy / Sell  */}
+
+                              { combined.baseInput !== 0 ?
+                                <Stack direction="row" marginTop="4">
+                                  <Checkbox
+                                    isChecked={ combined.isExecuteBuy }
+                                    onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteBuy', e.target.checked ) }
+                                    borderRadius="lg"
+                                    size="lg"
+                                    background="white"
+                                  />
+                                  <FormLabel fontSize="sm">
+                                    Execute Buys
+                                  </FormLabel>
+                                </Stack> 
+                                :
+                                <Box />
+                              }
+
+                              { combined.swapInput !== 0 ?
+                                <Stack direction="row" marginTop="4">
+                                  <Checkbox
+                                    isChecked={ combined.isExecuteSell }
+                                    onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteSell', e.target.checked ) }
+                                    borderRadius="lg"
+                                    size="lg"
+                                    background="white"
+                                  />
+                                  <FormLabel fontSize="sm">
+                                    Execute Sell
+                                  </FormLabel>
+                                </Stack>
+                                :
+                                <Box />
                               }
 
                               {/* Targets Row  */}
 
                               { combined.baseInput !== 0 ?
-                                <FormControl>
-                                  <FormLabel>Buy { combined.invertPrice ? "Above" : "Below" }</FormLabel>
+                                <FormControl marginY="2">
+                                  <FormLabel fontSize="sm">
+                                    Buy { combined.invertPrice ? "Above" : "Below" }
+                                  </FormLabel>
                                   <NumberInput
                                     size="sm"
                                     step={1.0}
+                                    borderRadius="lg"
                                     defaultValue={ combined.swapTarget }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapTarget', parseFloat(e.target.value)) }
                                   >
-                                    <NumberInputField />
+                                    <NumberInputField borderRadius="lg" background="white"/>
                                   </NumberInput>
                                 </FormControl>
                                 :
@@ -343,9 +368,9 @@ const Home: NextPage = () => {
                               }
                               
                               { combined.swapInput !== 0 ?
-                                <FormControl>
+                                <FormControl marginY="2">
                                   <Stack direction="row">
-                                    <FormLabel>
+                                    <FormLabel fontSize="sm">
                                       Sell { combined.invertPrice ? "Below" : "Above" }
                                     </FormLabel>
                                     <Text color="blue.400">{ margin }</Text>
@@ -356,7 +381,7 @@ const Home: NextPage = () => {
                                     defaultValue={ combined.baseTarget }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseTarget', parseFloat(e.target.value)) }
                                   >
-                                    <NumberInputField />
+                                    <NumberInputField borderRadius="lg" background="white"/>
                                   </NumberInput>
                                 </FormControl>
                                 :
@@ -367,14 +392,14 @@ const Home: NextPage = () => {
 
                               { combined.baseInput !== 0 ?
                                 <FormControl>
-                                  <FormLabel>Amount { combined.baseToken.symbol } </FormLabel>
+                                  <FormLabel fontSize="sm">Amount { combined.baseToken.symbol } </FormLabel>
                                   <NumberInput
                                     size="sm"
                                     step={1.0}
                                     defaultValue={ combined.baseInput }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', parseFloat(e.target.value)) }
                                   >
-                                    <NumberInputField />
+                                    <NumberInputField borderRadius="lg" background="white"/>
                                   </NumberInput>
                                 </FormControl>
                                 :
@@ -383,14 +408,14 @@ const Home: NextPage = () => {
 
                               { combined.swapInput !== 0 ?
                                 <FormControl>
-                                  <FormLabel>Amount { combined.swapToken.symbol } </FormLabel>
+                                  <FormLabel fontSize="sm">Amount { combined.swapToken.symbol } </FormLabel>
                                   <NumberInput
                                     size="sm"
                                     step={1.0}
                                     defaultValue={ combined.swapInput }
                                     onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', parseFloat(e.target.value)) }
                                   >
-                                    <NumberInputField />
+                                    <NumberInputField borderRadius="lg" background="white"/>
                                   </NumberInput>
                                 </FormControl>
                                 :

@@ -167,10 +167,10 @@ const Home: NextPage = () => {
                               </Text>
                               <Text>
                                 { combined.lastBuyUnitPrice &&
-                                  `$${ combined.lastBuyUnitPrice } (${Moment(combined.lastBuyCheckAt).format("LT") })`
+                                  `$${ combined.lastBuyUnitPrice } (${Moment(combined.lastBuyCheckAt).format("LT")} ${Moment().diff(Moment(combined.lastBuyCheckAt), 'minutes')} mins ago)`
                                 }
                                 { (!combined.lastBuyUnitPrice && combined.lastSellUnitPrice) &&
-                                  `$${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT") })`
+                                  `$${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT")})`
                                 }
                                 {/* { (combined.lastBuyUnitPrice && combined.lastSellUnitPrice) && " | " }
                                 { combined.lastSellUnitPrice &&

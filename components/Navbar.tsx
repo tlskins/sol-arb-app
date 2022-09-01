@@ -3,7 +3,6 @@ import {
   Flex,
   Avatar,
   HStack,
-  IconButton,
   Button,
   Menu,
   MenuButton,
@@ -27,26 +26,19 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
-import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react'
 import { signIn, signOut, useSession } from "next-auth/react";
 
 import { setAccessToken } from '../http-common'
-import { ICreateSwapRule } from '../types/swapRules'
 import SwapRuleService from '../services/swapRule.service'
 import WalletService from '../services/wallets.service'
 import { useGlobalState, resetGlobalState } from '../services/gloablState'
-import { ICreateWallet } from '../types/wallet'
 import { pWalletName } from '../presenters/wallets'
 import swapRuleService from '../services/swapRule.service'
 
 
 const Navbar = () => {
-  const {
-    isOpen: isOpenProfile,
-    onOpen: onOpenProfile,
-    onClose: onCloseProfile,
-  } = useDisclosure();
+
   const {
     isOpen: isCreateSwapModalOpen,
     onOpen: onOpenCreateSwapModal,
@@ -248,13 +240,6 @@ const Navbar = () => {
       {/* Navbar */}
       <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
-          <IconButton
-            size={'md'}
-            icon={isOpenProfile ? <CloseIcon /> : <HamburgerIcon />}
-            aria-label={'Open Menu'}
-            display={{ md: 'none' }}
-            onClick={(!isOpenProfile && isSignedIn) ? onOpenProfile : onCloseProfile}
-          />
           <HStack spacing={8} alignItems={'center'}>
             <HStack
               as={'nav'}

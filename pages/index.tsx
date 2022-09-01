@@ -282,7 +282,7 @@ const Home: NextPage = () => {
                                   padding="0.5"
                                   onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'walletId', e.target.value) }
                                 >
-                                  <option value={null}>None</option>
+                                  <option value={undefined}>None</option>
                                   { wallets.map( wallet => (
                                     <option key={wallet._id} value={wallet._id}> 
                                       { pWalletName( wallet ) }

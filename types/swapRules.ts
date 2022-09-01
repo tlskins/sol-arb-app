@@ -27,6 +27,7 @@ export interface ISwapRule {
   lastBuyUnitPrice?: number,
   lastSellCheckAt?: string,
   lastSellUnitPrice?: number,
+  walletId?: string,
 }
 
 export interface IUpdateSwapRule {
@@ -45,6 +46,7 @@ export interface IUpdateSwapRule {
   active?: boolean,
   inactiveBefore?: string,
   inactiveAfter?: string,
+  walletId?: string,
 }
 
 export interface ICreateSwapRule {

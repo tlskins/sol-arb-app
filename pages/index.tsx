@@ -21,6 +21,7 @@ import {
   Checkbox,
   useDisclosure,
   SimpleGrid,
+  Select,
 } from '@chakra-ui/react'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify'
@@ -33,12 +34,15 @@ import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
 import { IUpdateSwapRule } from '../types/swapRules'
 import { useGlobalState } from '../services/gloablState'
+import walletsService from '../services/wallets.service'
+import { pWalletName } from '../presenters/wallets'
 
 
 const Home: NextPage = () => {
   const { data: _sessionData } = useSession();
   const sessionData = _sessionData as any
   const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
+  const [wallets, setWallets] = useGlobalState('wallets')
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
   const {
     isOpen: isUpdating,
@@ -53,9 +57,9 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if ( sessionData?.token?.id ) {
-      console.log('setAccessToken', sessionData?.token?.access_token)
       setAccessToken( sessionData?.token?.access_token )
       onLoadSwapRules()
+      onLoadWallets()
     }
   }, [sessionData?.token?.id])
 
@@ -67,7 +71,16 @@ const Home: NextPage = () => {
     if ( rules ) {
       setTokenSwapRules( rules )
     }
-    console.log( 'onLoadSwapRules', rules )
+  }
+
+  const onLoadWallets = async () => {
+    if ( !sessionData ) {
+      return
+    }
+    const wallets = await walletsService.getWallets()
+    if ( wallets ) {
+      setWallets( wallets )
+    }
   }
 
   const onUpdateSwapRule = async () => {
@@ -84,7 +97,6 @@ const Home: NextPage = () => {
   }
 
   const onChangeSwapRule = ( swapSymbol: string, idx: number, key: string, value: any ) => {
-    console.log('onChangeSwapRule', swapSymbol, idx, key, value )
     const swapRule = tokenSwapRules.find( tokenSwapRule => tokenSwapRule.swapTokenSymbol === swapSymbol)?.swapRules[idx]
 
     if ( !swapRule ) return
@@ -107,8 +119,6 @@ const Home: NextPage = () => {
     }
     onDoneChecking()
   }
-
-  console.log('swaps', tokenSwapRules)
 
   return (
     <div className={styles.container}>
@@ -149,6 +159,7 @@ const Home: NextPage = () => {
                         margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
                       }
                     }
+                    const wallet = wallets.find( wallet => swapRule.walletId === wallet._id )
                     return(
                       <Accordion
                         key={swapRule._id}
@@ -161,22 +172,25 @@ const Home: NextPage = () => {
 
                         <AccordionItem>
                           <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }}>
-                            <Stack flex='1' textAlign='left' direction="row">
+                            <Stack textAlign='left' direction="row" paddingRight="4">
                               <Text marginRight="2">
                                 { combined.baseToken.symbol }
                               </Text>
-                              <Text>
-                                { combined.lastBuyUnitPrice &&
-                                  `$${ combined.lastBuyUnitPrice } (${Moment(combined.lastBuyCheckAt).format("LT")} ${Moment().diff(Moment(combined.lastBuyCheckAt), 'minutes')} mins ago)`
-                                }
-                                { (!combined.lastBuyUnitPrice && combined.lastSellUnitPrice) &&
-                                  `$${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT")})`
-                                }
-                                {/* { (combined.lastBuyUnitPrice && combined.lastSellUnitPrice) && " | " }
-                                { combined.lastSellUnitPrice &&
-                                  `Last Sell Price: ${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT") }) |`
-                                } */}
-                              </Text>
+                              <Stack direction="column" fontSize="xs">
+                                <Text>
+                                  { combined.lastBuyUnitPrice &&
+                                    `$${ combined.lastBuyUnitPrice } (${Moment(combined.lastBuyCheckAt).format("LT")} ${Moment().diff(Moment(combined.lastBuyCheckAt), 'minutes')} mins ago)`
+                                  }
+                                  { (!combined.lastBuyUnitPrice && combined.lastSellUnitPrice) &&
+                                    `$${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT")})`
+                                  }
+                                </Text>
+                                <Text>
+                                  { !wallet && "No Wallet Linked" }
+                                  { wallet && `Balances: ${ wallet.balances[swapRule.baseToken.symbol] || 0 } ${ swapRule.baseToken.symbol } |
+                                  ${ wallet.balances[swapRule.swapToken.symbol] } ${ swapRule.swapToken.symbol }` }
+                                </Text>
+                              </Stack>
                             </Stack>
                             <AccordionIcon />
                           </AccordionButton>
@@ -217,21 +231,7 @@ const Home: NextPage = () => {
                               </Stack>
 
                               <Stack direction="column">
-                                <FormLabel fontSize="sm" marginY="0">Slippage %</FormLabel>
-                                <NumberInput
-                                  size="sm"
-                                  step={1.0}
-                                  value={ combined.slippage }
-                                  onChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'slippage', parseFloat( value )) }
-                                >
-                                  <NumberInputField borderRadius="lg" background="white"/>
-                                </NumberInput>
-                              </Stack>
-
-                              {/* Inactive Dates */}
-
-                              <Stack direction="column">
-                                <FormLabel marginBottom="0" fontSize="sm">Inactive Before </FormLabel>
+                                <FormLabel fontSize="sm">Inactive Before </FormLabel>
                                 <DatePicker
                                   className="filter-calendar"
                                   selected={combined.inactiveBefore ? Moment( combined.inactiveBefore ).toDate() : null }
@@ -243,10 +243,7 @@ const Home: NextPage = () => {
                                   timeCaption="time"
                                   isClearable
                                 />
-                              </Stack>
-
-                              <Stack direction="column">
-                                <FormLabel marginBottom="0" fontSize="sm">Inactive After </FormLabel>
+                                <FormLabel fontSize="sm">Inactive After </FormLabel>
                                 <DatePicker
                                   className="filter-calendar"
                                   selected={combined.inactiveAfter ? Moment( combined.inactiveAfter ).toDate() : null }
@@ -258,6 +255,40 @@ const Home: NextPage = () => {
                                   timeCaption="time"
                                   isClearable
                                 />
+                              </Stack>
+
+                              {/* Row 2 */}
+
+                              <Stack direction="column">
+                                <FormLabel fontSize="sm" marginY="0">Slippage %</FormLabel>
+                                <NumberInput
+                                  size="sm"
+                                  step={1.0}
+                                  value={ combined.slippage }
+                                  onChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'slippage', parseFloat( value )) }
+                                >
+                                  <NumberInputField borderRadius="lg" background="white"/>
+                                </NumberInput>
+                              </Stack>
+
+                              <Stack direction="column">
+                                <FormLabel fontSize="sm" marginY="0">Wallet</FormLabel>
+                                <Select variant='outline'
+                                  size="sm"
+                                  background="white"
+                                  borderRadius="lg"
+                                  value={combined.walletId}
+                                  fontSize="sm"
+                                  padding="0.5"
+                                  onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'walletId', e.target.value) }
+                                >
+                                  <option value={null}>None</option>
+                                  { wallets.map( wallet => (
+                                    <option key={wallet._id} value={wallet._id}> 
+                                      { pWalletName( wallet ) }
+                                    </option>
+                                  ))}
+                                </Select>
                               </Stack>
 
                               {/* Enable / Disable Row */}

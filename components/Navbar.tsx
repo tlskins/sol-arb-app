@@ -3,7 +3,6 @@ import {
   Flex,
   Avatar,
   HStack,
-  Link,
   IconButton,
   Button,
   Menu,
@@ -14,7 +13,6 @@ import {
   useDisclosure,
   useColorModeValue,
   Center,
-  Text,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -26,6 +24,8 @@ import {
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
 } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react'
@@ -34,7 +34,11 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { setAccessToken } from '../http-common'
 import { ICreateSwapRule } from '../types/swapRules'
 import SwapRuleService from '../services/swapRule.service'
-import { useGlobalState } from '../services/gloablState'
+import WalletService from '../services/wallets.service'
+import { useGlobalState, resetGlobalState } from '../services/gloablState'
+import { ICreateWallet } from '../types/wallet'
+import { pWalletName } from '../presenters/wallets'
+import swapRuleService from '../services/swapRule.service'
 
 
 const Navbar = () => {
@@ -44,9 +48,14 @@ const Navbar = () => {
     onClose: onCloseProfile,
   } = useDisclosure();
   const {
-    isOpen: isCreateModalOpen,
-    onOpen: onOpenCreateModal,
-    onClose: onCloseCreateModal,
+    isOpen: isCreateSwapModalOpen,
+    onOpen: onOpenCreateSwapModal,
+    onClose: onCloseCreateSwapModal,
+  } = useDisclosure()
+  const {
+    isOpen: isCreateWalletModalOpen,
+    onOpen: onOpenCreateWalletModal,
+    onClose: onCloseCreateWalletModal,
   } = useDisclosure()
 
   const { data: _sessionData, status: sessionStatus } = useSession();
@@ -54,16 +63,18 @@ const Navbar = () => {
   const isLoading = sessionStatus === "loading"
   const isSignedIn = !!sessionData?.token
   const userName = sessionData?.token?.username
-  const [isCreating, setIsCreating] = useState(false)
-  const [createSwapRule, setCreateSwapRule] = useState({
-    baseTokenSym: "",
-    swapTokenSym: "",
-  } as ICreateSwapRule)
+
+  const [isCreatingSwap, setIsCreatingSwap] = useState(false)
+  const [createSwapRule, setCreateSwapRule] = useState(SwapRuleService.newSwapRule())
   const [, setTokenSwapRules] = useGlobalState('tokenSwapRules')
+
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false)
+  const [isShowPrivateKey, setIsShowPrivateKey] = useState(false)
+  const [createWallet, setCreateWallet] = useState(WalletService.newWallet())
+  const [wallets, setWallets] = useGlobalState('wallets')
 
   useEffect(() => {
     if ( sessionStatus === "authenticated" ) {
-      console.log('setAccessToken', sessionData?.token?.access_token)
       setAccessToken( sessionData?.token?.access_token )
     }
   }, [sessionStatus])
@@ -71,31 +82,43 @@ const Navbar = () => {
   const onSignOut = () => {
     signOut()
     setAccessToken( "" )
+    resetGlobalState()
   }
 
   const onCreateSwapRule = async () => {
-    setIsCreating(true)
+    setIsCreatingSwap(true)
     const resp = await SwapRuleService.create(createSwapRule)
     if ( resp ) {
-      SwapRuleService
-      setCreateSwapRule({
-        baseTokenSym: "",
-        swapTokenSym: "",
-      })
-      onCloseCreateModal()
+      setCreateSwapRule(swapRuleService.newSwapRule())
+      onCloseCreateSwapModal()
       const rules = await SwapRuleService.getRulesByDiscord()
       if ( rules ) {
         setTokenSwapRules( rules )
       }
     }
-    setIsCreating(false)
+    setIsCreatingSwap(false)
+  }
+
+  const onCreateWallet = async () => {
+    setIsCreatingWallet(true)
+    const resp = await WalletService.create(createWallet)
+    if ( resp ) {
+      setCreateWallet(WalletService.newWallet())
+      onCloseCreateWalletModal()
+      const wallets = await WalletService.getWallets()
+      if ( wallets ) {
+        setWallets( wallets )
+      }
+    }
+    setIsCreatingWallet(false)
   }
 
   return (
     <>
+      {/* Swap Rule Modal */}
       <Modal
-        isOpen={isCreateModalOpen}
-        onClose={onCloseCreateModal}
+        isOpen={isCreateSwapModalOpen}
+        onClose={onCloseCreateSwapModal}
         motionPreset='slideInRight'
         size="sm"
         isCentered
@@ -135,7 +158,7 @@ const Navbar = () => {
 
           <ModalFooter>
             <Button
-              isLoading={isCreating}
+              isLoading={isCreatingSwap}
               loadingText='Saving...'
               colorScheme='teal'
               variant='solid'
@@ -143,11 +166,86 @@ const Navbar = () => {
             >
               Save
             </Button>
-            <Button variant='ghost' onClick={onCloseCreateModal}>Close</Button>
+            <Button variant='ghost' onClick={onCloseCreateSwapModal}>Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
+      {/* Wallet Modal */}
+      <Modal
+        isOpen={isCreateWalletModalOpen}
+        onClose={onCloseCreateWalletModal}
+        motionPreset='slideInRight'
+        size="sm"
+        isCentered
+      >
+        <ModalOverlay
+          bg='none'
+          backdropFilter='auto'
+          backdropInvert='80%'
+          backdropBlur='2px'
+        />
+        <ModalContent>
+          <ModalHeader>Create Wallet</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack direction="column">
+              <FormControl>
+                <FormLabel>
+                  Wallet
+                </FormLabel>
+                <Input type="text"
+                  value={ createWallet.name }
+                  onChange={ e => setCreateWallet({ ...createWallet, name: e.target.value }) }
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>
+                  Public Key
+                </FormLabel>
+                <Input type="text"
+                  value={ createWallet.publicKey }
+                  onChange={ e => setCreateWallet({ ...createWallet, publicKey: e.target.value }) }
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>
+                  Private Key
+                </FormLabel>
+                <InputGroup size='md'>
+                  <Input
+                    pr='4.5rem'
+                    type={isShowPrivateKey ? 'text' : 'password'}
+                    placeholder='Private Key'
+                  />
+                  <InputRightElement width='4.5rem'>
+                    <Button h='1.75rem' size='sm' onClick={() => setIsShowPrivateKey(!isShowPrivateKey)}>
+                      {isShowPrivateKey ? 'Hide' : 'Show'}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
+            </Stack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              isLoading={isCreatingWallet}
+              loadingText='Saving...'
+              colorScheme='teal'
+              variant='solid'
+              onClick={onCreateWallet}
+            >
+              Save
+            </Button>
+            <Button variant='ghost' onClick={onCloseCreateWalletModal}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Navbar */}
       <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
           <IconButton
@@ -176,10 +274,7 @@ const Navbar = () => {
                   variant={'link'}
                   cursor={'pointer'}
                   minW={0}
-                  onClick={async () => {
-                    const signInResp = await signIn("discord", { redirect: false })
-                    console.log('signInResp', signInResp)
-                  }}
+                  onClick={() => signIn("discord", { redirect: false })}
                 >
                   Sign in
                 </MenuButton>
@@ -208,12 +303,37 @@ const Navbar = () => {
                         background:"green.200",
                       }}
                       fontWeight="bold"
-                      onClick={onOpenCreateModal}
+                      onClick={onOpenCreateSwapModal}
                     >
                       New Swap Rule
                     </MenuItem>
-
+                    <MenuItem
+                      _hover={{
+                        background:"green.200",
+                      }}
+                      fontWeight="bold"
+                      onClick={onOpenCreateWalletModal}
+                    >
+                      New Wallet
+                    </MenuItem>
                     <MenuDivider />
+                    { wallets.length > 0 &&
+                      <>
+                        <MenuItem fontWeight="bold">
+                          Wallets
+                        </MenuItem>
+                        { wallets.map( wallet => (
+                          <MenuItem key={wallet._id}
+                            _hover={{
+                              background:"green.200",
+                            }}
+                          >
+                            { pWalletName( wallet ) }
+                          </MenuItem>
+                        ))}
+                        <MenuDivider />
+                      </>
+                    }
                     <MenuItem onClick={onSignOut}>
                       Sign Out
                     </MenuItem>

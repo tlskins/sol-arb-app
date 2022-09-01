@@ -8,6 +8,13 @@ interface SwapRulesResp {
 }
 
 class SwapRuleService {
+  newSwapRule = (): ICreateSwapRule => {
+    return {
+      baseTokenSym: "",
+      swapTokenSym: "",
+    } as ICreateSwapRule
+  }
+
   getRulesByDiscord = async (): Promise<ITokenSwapRules[] | undefined> => {
     try {
       const resp: IResponse<SwapRulesResp> = await http.get( `swap-rule` )

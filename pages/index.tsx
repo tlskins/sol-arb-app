@@ -188,7 +188,7 @@ const Home: NextPage = () => {
                                 <Text>
                                   { !wallet && "No Wallet Linked" }
                                   { wallet && `Balances: ${ wallet.balances[swapRule.baseToken.symbol] || 0 } ${ swapRule.baseToken.symbol } |
-                                  ${ wallet.balances[swapRule.swapToken.symbol] } ${ swapRule.swapToken.symbol }` }
+                                  ${ wallet.balances[swapRule.swapToken.symbol] || 0 } ${ swapRule.swapToken.symbol }` }
                                 </Text>
                               </Stack>
                             </Stack>
@@ -280,9 +280,9 @@ const Home: NextPage = () => {
                                   value={combined.walletId}
                                   fontSize="sm"
                                   padding="0.5"
-                                  onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'walletId', e.target.value) }
+                                  onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'walletId', e.target.value === 'None' ? null : e.target.value ) }
                                 >
-                                  <option value={undefined}>None</option>
+                                  <option value="None">None</option>
                                   { wallets.map( wallet => (
                                     <option key={wallet._id} value={wallet._id}> 
                                       { pWalletName( wallet ) }

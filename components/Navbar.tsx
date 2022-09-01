@@ -211,6 +211,7 @@ const Navbar = () => {
                     pr='4.5rem'
                     type={isShowPrivateKey ? 'text' : 'password'}
                     placeholder='Private Key'
+                    onChange={ e => setCreateWallet({ ...createWallet, privateKey: e.target.value }) }
                   />
                   <InputRightElement width='4.5rem'>
                     <Button h='1.75rem' size='sm' onClick={() => setIsShowPrivateKey(!isShowPrivateKey)}>

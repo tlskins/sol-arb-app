@@ -22,6 +22,7 @@ export const handleError = (errPrefix: string, err: any): void => {
   if (axios.isAxiosError(err)) {
     const serverErr = err as AxiosError<IServerError>;
     toast.error(`${errPrefix}: ${ serverErr?.response?.data?.message || 'Unknown' }`, {
+      theme: 'dark',
       position: toast.POSITION.TOP_CENTER,
     })
   } else {

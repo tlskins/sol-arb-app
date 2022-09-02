@@ -14,6 +14,7 @@
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
     "axios": "^0.27.2",
+    "canvasjs": "^1.8.3",
     "framer-motion": "^7.2.1",
     "moment-timezone": "^0.5.37",
     "next": "12.2.3",

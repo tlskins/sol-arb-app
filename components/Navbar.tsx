@@ -38,7 +38,6 @@ import swapRuleService from '../services/swapRule.service'
 
 
 const Navbar = () => {
-
   const {
     isOpen: isCreateSwapModalOpen,
     onOpen: onOpenCreateSwapModal,

@@ -1,6 +1,8 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from "next-auth/react"
+import { FaChartLine } from 'react-icons/fa'
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import {
   Accordion,
@@ -14,7 +16,6 @@ import {
   Text,
   FormControl,
   FormLabel,
-  Input,
   Stack,
   NumberInput,
   NumberInputField,
@@ -22,6 +23,13 @@ import {
   useDisclosure,
   SimpleGrid,
   Select,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
 } from '@chakra-ui/react'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify'
@@ -32,11 +40,11 @@ import SwapRuleService from '../services/swapRule.service'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
-import { IUpdateSwapRule } from '../types/swapRules'
+import { ISwapRule, IUpdateSwapRule } from '../types/swapRules'
 import { useGlobalState } from '../services/gloablState'
 import walletsService from '../services/wallets.service'
 import { pWalletName } from '../presenters/wallets'
-
+const SwapChart = dynamic(() => import("../components/SwapChart"),  { ssr: false })
 
 const Home: NextPage = () => {
   const { data: _sessionData } = useSession();
@@ -44,6 +52,7 @@ const Home: NextPage = () => {
   const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
   const [wallets, setWallets] = useGlobalState('wallets')
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
+  const [swapRuleChart, setSwapRuleChart] = useState(undefined as ISwapRule | undefined)
   const {
     isOpen: isUpdating,
     onOpen: onUpdating,
@@ -54,6 +63,11 @@ const Home: NextPage = () => {
     onOpen: onChecking,
     onClose: onDoneChecking,
   } = useDisclosure()
+  const {
+    isOpen: isShowSwapChart,
+    onOpen: onShowSwapChart,
+    onClose: onHideSwapChart,
+  } = useDisclosure()
 
   useEffect(() => {
     if ( sessionData?.token?.id ) {
@@ -62,6 +76,16 @@ const Home: NextPage = () => {
       onLoadWallets()
     }
   }, [sessionData?.token?.id])
+
+  const onOpenSwapChart = (swapRule: ISwapRule) => {
+    setSwapRuleChart(swapRule)
+    onShowSwapChart()
+  }
+
+  const onCloseSwapChart = () => {
+    setSwapRuleChart(undefined)
+    onHideSwapChart()
+  }
 
   const onLoadSwapRules = async () => {
     if ( !sessionData ) {
@@ -130,6 +154,32 @@ const Home: NextPage = () => {
 
       <Navbar />
 
+      <Modal
+        isOpen={isShowSwapChart}
+        onClose={onCloseSwapChart}
+        motionPreset='slideInRight'
+        size="sm"
+        isCentered
+      >
+        <ModalOverlay
+          bg='none'
+          backdropFilter='auto'
+          backdropInvert='80%'
+          backdropBlur='2px'
+        />
+        <ModalContent>
+          <ModalHeader>Swap Chart</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <SwapChart swapRule={swapRuleChart} />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant='ghost' onClick={onCloseSwapChart}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <main className={styles.main}>
 
         <Text fontSize='lg' marginY="4" fontWeight="bold" textDecoration="underline">
@@ -153,6 +203,7 @@ const Home: NextPage = () => {
                     const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
                     const margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
                     const wallet = wallets.find( wallet => swapRule.walletId === wallet._id )
+                    const lastCheck = combined.lastBuyCheckAt || combined.lastSellCheckAt
                     return(
                       <Accordion
                         key={swapRule._id}
@@ -171,21 +222,18 @@ const Home: NextPage = () => {
                               </Text>
                               <Stack direction="column" fontSize="xs">
                                 <Text>
-                                  { combined.lastBuyUnitPrice &&
-                                    `$${ combined.lastBuyUnitPrice } (${Moment(combined.lastBuyCheckAt).format("LT")} ${Moment().diff(Moment(combined.lastBuyCheckAt), 'minutes')} mins ago)`
-                                  }
-                                  { (!combined.lastBuyUnitPrice && combined.lastSellUnitPrice) &&
-                                    `$${ combined.lastSellUnitPrice } (${Moment(combined.lastSellCheckAt).format("LT")})`
-                                  }
+                                  { `$${ combined.lastSellUnitPrice || "?" }` } - { `$${ combined.lastBuyUnitPrice || "?" }` }
+                                </Text>
+                                <Text>
+                                  { `${Moment(lastCheck).format("LT")} (${Moment().diff(Moment(lastCheck), 'minutes')} mins ago)` }
                                 </Text>
                                 <Text>
                                   { !wallet && "No Wallet Linked" }
-                                  { wallet && `Balances: ${ wallet.balances[swapRule.baseToken.symbol] || 0 } ${ swapRule.baseToken.symbol } |
+                                  { wallet && `${ wallet.balances[swapRule.baseToken.symbol] || 0 } ${ swapRule.baseToken.symbol } |
                                   ${ wallet.balances[swapRule.swapToken.symbol] || 0 } ${ swapRule.swapToken.symbol }` }
                                 </Text>
                               </Stack>
                             </Stack>
-                            <AccordionIcon />
                           </AccordionButton>
 
                           {/* Panel */}
@@ -197,7 +245,7 @@ const Home: NextPage = () => {
                               {/* Row 1 */}
 
                               <Stack direction="column">
-                                <Stack direction="row">
+                                <Stack direction="row" alignItems="center" alignContent="center" justifyContent="center">
                                   <FormControl>
                                     <FormLabel fontSize="sm">Active?</FormLabel>
                                     <Checkbox
@@ -206,6 +254,17 @@ const Home: NextPage = () => {
                                       onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
                                       borderRadius="lg"
                                       size="lg"
+                                    />
+                                  </FormControl>
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Chart</FormLabel>
+                                    <IconButton aria-label='Chart'
+                                      variant='outline'
+                                      size="sm"
+                                      colorScheme='blue'
+                                      icon={<FaChartLine />}
+                                      onClick={() => onOpenSwapChart(swapRule)}
                                     />
                                   </FormControl>
                                 </Stack>

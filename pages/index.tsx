@@ -374,7 +374,7 @@ const Home: NextPage = () => {
                               { combined.baseInput !== 0 ?
                                 <FormControl marginY="2">
                                   <FormLabel fontSize="sm">
-                                    Buy { combined.invertPrice ? "Above" : "Below" }
+                                    Buy Below
                                   </FormLabel>
                                   <NumberInput
                                     size="sm"
@@ -394,7 +394,7 @@ const Home: NextPage = () => {
                                 <FormControl marginY="2">
                                   <Stack direction="row">
                                     <FormLabel fontSize="sm">
-                                      Sell { combined.invertPrice ? "Below" : "Above" }
+                                      Sell Above
                                     </FormLabel>
                                     <Text color="blue.400">{ margin }</Text>
                                   </Stack>

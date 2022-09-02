@@ -10,15 +10,18 @@ import { ISwapRule } from '../types/swapRules'
 interface DataPoint {
   x: Date,
   y: number,
+  label: string,
 }
 
 const SwapChart = ({ swapRule }: { swapRule: ISwapRule | undefined }) => {
-  const [dataPoints, setDataPoints] = useState([] as DataPoint[])
+  const [buyDataPoints, setBuyDataPoints] = useState([] as DataPoint[])
+  const [sellDataPoints, setSellDataPoints] = useState([] as DataPoint[])
+
   useEffect(() => {
-    if ( swapRule?._id ) {
+    if ( !!swapRule?._id ) {
       onLoadSwapRecords()
     }
-  }, [swapRule?._id])
+  }, [swapRule])
 
   const onLoadSwapRecords = async () => {
     if ( !swapRule ) {
@@ -26,29 +29,47 @@ const SwapChart = ({ swapRule }: { swapRule: ISwapRule | undefined }) => {
     }
     const swapRecords = await swapRecordService.getSwapRecords(swapRule._id)
     if ( swapRecords ) {
-      setDataPoints(swapRecords.map( record => ({ x: Moment(record.timestamp).toDate(), y: record.unitPrice })))
+      setBuyDataPoints(swapRecords.filter( record => record.inputTokenSymbol === swapRule.baseToken.symbol ).map( record => ({
+        label: 'Buy',
+        x: Moment(record.timestamp).toDate(),
+        y: record.unitPrice,
+      })))
+      setSellDataPoints(swapRecords.filter( record => record.inputTokenSymbol !== swapRule.baseToken.symbol ).map( record => ({
+        label: 'Sell',
+        x: Moment(record.timestamp).toDate(),
+        y: record.unitPrice,
+      })))
     }
   }
 
   return(
     <div>
-      <CanvasJSChart options={{
-        theme: "light2",
-        title: {
-          text: `${ swapRule?.swapToken?.symbol || '?' } Prices`
-        },
-        axisY: {
-          title: `${ swapRule?.swapToken?.symbol || '?' } Price in ${ swapRule?.baseToken?.symbol || '?' }`,
-          prefix: "$",
-        },
-        data: [{
-          type: "line",
-          xValueFormatString: "MM hh:mm",
-          yValueFormatString: "$#,##0.00",
-          dataPoints
-        }]
-      }}
-    />
+      <CanvasJSChart
+          options={{
+          theme: "light2",
+          title: {
+            text: `${ swapRule?.swapToken?.symbol || '?' } Prices`
+          },
+          axisY: {
+            title: `${ swapRule?.swapToken?.symbol || '?' } Price in ${ swapRule?.baseToken?.symbol || '?' }`,
+            prefix: "$",
+          },
+          data: [
+            {
+              type: "line",
+              xValueFormatString: "MM hh:mm",
+              yValueFormatString: "$#,##0.00",
+              dataPoints: buyDataPoints,
+            },
+            {
+              type: "line",
+              xValueFormatString: "MM hh:mm",
+              yValueFormatString: "$#,##0.00",
+              dataPoints: sellDataPoints,
+            },
+          ]
+        }}
+      />
     </div>
   )
 }

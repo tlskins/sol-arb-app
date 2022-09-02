@@ -38,7 +38,6 @@ class SwapRuleService {
         swapInput: 1,
         swapTarget: 1,
         isExecuteBuy: false,
-        invertPrice: false,
         slippage: 5,
         active: false,
       } )

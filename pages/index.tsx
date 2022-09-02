@@ -151,14 +151,7 @@ const Home: NextPage = () => {
                 <AccordionPanel minWidth="full" padding="0.5">
                   { tokenSwapRule.swapRules.map( (swapRule, idx) => {
                     const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
-                    let margin = undefined as string | undefined
-                    if ( combined.baseTarget !== 0 && combined.swapTarget !== 0 ) {
-                      if ( combined.invertPrice ) {
-                        margin = `(${((combined.swapTarget - combined.baseTarget) / combined.baseTarget * 100).toFixed(0)}%)`
-                      } else {
-                        margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
-                      }
-                    }
+                    const margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
                     const wallet = wallets.find( wallet => swapRule.walletId === wallet._id )
                     return(
                       <Accordion
@@ -203,8 +196,8 @@ const Home: NextPage = () => {
 
                               {/* Row 1 */}
 
-                              <Stack direction="row">
-                                <Stack direction="column">
+                              <Stack direction="column">
+                                <Stack direction="row">
                                   <FormControl>
                                     <FormLabel fontSize="sm">Active?</FormLabel>
                                     <Checkbox
@@ -216,18 +209,17 @@ const Home: NextPage = () => {
                                     />
                                   </FormControl>
                                 </Stack>
-                                <Stack direction="column">
-                                  <FormControl>
-                                    <FormLabel fontSize="sm">Invert?</FormLabel>
-                                    <Checkbox
-                                      background="white"
-                                      isChecked={ combined.invertPrice }
-                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'invertPrice', e.target.checked ) }
-                                      borderRadius="lg"
-                                      size="lg"
-                                    />
+                                <FormControl>
+                                    <FormLabel fontSize="sm">Decimals</FormLabel>
+                                    <NumberInput
+                                      size="sm"
+                                      step={1.0}
+                                      defaultValue={ combined.decimals }
+                                      onBlur={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'decimals', parseFloat(e.target.value)) }
+                                    >
+                                      <NumberInputField borderRadius="lg" background="white"/>
+                                    </NumberInput>
                                   </FormControl>
-                                </Stack>
                               </Stack>
 
                               <Stack direction="column">

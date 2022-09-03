@@ -229,7 +229,7 @@ const Home: NextPage = () => {
                             {/* Header */}
 
                             <AccordionItem>
-                              <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }}>
+                              <AccordionButton _expanded={{ bg: 'blue.200' }}>
                                 <Stack textAlign='left' direction="row" paddingRight="2">
                                   <Stack direction="column" fontSize="sm" fontWeight="bold">
                                     <Text marginRight="2">

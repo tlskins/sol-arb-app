@@ -555,27 +555,27 @@ const Home: NextPage = () => {
               })}
             </Accordion>
 
-            <Button
-              isLoading={isRefreshing}
-              loadingText='Refreshing...'
-              colorScheme="green"
-              variant='solid'
-              marginTop="8"
-              onClick={onLoadSwapRules}
-            >
-              Refresh
-            </Button>
+            <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+              <Button
+                isLoading={isRefreshing}
+                loadingText='Refreshing...'
+                colorScheme="green"
+                variant='solid'
+                onClick={onLoadSwapRules}
+              >
+                Refresh
+              </Button>
 
-            <Button
-              isLoading={isChecking}
-              loadingText='Checking...'
-              colorScheme="blue"
-              variant='solid'
-              marginTop="8"
-              onClick={onCheckSwapRules}
-            >
-              Check Rules
-            </Button>
+              <Button
+                isLoading={isChecking}
+                loadingText='Checking...'
+                colorScheme="blue"
+                variant='solid'
+                onClick={onCheckSwapRules}
+              >
+                Check Rules
+              </Button>
+            </Stack>
           </>
         }
       </main>

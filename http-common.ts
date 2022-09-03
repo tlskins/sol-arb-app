@@ -6,7 +6,7 @@ import { IServerError } from './types/service'
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_HOST,
-  timeout: 30000,
+  timeout: 150000,
   headers: {
     'Content-type': 'application/json',
   },

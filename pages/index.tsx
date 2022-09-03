@@ -59,6 +59,11 @@ const Home: NextPage = () => {
     onClose: onUpdated,
   } = useDisclosure()
   const {
+    isOpen: isRefreshing,
+    onOpen: onRefreshing,
+    onClose: onDoneRefreshing,
+  } = useDisclosure()
+  const {
     isOpen: isChecking,
     onOpen: onChecking,
     onClose: onDoneChecking,
@@ -91,10 +96,12 @@ const Home: NextPage = () => {
     if ( !sessionData ) {
       return
     }
+    onRefreshing()
     const rules = await SwapRuleService.getRulesByDiscord()
     if ( rules ) {
       setTokenSwapRules( rules )
     }
+    onDoneRefreshing()
   }
 
   const onLoadWallets = async () => {
@@ -206,7 +213,11 @@ const Home: NextPage = () => {
                         const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
                         const margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
                         const wallet = wallets.find( wallet => swapRule.walletId === wallet._id )
-                        const lastCheck = combined.lastBuyCheckAt || combined.lastSellCheckAt
+                        const buyDiff = combined.swapTarget - (combined.lastBuyUnitPrice || 0)
+                        const sellDiff = combined.baseTarget - (combined.lastSellUnitPrice || 0)
+                        const isLeanBuy = buyDiff < sellDiff
+                        const hitBuy = buyDiff >= 0
+                        const hitSell = sellDiff <= 0
                         return(
                           <Accordion
                             key={swapRule._id}
@@ -219,17 +230,28 @@ const Home: NextPage = () => {
 
                             <AccordionItem>
                               <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }}>
-                                <Stack textAlign='left' direction="row" paddingRight="4">
-                                  <Text marginRight="2">
-                                    { combined.baseToken.symbol }
-                                  </Text>
-                                  <Stack direction="column" fontSize="xs">
-                                    <Text>
-                                      { `$${ combined.lastSellUnitPrice || "?" }` } - { `$${ combined.lastBuyUnitPrice || "?" }` }
+                                <Stack textAlign='left' direction="row" paddingRight="2">
+                                  <Stack direction="column" fontSize="sm" fontWeight="bold">
+                                    <Text marginRight="2">
+                                      { combined.baseToken.symbol }
                                     </Text>
-                                    <Text>
-                                      { `${Moment(lastCheck).format("LT")} (${Moment().diff(Moment(lastCheck), 'minutes')} mins ago)` }
-                                    </Text>
+                                    { (combined.baseInput && combined.swapInput) &&
+                                      <Text textColor={ isLeanBuy ? 'green' : 'red' }>
+                                        { isLeanBuy ? 'BUY' : 'SELL' }
+                                      </Text>
+                                    }
+                                  </Stack>
+                                  <Stack direction="column" fontSize="xs" spacing="2">
+                                    { combined.baseInput &&
+                                      <Text borderRadius="lg" background={ hitBuy ? "green.100" : ""} p={ hitBuy ? "0.5" : ""}>
+                                        { `BUY Price @ $${ combined.lastBuyUnitPrice || "?" } (${Moment().diff(Moment(combined.lastBuyCheckAt), 'minutes')} mins ago) IF <= ${ combined.swapTarget } ` }
+                                      </Text>
+                                    }
+                                    { combined.swapInput && 
+                                      <Text borderRadius="lg" background={ hitSell ? "red.100" : ""} p={ hitSell ? "0.5" : ""}>
+                                        { `SELL Price @ $${ combined.lastSellUnitPrice || "?" } (${Moment().diff(Moment(combined.lastSellCheckAt), 'minutes')} mins ago) IF >= ${ combined.baseTarget } ` }
+                                      </Text>
+                                    }
                                     <Text>
                                       { !wallet && "No Wallet Linked" }
                                       { wallet && `${ wallet.balances[swapRule.baseToken.symbol] || 0 } ${ swapRule.baseToken.symbol } |
@@ -532,9 +554,20 @@ const Home: NextPage = () => {
             </Accordion>
 
             <Button
+              isLoading={isRefreshing}
+              loadingText='Refreshing...'
+              colorScheme="green"
+              variant='solid'
+              marginTop="8"
+              onClick={onLoadSwapRules}
+            >
+              Refresh
+            </Button>
+
+            <Button
               isLoading={isChecking}
               loadingText='Checking...'
-              colorScheme="green"
+              colorScheme="blue"
               variant='solid'
               marginTop="8"
               onClick={onCheckSwapRules}

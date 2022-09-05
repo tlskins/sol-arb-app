@@ -1,3 +1,4 @@
+import { Moment } from 'moment-timezone'
 import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
 import { ISwapRecord } from '../types/swapRecord'
@@ -7,9 +8,14 @@ interface SwapRecordsResp {
 }
 
 class SwapRecordService {
-  getSwapRecords = async (ruleId: string): Promise<ISwapRecord[] | undefined> => {
+  getSwapRecords = async (ruleId: string, start: Moment, end: Moment): Promise<ISwapRecord[] | undefined> => {
     try {
-      const resp: IResponse<SwapRecordsResp> = await http.get( `swap-records/${ruleId}` )
+      const resp: IResponse<SwapRecordsResp> = await http.get( `swap-records/${ruleId}`, {
+        params: {
+          start: start.toISOString(),
+          end: end.toISOString(),
+        }
+      })
 
       return resp.data.swapRecords
     } catch( err ) {

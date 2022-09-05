@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import Moment from 'moment-timezone'
 import CanvasJSReact from '../canvasjs.react'
 var CanvasJSChart = CanvasJSReact.CanvasJSChart
+import DatePicker from "react-datepicker"
+import {
+  Button,
+  FormLabel,
+  Stack,
+} from '@chakra-ui/react'
 
 import swapRecordService from '../services/swapRecord.service'
 import { ISwapRule } from '../types/swapRules'
@@ -12,24 +18,33 @@ interface DataPoint {
   label: string,
 }
 
-const SwapChart = ({ swapRule }: { swapRule: ISwapRule | undefined }) => {
-  const [dataLoaded, setDataLoaded] = useState(false)
+const SwapChart = ({
+  swapRule,
+  start,
+  end,
+}: {
+  swapRule: ISwapRule | undefined,
+  start: Moment.Moment | undefined,
+  end: Moment.Moment | undefined,
+}) => {
+  const [isLoading, setIsLoading] = useState(false)
   const [buyDataPoints, setBuyDataPoints] = useState([] as DataPoint[])
   const [sellDataPoints, setSellDataPoints] = useState([] as DataPoint[])
   const [buyTargetPoints, setBuyTargetPoints] = useState([] as DataPoint[])
   const [sellTargetPoints, setSellTargetPoints] = useState([] as DataPoint[])
-
+  const [startTime, setStartTime] = useState(start)
+  const [endTime, setEndTime] = useState(end)
 
   useEffect(() => {
     onLoadSwapRecords()
   }, [])
 
   const onLoadSwapRecords = async () => {
-    if ( !swapRule ) {
+    if ( !swapRule || !startTime || !endTime ) {
       return
     }
-    setDataLoaded(false)
-    const swapRecords = await swapRecordService.getSwapRecords(swapRule._id)
+    setIsLoading(true)
+    const swapRecords = await swapRecordService.getSwapRecords(swapRule._id, startTime, endTime)
     if ( swapRecords ) {
       const newBuyDataPts = swapRecords.filter( record => record.inputTokenSymbol === swapRule.baseToken.symbol ).map( record => ({
         label: 'Buy Price',
@@ -61,12 +76,12 @@ const SwapChart = ({ swapRule }: { swapRule: ISwapRule | undefined }) => {
         setSellTargetPoints(newSellTargetPoints)
       }
     }
-    setDataLoaded(true)
+    setIsLoading(false)
   }
 
   return(
     <div>
-      { dataLoaded &&
+      { !isLoading &&
         <CanvasJSChart
           options={{
             theme: "light2",
@@ -106,6 +121,48 @@ const SwapChart = ({ swapRule }: { swapRule: ISwapRule | undefined }) => {
           }}
         />
       }
+
+      <Stack direction="column" marginY="4">
+        <Stack direction="row">
+          <FormLabel fontSize="sm">Start</FormLabel>
+          <DatePicker
+            className="filter-calendar"
+            selected={startTime?.toDate()}
+            dateFormat="Pp"
+            onChange={ date => setStartTime(Moment(date)) }
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={60}
+            timeCaption="time"
+          />
+        </Stack>
+
+        <Stack direction="row">
+          <FormLabel fontSize="sm">End </FormLabel>
+          <DatePicker
+            className="filter-calendar"
+            selected={endTime?.toDate()}
+            dateFormat="Pp"
+            onChange={ date => setEndTime(Moment(date)) }
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={60}
+            timeCaption="time"
+          />
+        </Stack>
+
+        <Button
+          size="sm"
+          marginY="2"
+          isLoading={isLoading}
+          loadingText='Loading...'
+          colorScheme='teal'
+          variant='solid'
+          onClick={onLoadSwapRecords}
+        >
+          Refresh
+        </Button>
+      </Stack>
     </div>
   )
 }

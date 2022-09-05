@@ -10,12 +10,12 @@ interface SwapRecordsResp {
 class SwapRecordService {
   getSwapRecords = async (ruleId: string, start: Moment, end: Moment): Promise<ISwapRecord[] | undefined> => {
     try {
-      const resp: IResponse<SwapRecordsResp> = await http.get( `swap-records/${ruleId}`, {
-        params: {
+      const resp: IResponse<SwapRecordsResp> = await http.post( `swap-records/${ruleId}`,
+        {
           start: start.toISOString(),
           end: end.toISOString(),
         }
-      })
+      )
 
       return resp.data.swapRecords
     } catch( err ) {

@@ -7,6 +7,7 @@ import {
   Button,
   FormLabel,
   Stack,
+  Text,
 } from '@chakra-ui/react'
 
 import swapRecordService from '../services/swapRecord.service'
@@ -34,6 +35,20 @@ const SwapChart = ({
   const [sellTargetPoints, setSellTargetPoints] = useState([] as DataPoint[])
   const [startTime, setStartTime] = useState(start)
   const [endTime, setEndTime] = useState(end)
+
+  const minPrice = [...buyDataPoints, ...sellDataPoints].reduce((min, curr) => {
+    if ( min == null) return curr.y
+
+    return curr.y < min ? curr.y : min
+  }, undefined as undefined | number)
+  const maxPrice = [...buyDataPoints, ...sellDataPoints].reduce((max, curr) => {
+    if ( max == null) return curr.y
+
+    return curr.y > max ? curr.y : max
+  }, undefined as undefined | number)
+  const avgPrice = ([...buyDataPoints, ...sellDataPoints].reduce((sum, curr) => {
+    return sum += curr.y
+  }, 0.0 ) / [...buyDataPoints, ...sellDataPoints].length)
 
   useEffect(() => {
     onLoadSwapRecords()
@@ -123,6 +138,10 @@ const SwapChart = ({
       }
 
       <Stack direction="column" marginY="4">
+        <Text> Max Price ${ maxPrice?.toFixed( swapRule?.decimals ) }</Text>
+        <Text> Min Price ${ minPrice?.toFixed( swapRule?.decimals ) }</Text>
+        <Text> Avg Price ${ avgPrice?.toFixed( swapRule?.decimals ) }</Text>
+
         <Stack direction="row">
           <FormLabel fontSize="sm">Start</FormLabel>
           <DatePicker

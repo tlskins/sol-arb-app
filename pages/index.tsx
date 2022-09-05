@@ -130,17 +130,33 @@ const Home: NextPage = () => {
 
   const onChangeSwapRule = ( swapSymbol: string, idx: number, key: string, value: any ) => {
     const swapRule = tokenSwapRules.find( tokenSwapRule => tokenSwapRule.swapTokenSymbol === swapSymbol)?.swapRules[idx]
-
     if ( !swapRule ) return
-
     let update = { ...swapRuleUpdate }
-
     if ( swapRuleUpdate._id !== swapRule._id) {
       update = { _id: swapRule._id }
     }
-
     // @ts-ignore: dynamic access
     update[key] = value
+    setSwapRuleUpdate( update )
+  }
+
+  const onChangeAlert = ( swapSymbol: string, idx: number, alertType: string, key: string, value: any ) => {
+    const swapRule = tokenSwapRules.find( tokenSwapRule => tokenSwapRule.swapTokenSymbol === swapSymbol)?.swapRules[idx]
+    if ( !swapRule ) return
+    let update = { ...swapRuleUpdate }
+    if ( swapRuleUpdate._id !== swapRule._id) {
+      update = { _id: swapRule._id }
+    }
+    // @ts-ignore: dynamic access
+    if ( !update[alertType] ) {
+      // @ts-ignore: dynamic access
+      update[alertType] = {
+        active: false,
+        fixedPriceChange: 0.05,
+      }
+    }
+    // @ts-ignore: dynamic access
+    update[alertType][key] = value
     setSwapRuleUpdate( update )
   }
 
@@ -530,6 +546,68 @@ const Home: NextPage = () => {
                                     :
                                     <Box />
                                   }
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Alert?</FormLabel>
+                                    <Checkbox
+                                      background="white"
+                                      isChecked={ combined.buyAlertSettings?.active || false }
+                                      onChange={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'buyAlertSettings', 'active', e.target.checked ) }
+                                      borderRadius="lg"
+                                      size="lg"
+                                    />
+                                  </FormControl>
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Alert?</FormLabel>
+                                    <Checkbox
+                                      background="white"
+                                      isChecked={ combined.sellAlertSettings?.active || false }
+                                      onChange={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'sellAlertSettings', 'active', e.target.checked ) }
+                                      borderRadius="lg"
+                                      size="lg"
+                                    />
+                                  </FormControl>
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Fixed Change</FormLabel>
+                                    <NumberInput
+                                      size="sm"
+                                      step={1.0}
+                                      defaultValue={ combined.buyAlertSettings?.fixedPriceChange }
+                                      onBlur={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'buyAlertSettings', 'fixedPriceChange', parseFloat(e.target.value)) }
+                                    >
+                                      <NumberInputField borderRadius="lg" background="white"/>
+                                    </NumberInput>
+                                  </FormControl>
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Fixed Change</FormLabel>
+                                    <NumberInput
+                                      size="sm"
+                                      step={1.0}
+                                      defaultValue={ combined.sellAlertSettings?.fixedPriceChange }
+                                      onBlur={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'sellAlertSettings', 'fixedPriceChange', parseFloat(e.target.value)) }
+                                    >
+                                      <NumberInputField borderRadius="lg" background="white"/>
+                                    </NumberInput>
+                                  </FormControl>
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">
+                                      { (combined.buyAlertSettings && combined.buyAlertSettings?.lastAlertUnitPrice != null) &&
+                                        `Last: $${ combined.buyAlertSettings?.lastAlertUnitPrice?.toFixed( combined.decimals ) }`
+                                      }
+                                    </FormLabel>
+                                  </FormControl>
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">
+                                      { (combined.sellAlertSettings && combined.sellAlertSettings?.lastAlertUnitPrice != null) &&
+                                        `Last: $${ combined.sellAlertSettings?.lastAlertUnitPrice?.toFixed( combined.decimals ) }`
+                                      }
+                                    </FormLabel>
+                                  </FormControl>
                                   
                                 </SimpleGrid>
 

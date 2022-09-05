@@ -1,4 +1,5 @@
 import { Token } from './jupiter'
+import { AlertSettings } from './alertSettings'
 
 export interface ITokenSwapRules {
   swapTokenSymbol: string,
@@ -28,6 +29,8 @@ export interface ISwapRule {
   lastSellCheckAt?: string,
   lastSellUnitPrice?: number,
   walletId?: string,
+  buyAlertSettings?: AlertSettings,
+  sellAlertSettings?: AlertSettings, 
 }
 
 export interface IUpdateSwapRule {

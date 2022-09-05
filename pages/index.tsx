@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { FaChartLine } from 'react-icons/fa'
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import {
   Accordion,
   AccordionIcon,
@@ -23,13 +24,6 @@ import {
   useDisclosure,
   SimpleGrid,
   Select,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
 } from '@chakra-ui/react'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify'
@@ -44,17 +38,17 @@ import { ISwapRule, IUpdateSwapRule } from '../types/swapRules'
 import { useGlobalState } from '../services/gloablState'
 import walletsService from '../services/wallets.service'
 import { pWalletName } from '../presenters/wallets'
-const SwapChart = dynamic(() => import("../components/SwapChart"),  { ssr: false })
 
 const Home: NextPage = () => {
+  const router = useRouter()
   const { data: _sessionData } = useSession();
   const sessionData = _sessionData as any
   const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
   const [wallets, setWallets] = useGlobalState('wallets')
+  const [, setChartSwapRule] = useGlobalState('chartSwapRule')
+  const [, setChartStart] = useGlobalState('chartStart')
+  const [, setChartEnd] = useGlobalState('chartEnd')
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
-  const [swapRuleChart, setSwapRuleChart] = useState(undefined as ISwapRule | undefined)
-  const [chartStart, setChartStart] = useState(undefined as Moment.Moment | undefined)
-  const [chartEnd, setChartEnd] = useState(undefined as Moment.Moment | undefined)
   const {
     isOpen: isUpdating,
     onOpen: onUpdating,
@@ -70,11 +64,11 @@ const Home: NextPage = () => {
     onOpen: onChecking,
     onClose: onDoneChecking,
   } = useDisclosure()
-  const {
-    isOpen: isShowSwapChart,
-    onOpen: onShowSwapChart,
-    onClose: onHideSwapChart,
-  } = useDisclosure()
+  // const {
+  //   isOpen: isShowSwapChart,
+  //   onOpen: onShowSwapChart,
+  //   onClose: onHideSwapChart,
+  // } = useDisclosure()
 
   useEffect(() => {
     if ( sessionData?.token?.id ) {
@@ -88,13 +82,8 @@ const Home: NextPage = () => {
     const [newStart, newEnd] = windowStr.split(',').map( str => Moment().add(-1 * parseInt(str), 'hours'))
     setChartStart(newStart)
     setChartEnd(newEnd)
-    setSwapRuleChart(swapRule)
-    onShowSwapChart()
-  }
-
-  const onCloseSwapChart = () => {
-    setSwapRuleChart(undefined)
-    onHideSwapChart()
+    setChartSwapRule(swapRule)
+    router.push(`chart`)
   }
 
   const onLoadSwapRules = async () => {
@@ -182,38 +171,6 @@ const Home: NextPage = () => {
       </Head>
 
       <Navbar />
-
-      { (swapRuleChart && isShowSwapChart) &&
-        <Modal
-          isOpen={isShowSwapChart}
-          onClose={onCloseSwapChart}
-          motionPreset='slideInRight'
-          size="sm"
-          isCentered
-        >
-          <ModalOverlay
-            bg='none'
-            backdropFilter='auto'
-            backdropInvert='80%'
-            backdropBlur='2px'
-          />
-          <ModalContent>
-            <ModalHeader>Swap Chart</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <SwapChart
-                swapRule={swapRuleChart}
-                start={chartStart}
-                end={chartEnd}
-              />
-            </ModalBody>
-
-            <ModalFooter>
-              <Button variant='ghost' onClick={onCloseSwapChart}>Close</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      }
 
       <main className={styles.main}>
 

@@ -4,14 +4,19 @@ import CanvasJSReact from '../canvasjs.react'
 var CanvasJSChart = CanvasJSReact.CanvasJSChart
 import DatePicker from "react-datepicker"
 import {
+  Box,
   Button,
   FormLabel,
   Stack,
   Text,
 } from '@chakra-ui/react'
+import type { NextPage } from 'next'
+import { useRouter } from 'next/router'
 
 import swapRecordService from '../services/swapRecord.service'
 import { ISwapRule } from '../types/swapRules'
+import { useGlobalState } from '../services/gloablState'
+
 
 interface DataPoint {
   x: Date,
@@ -19,22 +24,17 @@ interface DataPoint {
   label: string,
 }
 
-const SwapChart = ({
-  swapRule,
-  start,
-  end,
-}: {
-  swapRule: ISwapRule | undefined,
-  start: Moment.Moment | undefined,
-  end: Moment.Moment | undefined,
-}) => {
+const SwapChart: NextPage = () => {
+  const router = useRouter()
+  const [swapRule, setChartSwapRule] = useGlobalState('chartSwapRule')
+  const [chartStart, setChartStart] = useGlobalState('chartStart')
+  const [chartEnd, setChartEnd] = useGlobalState('chartEnd')
+
   const [isLoading, setIsLoading] = useState(false)
   const [buyDataPoints, setBuyDataPoints] = useState([] as DataPoint[])
   const [sellDataPoints, setSellDataPoints] = useState([] as DataPoint[])
   const [buyTargetPoints, setBuyTargetPoints] = useState([] as DataPoint[])
   const [sellTargetPoints, setSellTargetPoints] = useState([] as DataPoint[])
-  const [startTime, setStartTime] = useState(start)
-  const [endTime, setEndTime] = useState(end)
 
   const minPrice = [...buyDataPoints, ...sellDataPoints].reduce((min, curr) => {
     if ( min == null) return curr.y
@@ -55,11 +55,11 @@ const SwapChart = ({
   }, [])
 
   const onLoadSwapRecords = async () => {
-    if ( !swapRule || !startTime || !endTime ) {
+    if ( !swapRule || !chartStart || !chartEnd ) {
       return
     }
     setIsLoading(true)
-    const swapRecords = await swapRecordService.getSwapRecords(swapRule._id, startTime, endTime)
+    const swapRecords = await swapRecordService.getSwapRecords(swapRule._id, chartStart, chartEnd)
     if ( swapRecords ) {
       const newBuyDataPts = swapRecords.filter( record => record.inputTokenSymbol === swapRule.baseToken.symbol ).map( record => ({
         label: 'Buy Price',
@@ -95,7 +95,15 @@ const SwapChart = ({
   }
 
   return(
-    <div>
+    <Stack p="2">
+      <Button
+        colorScheme='teal'
+        variant='solid'
+        onClick={() => router.push( '/' )}
+      >
+        Back
+      </Button>
+
       { !isLoading &&
         <CanvasJSChart
           options={{
@@ -146,9 +154,9 @@ const SwapChart = ({
           <FormLabel fontSize="sm">Start</FormLabel>
           <DatePicker
             className="filter-calendar"
-            selected={startTime?.toDate()}
+            selected={chartStart?.toDate()}
             dateFormat="Pp"
-            onChange={ date => setStartTime(Moment(date)) }
+            onChange={ date => setChartStart(Moment(date)) }
             showTimeSelect
             timeFormat="HH:mm"
             timeIntervals={60}
@@ -160,9 +168,9 @@ const SwapChart = ({
           <FormLabel fontSize="sm">End </FormLabel>
           <DatePicker
             className="filter-calendar"
-            selected={endTime?.toDate()}
+            selected={chartEnd?.toDate()}
             dateFormat="Pp"
-            onChange={ date => setEndTime(Moment(date)) }
+            onChange={ date => setChartEnd(Moment(date)) }
             showTimeSelect
             timeFormat="HH:mm"
             timeIntervals={60}
@@ -182,7 +190,7 @@ const SwapChart = ({
           Refresh
         </Button>
       </Stack>
-    </div>
+    </Stack>
   )
 }
 

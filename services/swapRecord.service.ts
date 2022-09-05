@@ -12,8 +12,8 @@ class SwapRecordService {
     try {
       const resp: IResponse<SwapRecordsResp> = await http.post( `swap-records/${ruleId}`,
         {
-          start: start.toISOString(),
-          end: end.toISOString(),
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
         }
       )
 

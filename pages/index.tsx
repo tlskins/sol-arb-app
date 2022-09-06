@@ -2,7 +2,6 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from "next-auth/react"
 import { FaChartLine } from 'react-icons/fa'
-import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import {

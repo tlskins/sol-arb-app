@@ -4,7 +4,6 @@ import CanvasJSReact from '../canvasjs.react'
 var CanvasJSChart = CanvasJSReact.CanvasJSChart
 import DatePicker from "react-datepicker"
 import {
-  Box,
   Button,
   FormLabel,
   Stack,
@@ -14,7 +13,6 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 
 import swapRecordService from '../services/swapRecord.service'
-import { ISwapRule } from '../types/swapRules'
 import { useGlobalState } from '../services/gloablState'
 
 
@@ -26,7 +24,7 @@ interface DataPoint {
 
 const SwapChart: NextPage = () => {
   const router = useRouter()
-  const [swapRule, setChartSwapRule] = useGlobalState('chartSwapRule')
+  const [swapRule,] = useGlobalState('chartSwapRule')
   const [chartStart, setChartStart] = useGlobalState('chartStart')
   const [chartEnd, setChartEnd] = useGlobalState('chartEnd')
 
@@ -146,9 +144,11 @@ const SwapChart: NextPage = () => {
       }
 
       <Stack direction="column" marginY="4">
-        <Text> Max Price ${ maxPrice?.toFixed( swapRule?.decimals ) }</Text>
-        <Text> Min Price ${ minPrice?.toFixed( swapRule?.decimals ) }</Text>
-        <Text> Avg Price ${ avgPrice?.toFixed( swapRule?.decimals ) }</Text>
+        <Stack direction="row" fontSize="sm">
+          <Text> Min Price ${ minPrice?.toFixed( swapRule?.decimals ) }</Text>
+          <Text> Avg Price ${ avgPrice?.toFixed( swapRule?.decimals ) }</Text>
+          <Text> Max Price ${ maxPrice?.toFixed( swapRule?.decimals ) }</Text>
+        </Stack>
 
         <Stack direction="row">
           <FormLabel fontSize="sm">Start</FormLabel>

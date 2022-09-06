@@ -40,7 +40,7 @@ import { pWalletName } from '../presenters/wallets'
 
 const Home: NextPage = () => {
   const router = useRouter()
-  const { data: _sessionData } = useSession();
+  const { data: _sessionData } = useSession()
   const sessionData = _sessionData as any
   const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
   const [wallets, setWallets] = useGlobalState('wallets')

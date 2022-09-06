@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 import Moment from 'moment-timezone'
-import CanvasJSReact from '../canvasjs.react'
-var CanvasJSChart = CanvasJSReact.CanvasJSChart
 import DatePicker from "react-datepicker"
 import {
   Button,
@@ -10,10 +8,12 @@ import {
   Text,
 } from '@chakra-ui/react'
 import type { NextPage } from 'next'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 
 import swapRecordService from '../services/swapRecord.service'
 import { useGlobalState } from '../services/gloablState'
+const SwapChart = dynamic(() => import("../components/SwapChart"), { ssr: false })
 
 
 interface DataPoint {
@@ -22,7 +22,7 @@ interface DataPoint {
   label: string,
 }
 
-const SwapChart: NextPage = () => {
+const Chart: NextPage = () => {
   const router = useRouter()
   const [swapRule,] = useGlobalState('chartSwapRule')
   const [chartStart, setChartStart] = useGlobalState('chartStart')
@@ -102,44 +102,13 @@ const SwapChart: NextPage = () => {
         Back
       </Button>
 
-      { !isLoading &&
-        <CanvasJSChart
-          options={{
-            theme: "light2",
-            title: {
-              text: `${ swapRule?.swapToken?.symbol || '?' } Prices`
-            },
-            axisY: {
-              title: `${ swapRule?.swapToken?.symbol || '?' } Price in ${ swapRule?.baseToken?.symbol || '?' }`,
-              prefix: "$",
-            },
-            data: [
-              {
-                type: "line",
-                xValueFormatString: "MM hh:mm",
-                yValueFormatString: "$#,##0.00",
-                dataPoints: buyDataPoints,
-              },
-              {
-                type: "line",
-                xValueFormatString: "MM hh:mm",
-                yValueFormatString: "$#,##0.00",
-                dataPoints: sellDataPoints,
-              },
-              {
-                type: "line",
-                xValueFormatString: "MM hh:mm",
-                yValueFormatString: "$#,##0.00",
-                dataPoints: buyTargetPoints,
-              },
-              {
-                type: "line",
-                xValueFormatString: "MM hh:mm",
-                yValueFormatString: "$#,##0.00",
-                dataPoints: sellTargetPoints,
-              },
-            ]
-          }}
+      { !isLoading && swapRule &&
+        <SwapChart
+          swapRule={swapRule}
+          buyDataPoints={buyDataPoints}
+          sellDataPoints={sellDataPoints}
+          buyTargetPoints={buyTargetPoints}
+          sellTargetPoints={sellTargetPoints}
         />
       }
 
@@ -194,4 +163,4 @@ const SwapChart: NextPage = () => {
   )
 }
 
-export default SwapChart
+export default Chart

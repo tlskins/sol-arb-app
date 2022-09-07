@@ -63,11 +63,6 @@ const Home: NextPage = () => {
     onOpen: onChecking,
     onClose: onDoneChecking,
   } = useDisclosure()
-  // const {
-  //   isOpen: isShowSwapChart,
-  //   onOpen: onShowSwapChart,
-  //   onClose: onHideSwapChart,
-  // } = useDisclosure()
 
   useEffect(() => {
     if ( sessionData?.token?.id ) {
@@ -253,22 +248,23 @@ const Home: NextPage = () => {
                                   {/* Row 1 */}
 
                                   <Stack direction="column">
-                                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="center">
-                                      <FormControl>
-                                        <FormLabel fontSize="sm">Active?</FormLabel>
-                                        <Checkbox
-                                          background="white"
-                                          isChecked={ combined.active }
-                                          onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
-                                          borderRadius="lg"
-                                          size="lg"
-                                        />
-                                      </FormControl>
+                                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                                      <FormLabel fontSize="sm">Active?</FormLabel>
+                                      <Checkbox
+                                        background="white"
+                                        isChecked={ combined.active }
+                                        onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
+                                        borderRadius="lg"
+                                        size="lg"
+                                      />
                                     </Stack>
 
                                     <FormControl fontSize="sm">
-                                      <Select icon={<FaChartLine />}
+                                      <Select size="sm"
                                         fontSize="sm"
+                                        icon={<FaChartLine />}
+                                        background="white"
+                                        borderRadius="lg"
                                         onChange={ e => onOpenSwapChart(swapRule, e.target.value) }
                                       >
                                         <option value="">Chart</option>
@@ -282,7 +278,7 @@ const Home: NextPage = () => {
                                   <Stack direction="column">
                                     <FormLabel fontSize="sm">Inactive Before </FormLabel>
                                     <DatePicker
-                                      className="filter-calendar"
+                                      className="filter-calendar full-width"
                                       selected={combined.inactiveBefore ? Moment( combined.inactiveBefore ).toDate() : null }
                                       dateFormat="Pp"
                                       onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveBefore', date?.toISOString() || '' ) }
@@ -294,7 +290,7 @@ const Home: NextPage = () => {
                                     />
                                     <FormLabel fontSize="sm">Inactive After </FormLabel>
                                     <DatePicker
-                                      className="filter-calendar"
+                                      className="filter-calendar full-width"
                                       selected={combined.inactiveAfter ? Moment( combined.inactiveAfter ).toDate() : null }
                                       dateFormat="Pp"
                                       onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveAfter', date?.toISOString() || '' ) }
@@ -443,7 +439,7 @@ const Home: NextPage = () => {
                                   {/* Targets Row  */}
 
                                   { combined.baseInput !== 0 ?
-                                    <Stack marginY="2" direction="row">
+                                    <Stack marginY="2" direction="column">
                                       <FormControl>
                                         <FormLabel fontSize="sm">
                                           Amount { combined.baseToken.symbol }
@@ -478,7 +474,7 @@ const Home: NextPage = () => {
                                   }
                                   
                                   { combined.swapInput !== 0 ?
-                                    <Stack marginY="2" direction="row">
+                                    <Stack marginY="2" direction="column">
                                       <FormControl>
                                         <FormLabel fontSize="sm">
                                           Amount { combined.swapToken.symbol }
@@ -514,7 +510,7 @@ const Home: NextPage = () => {
                                   {/* Margin Row  */}
 
                                   { (combined.baseTarget && combined.swapTarget) ?
-                                    <Text>
+                                    <Text fontSize="sm" fontWeight="bold">
                                       Margin { margin }
                                     </Text>
                                     :
@@ -525,7 +521,7 @@ const Home: NextPage = () => {
                                   
                                   {/* Alerts Row */}
                                   
-                                  <Stack direction="row" margin="2">
+                                  <Stack direction="column" margin="2">
                                     <FormControl>
                                       <FormLabel fontSize="sm">Alert?</FormLabel>
                                       <Checkbox
@@ -550,7 +546,7 @@ const Home: NextPage = () => {
                                     </FormControl>
                                   </Stack>
 
-                                  <Stack direction="row" margin="2">
+                                  <Stack direction="column" margin="2">
                                     <FormControl>
                                       <FormLabel fontSize="sm">Alert?</FormLabel>
                                       <Checkbox

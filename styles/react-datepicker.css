@@ -574,8 +574,8 @@
   width: 100%;
   font-size: small;
   border: 1px solid #d3d3d3;
-  border-radius: 2px;
-  padding: 1px;
+  border-radius: 7px;
+  padding: 1.5px;
 }
 
 .react-datepicker__year-read-view,
@@ -629,6 +629,17 @@
 .react-datepicker__month-year-dropdown--scrollable {
   height: 150px;
   overflow-y: scroll;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.rounded {
+  border-top-left-radius: 30%;
+  border-top-right-radius: 30%;
+  border-bottom-left-radius: 30%;
+  border-bottom-right-radius: 30%;
 }
 
 .react-datepicker__year-option,

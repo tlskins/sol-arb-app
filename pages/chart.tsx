@@ -77,6 +77,10 @@ const Chart: NextPage = () => {
     onLoadSwapRecords()
   }, [])
 
+  useEffect(() => {
+    drawBuySellPoints(renderStart, renderEnd, combined.swapTarget, combined.baseTarget)
+  }, [buyDataPoints, sellDataPoints, renderStart, renderEnd, combined.swapTarget, combined.baseTarget])
+
   const onChangeSwapRule = async (key: string, value: any) => {
     if ( !swapRule ) return
     const update = { ...swapRuleUpdate }
@@ -86,7 +90,7 @@ const Chart: NextPage = () => {
     // @ts-ignore: dynamic access
     update[key] = value
     setSwapRuleUpdate( update )
-    reDrawBuySellPoints()
+    onLoadSwapRecords()
   }
 
   const reDrawBuySellPoints = () => {
@@ -95,9 +99,6 @@ const Chart: NextPage = () => {
     }
     buySellTimeout = undefined
     buySellTimeout = setTimeout(() => {
-      if ( renderStart && renderEnd ) {
-        drawBuySellPoints(renderStart, renderEnd, combined.swapTarget, combined.baseTarget)
-      }
       calcBuySellHits(combined.swapTarget, combined.baseTarget)
     }, 150 )
   }
@@ -127,7 +128,6 @@ const Chart: NextPage = () => {
       const newRenderEnd = Moment(swapRecords[swapRecords.length-1].timestamp).toDate()
       setRenderStart(newRenderStart)
       setRenderEnd(newRenderEnd)
-      drawBuySellPoints(newRenderStart, newRenderEnd, combined.swapTarget, combined.baseTarget)
       calcBuySellHits(combined.swapTarget, combined.baseTarget)
     }
     setIsLoading(false)
@@ -176,8 +176,8 @@ const Chart: NextPage = () => {
     })))
   }
 
-  const drawBuySellPoints = (start: Date, end: Date, buyBelow?: number, sellAbove?: number) => {
-    if ( buyBelow != null ) {
+  const drawBuySellPoints = (start?: Date, end?: Date, buyBelow?: number, sellAbove?: number) => {
+    if ( buyBelow != null && start != null && end != null ) {
       setBuyTargetPoints([
         {
           label: 'Buy Target',
@@ -191,7 +191,7 @@ const Chart: NextPage = () => {
         },
       ])
     }
-    if ( sellAbove != null ) {
+    if ( sellAbove != null && start != null && end != null ) {
       setSellTargetPoints([
         {
           label: 'Sell Above',
@@ -209,28 +209,6 @@ const Chart: NextPage = () => {
 
   return(
     <Stack p="2">
-      <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginBottom="12">
-        <Button
-          size="sm"
-          colorScheme='teal'
-          variant='solid'
-          onClick={() => router.push( '/' )}
-        >
-          Back
-        </Button>
-
-        <Button
-          size="sm"
-          isLoading={isLoading}
-          loadingText='Loading...'
-          colorScheme='teal'
-          variant='solid'
-          onClick={onLoadSwapRecords}
-        >
-          Refresh
-        </Button>
-      </Stack>
-
       { !isLoading && swapRule &&
         <SwapChart
           swapRule={swapRule}
@@ -300,7 +278,7 @@ const Chart: NextPage = () => {
               size="sm"
               step={1.0}
               defaultValue={ combined?.baseTarget || 0 }
-              onBlur={ e => onChangeSwapRule( 'baseTarget', parseFloat(e.target.value)) }
+              onChange={ val => onChangeSwapRule( 'baseTarget', parseFloat(val)) }
             >
               <NumberInputField borderRadius="lg" background="white"/>
             </NumberInput>
@@ -317,7 +295,7 @@ const Chart: NextPage = () => {
               size="sm"
               step={1.0}
               defaultValue={ combined?.swapTarget || 0 }
-              onBlur={ e => onChangeSwapRule( 'swapTarget', parseFloat(e.target.value)) }
+              onChange={ val => onChangeSwapRule( 'swapTarget', parseFloat(val)) }
             >
               <NumberInputField borderRadius="lg" background="white"/>
             </NumberInput>
@@ -332,6 +310,28 @@ const Chart: NextPage = () => {
           <Text fontSize="sm" fontWeight="bold">
             Margin { margin }
           </Text>
+        </Stack>
+
+        <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginBottom="12">
+          <Button
+            size="sm"
+            colorScheme='teal'
+            variant='solid'
+            onClick={() => router.push( '/' )}
+          >
+            Back
+          </Button>
+
+          <Button
+            size="sm"
+            isLoading={isLoading}
+            loadingText='Loading...'
+            colorScheme='teal'
+            variant='solid'
+            onClick={onLoadSwapRecords}
+          >
+            Refresh
+          </Button>
         </Stack>
 
         <Stack direction="row">

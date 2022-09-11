@@ -37,6 +37,7 @@ import { ISwapRule, IUpdateSwapRule } from '../types/swapRules'
 import { useGlobalState } from '../services/gloablState'
 import walletsService from '../services/wallets.service'
 import { pWalletName } from '../presenters/wallets'
+import { ChartRangeFilters } from './chart'
 
 const Home: NextPage = () => {
   const router = useRouter()
@@ -44,9 +45,6 @@ const Home: NextPage = () => {
   const sessionData = _sessionData as any
   const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
   const [wallets, setWallets] = useGlobalState('wallets')
-  const [, setChartSwapRule] = useGlobalState('chartSwapRule')
-  const [, setChartStart] = useGlobalState('chartStart')
-  const [, setChartEnd] = useGlobalState('chartEnd')
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
   const {
     isOpen: isUpdating,
@@ -72,12 +70,8 @@ const Home: NextPage = () => {
     }
   }, [sessionData?.token?.id])
 
-  const onOpenSwapChart = (swapRule: ISwapRule, windowStr: string) => {
-    const [newStart, newEnd] = windowStr.split(',').map( str => Moment().add(-1 * parseInt(str), 'hours'))
-    setChartStart(newStart)
-    setChartEnd(newEnd)
-    setChartSwapRule(swapRule)
-    router.push(`chart`)
+  const onOpenSwapChart = (swapRule: ISwapRule, filterId: string) => {
+    router.push(`chart/?ruleId=${swapRule._id}&filterId=${filterId}`)
   }
 
   const onLoadSwapRules = async () => {
@@ -268,9 +262,12 @@ const Home: NextPage = () => {
                                         onChange={ e => onOpenSwapChart(swapRule, e.target.value) }
                                       >
                                         <option value="">Chart</option>
-                                        <option value="24,0">24 Hr</option>
-                                        <option value="72,0">3 Day</option>
-                                        <option value="168,0">1 Wk</option>
+                                        { ChartRangeFilters.map( ({ id, unit, length }) => <option
+                                          key={id}
+                                          value={id}
+                                        >
+                                          { id }
+                                        </option> )}
                                       </Select>
                                     </FormControl>
                                   </Stack>

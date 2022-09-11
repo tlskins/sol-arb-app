@@ -7,15 +7,18 @@ interface SwapRecordsResp {
   swapRecords: ISwapRecord[]
 }
 
+interface GetSwapRecordsReq {
+  startTime?: string,
+  endTime?: string,
+}
+
 class SwapRecordService {
-  getSwapRecords = async (ruleId: string, start: Moment, end: Moment): Promise<ISwapRecord[] | undefined> => {
+  getSwapRecords = async (ruleId: string, start?: Moment, end?: Moment): Promise<ISwapRecord[] | undefined> => {
     try {
-      const resp: IResponse<SwapRecordsResp> = await http.post( `swap-records/${ruleId}`,
-        {
-          startTime: start.toISOString(),
-          endTime: end.toISOString(),
-        }
-      )
+      const req = {} as GetSwapRecordsReq
+      if ( start ) req.startTime = start.toISOString()
+      if ( end ) req.endTime = end.toISOString()
+      const resp: IResponse<SwapRecordsResp> = await http.post( `swap-records/${ruleId}`, req)
 
       return resp.data.swapRecords
     } catch( err ) {

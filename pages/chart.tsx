@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Moment from 'moment-timezone'
+import { useSession } from "next-auth/react"
 import DatePicker from "react-datepicker"
 import {
   Button,
@@ -17,10 +18,10 @@ import {
   NumberInputField,
 } from '@chakra-ui/react'
 
+import Navbar from '../components/Navbar'
 import swapRecordService from '../services/swapRecord.service'
-import { IUpdateSwapRule } from '../types/swapRules'
+import { IUpdateSwapRule, ISwapRule } from '../types/swapRules'
 import { ISwapRecord } from '../types/swapRecord'
-import { useGlobalState } from '../services/gloablState'
 import SwapRuleService from '../services/swapRule.service'
 const SwapChart = dynamic(() => import("../components/SwapChart"), { ssr: false })
 
@@ -31,13 +32,35 @@ interface DataPoint {
   label: string,
 }
 
+type ChartRangeUnits = 'week' | 'day'
+
+interface ChartFilter {
+  id: string,
+  unit: ChartRangeUnits,
+  length: number,
+}
+
+export const ChartRangeFilters = [
+  { id: '1 Day', unit: 'day', length: 1 },
+  { id: '2 Day', unit: 'day', length: 2 },
+  { id: '3 Day', unit: 'day', length: 3 },
+  { id: '1 Week', unit: 'week', length: 1 },
+  { id: '2 Week', unit: 'week', length: 2 },
+  { id: '3 Week', unit: 'week', length: 3 },
+] as ChartFilter[]
+
 let buySellTimeout = undefined as any
 
 const Chart: NextPage = () => {
   const router = useRouter()
-  const [swapRule,] = useGlobalState('chartSwapRule')
-  const [chartStart, setChartStart] = useGlobalState('chartStart')
-  const [chartEnd, setChartEnd] = useGlobalState('chartEnd')
+  const { ruleId, filterId } = router.query
+  const { data: _sessionData } = useSession()
+  const sessionData = _sessionData as any
+  console.log('sessionData',sessionData)
+
+  const [swapRule,setSwapRule] = useState(undefined as ISwapRule | undefined)
+  const [chartStart, setChartStart] = useState(undefined as undefined | Moment.Moment)
+  const [chartEnd, setChartEnd] = useState(undefined as undefined | Moment.Moment)
   
   const [isLoading, setIsLoading] = useState(false)
   const [buyDataPoints, setBuyDataPoints] = useState([] as DataPoint[])
@@ -57,7 +80,7 @@ const Chart: NextPage = () => {
   } = useDisclosure()
 
   const combined = { ...swapRule, ...swapRuleUpdate }
-  const margin = `(${(((combined?.baseTarget || 0) - (combined?.swapTarget || 0)) / (combined.swapTarget || 0) * 100).toFixed(0)}%)`
+  const margin = `(${(((combined?.baseTarget || 0) - (combined?.swapTarget || 0)) / (combined.swapTarget || 1) * 100).toFixed(0)}%)`
 
   const minPrice = [...buyDataPoints, ...sellDataPoints].reduce((min, curr) => {
     if ( min == null) return curr.y
@@ -71,15 +94,36 @@ const Chart: NextPage = () => {
   }, undefined as undefined | number)
   const avgPrice = ([...buyDataPoints, ...sellDataPoints].reduce((sum, curr) => {
     return sum += curr.y
-  }, 0.0 ) / [...buyDataPoints, ...sellDataPoints].length)
+  }, 0.0 ) / ([...buyDataPoints, ...sellDataPoints].length || 1))
+
+  useEffect(() => {
+    if ( sessionData?.token?.id ) {
+      if ( filterId ) {
+        const filter = ChartRangeFilters.find( filter => filter.id === filterId )
+        if ( filter ) {
+          const { length, unit } = filter
+          setChartStart(Moment().add(-1 * length, unit))
+        }
+      }
+      if ( ruleId ) {
+        onLoadSwapRule()
+      }
+    }
+  }, [ruleId, filterId, sessionData?.token?.id])
 
   useEffect(() => {
     onLoadSwapRecords()
-  }, [])
+  }, [swapRule])
 
   useEffect(() => {
     drawBuySellPoints(renderStart, renderEnd, combined.swapTarget, combined.baseTarget)
+    calcBuySellHits(combined.swapTarget, combined.baseTarget)
   }, [buyDataPoints, sellDataPoints, renderStart, renderEnd, combined.swapTarget, combined.baseTarget])
+
+  const onLoadSwapRule = async () => {
+    const newSwapRule = await SwapRuleService.getRule( ruleId as string )
+    setSwapRule( newSwapRule )
+  }
 
   const onChangeSwapRule = async (key: string, value: any) => {
     if ( !swapRule ) return
@@ -93,15 +137,15 @@ const Chart: NextPage = () => {
     onLoadSwapRecords()
   }
 
-  const reDrawBuySellPoints = () => {
-    if ( buySellTimeout ) {
-      clearTimeout( buySellTimeout )
-    }
-    buySellTimeout = undefined
-    buySellTimeout = setTimeout(() => {
-      calcBuySellHits(combined.swapTarget, combined.baseTarget)
-    }, 150 )
-  }
+  // const reDrawBuySellPoints = () => {
+  //   if ( buySellTimeout ) {
+  //     clearTimeout( buySellTimeout )
+  //   }
+  //   buySellTimeout = undefined
+  //   buySellTimeout = setTimeout(() => {
+  //     calcBuySellHits(combined.swapTarget, combined.baseTarget)
+  //   }, 150 )
+  // }
 
   const onUpdateSwapRule = async () => {
     onUpdating()
@@ -117,7 +161,7 @@ const Chart: NextPage = () => {
   }
 
   const onLoadSwapRecords = async () => {
-    if ( !swapRule || !chartStart || !chartEnd ) {
+    if ( !swapRule ) {
       return
     }
     setIsLoading(true)
@@ -209,6 +253,8 @@ const Chart: NextPage = () => {
 
   return(
     <Stack p="2">
+      <Navbar />
+
       { !isLoading && swapRule &&
         <SwapChart
           swapRule={swapRule}
@@ -246,8 +292,9 @@ const Chart: NextPage = () => {
               className="filter-calendar full-width"
               selected={chartStart?.toDate()}
               dateFormat="Pp"
-              onChange={ date => setChartStart(Moment(date)) }
+              onChange={ date => setChartStart(date ? Moment(date) : undefined) }
               showTimeSelect
+              isClearable={true}
               timeFormat="HH:mm"
               timeIntervals={60}
               timeCaption="time"
@@ -260,8 +307,9 @@ const Chart: NextPage = () => {
               className="filter-calendar full-width"
               selected={chartEnd?.toDate()}
               dateFormat="Pp"
-              onChange={ date => setChartEnd(Moment(date)) }
+              onChange={ date => setChartEnd(date ? Moment(date) : undefined) }
               showTimeSelect
+              isClearable={true}
               timeFormat="HH:mm"
               timeIntervals={60}
               timeCaption="time"

@@ -8,6 +8,7 @@ export const pResponseSwapRule = (data: ISwapRule): ISwapRule => {
   }
 }
 
+
 export const pResponseTokenSwapRules = (rules: ISwapRule[]): ITokenSwapRules[] => {
   const rulesMap = new Map<string, ITokenSwapRules>()
   rules.forEach( rule => {

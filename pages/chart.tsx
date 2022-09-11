@@ -7,6 +7,8 @@ import {
   FormLabel,
   Stack,
   Text,
+  FormControl,
+  Select,
 } from '@chakra-ui/react'
 import type { NextPage } from 'next'
 import dynamic from 'next/dynamic'
@@ -53,11 +55,12 @@ let buySellTimeout = undefined as any
 
 const Chart: NextPage = () => {
   const router = useRouter()
-  const { ruleId, filterId } = router.query
+  const { ruleId, filterId: routerFilterId } = router.query
   const { data: _sessionData } = useSession()
   const sessionData = _sessionData as any
   console.log('sessionData',sessionData)
 
+  const [filterId, setFilterId] = useState(routerFilterId as string)
   const [swapRule,setSwapRule] = useState(undefined as ISwapRule | undefined)
   const [chartStart, setChartStart] = useState(undefined as undefined | Moment.Moment)
   const [chartEnd, setChartEnd] = useState(undefined as undefined | Moment.Moment)
@@ -114,6 +117,12 @@ const Chart: NextPage = () => {
   useEffect(() => {
     onLoadSwapRecords()
   }, [swapRule])
+
+  useEffect(() => {
+    if ( routerFilterId ) {
+      setFilterId(routerFilterId as string)
+    }
+  }, [routerFilterId])
 
   useEffect(() => {
     drawBuySellPoints(renderStart, renderEnd, combined.swapTarget, combined.baseTarget)
@@ -286,6 +295,24 @@ const Chart: NextPage = () => {
         </Stack>
 
         <Stack direction="column">
+          <FormControl fontSize="sm">
+            <Select size="sm"
+              fontSize="sm"
+              background="white"
+              borderRadius="lg"
+              onChange={ e => setFilterId(e.target.value)}
+              value={ filterId }
+            >
+              <option value="">Chart</option>
+              { ChartRangeFilters.map( ({ id }) => <option
+                key={id}
+                value={id}
+              >
+                { id }
+              </option> )}
+            </Select>
+          </FormControl>
+
           <Stack direction="row">
             <FormLabel fontSize="sm">Start</FormLabel>
             <DatePicker

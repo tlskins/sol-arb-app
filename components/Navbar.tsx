@@ -1,5 +1,6 @@
 import {
   Box,
+  Checkbox,
   Flex,
   Avatar,
   HStack,
@@ -19,6 +20,9 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  NumberInput,
+  NumberInputField,
+  Select,
   Stack,
   FormControl,
   FormLabel,
@@ -26,18 +30,23 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { signIn, signOut, useSession } from "next-auth/react";
+import { useRouter } from 'next/router'
 
 import { setAccessToken } from '../http-common'
 import SwapRuleService from '../services/swapRule.service'
 import WalletService from '../services/wallets.service'
 import { useGlobalState, resetGlobalState } from '../services/gloablState'
 import { pWalletName } from '../presenters/wallets'
-import swapRuleService from '../services/swapRule.service'
+import ProjectRuleService from '../services/projectRule.service'
+import { ProjectStat } from '../types/projectRules'
+
+let projSearchTimer = null as null | NodeJS.Timeout
 
 
 const Navbar = () => {
+  const router = useRouter()
   const {
     isOpen: isCreateSwapModalOpen,
     onOpen: onOpenCreateSwapModal,
@@ -47,6 +56,11 @@ const Navbar = () => {
     isOpen: isCreateWalletModalOpen,
     onOpen: onOpenCreateWalletModal,
     onClose: onCloseCreateWalletModal,
+  } = useDisclosure()
+  const {
+    isOpen: isCreateProjModalOpen,
+    onOpen: onOpenCreateProjModal,
+    onClose: onCloseCreateProjModal,
   } = useDisclosure()
 
   const { data: _sessionData, status: sessionStatus } = useSession();
@@ -64,6 +78,13 @@ const Navbar = () => {
   const [createWallet, setCreateWallet] = useState(WalletService.newWallet())
   const [wallets, setWallets] = useGlobalState('wallets')
 
+  const [isCreatingProj, setIsCreatingProj] = useState(false)
+  const [createProjRule, setCreateProjRule] = useState(ProjectRuleService.newProjectRule())
+  const [, setProjRules] = useGlobalState('projectRules')
+  const [searchProj, setSearchProj] = useState("")
+  const [searchProjResults, setSearchProjResults] = useState([] as ProjectStat[])
+  const searchRef = useRef( undefined as NodeJS.Timeout | undefined )
+
   useEffect(() => {
     if ( sessionStatus === "authenticated" ) {
       setAccessToken( sessionData?.token?.access_token )
@@ -80,7 +101,7 @@ const Navbar = () => {
     setIsCreatingSwap(true)
     const resp = await SwapRuleService.create(createSwapRule)
     if ( resp ) {
-      setCreateSwapRule(swapRuleService.newSwapRule())
+      setCreateSwapRule(SwapRuleService.newSwapRule())
       onCloseCreateSwapModal()
       const rules = await SwapRuleService.getRulesByDiscord()
       if ( rules ) {
@@ -102,6 +123,35 @@ const Navbar = () => {
       }
     }
     setIsCreatingWallet(false)
+  }
+
+  const onCreateProjRule = async () => {
+    setIsCreatingProj(true)
+    const resp = await ProjectRuleService.createRule(createProjRule)
+    if ( resp ) {
+      setCreateProjRule(ProjectRuleService.newProjectRule())
+      onCloseCreateProjModal()
+      const rules = await ProjectRuleService.getProfileStats()
+      if ( rules ) {
+        setProjRules( rules )
+      }
+    }
+    setIsCreatingProj(false)
+  }
+
+  const onSearchProject = (searchText: string) => {
+    console.log('onSearchProject', searchText)
+    setSearchProj(searchText)
+    if ( searchRef.current ) {
+      clearTimeout( searchRef.current )
+    }
+    searchRef.current = setTimeout( async () => {
+      console.log('timeout func called')
+      const projects = await ProjectRuleService.searchProjects( searchText )
+      if ( projects ) {
+        setSearchProjResults( projects )
+      }
+    }, 650)
   }
 
   return (
@@ -237,6 +287,101 @@ const Navbar = () => {
         </ModalContent>
       </Modal>
 
+      {/* Project Rule Modal */}
+      <Modal
+        isOpen={isCreateProjModalOpen}
+        onClose={onCloseCreateProjModal}
+        motionPreset='slideInRight'
+        size="sm"
+        isCentered
+      >
+        <ModalOverlay
+          bg='none'
+          backdropFilter='auto'
+          backdropInvert='80%'
+          backdropBlur='2px'
+        />
+        <ModalContent>
+          <ModalHeader>Create NFT Rule</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack direction="column">
+              <FormControl>
+                <FormLabel>
+                  NFT
+                </FormLabel>
+                <Input type="text"
+                  placeholder="Search"
+                  value={ searchProj }
+                  onChange={ e => onSearchProject( e.target.value ) }
+                />
+              </FormControl>
+
+              { searchProjResults.length > 0 &&
+                <Select variant='outline'
+                  size="sm"
+                  background="white"
+                  borderRadius="lg"
+                  value={createProjRule?.projectId}
+                  fontSize="sm"
+                  padding="0.5"
+                  onChange={ e => setCreateProjRule({ ...createProjRule, projectId: e.target.value })}
+                >
+                  <option>Select</option>
+                  { searchProjResults.map( result => (
+                    <option key={result.project_id} value={result.project_id}> 
+                      { result.project?.display_name || "?" } ({ result.floor_price || "?" } FP)
+                    </option>
+                  ))}
+                </Select>
+              }
+
+              { createProjRule.projectId &&
+                <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                    <FormLabel>
+                      Active
+                    </FormLabel>
+                    <Checkbox
+                      background="white"
+                      isChecked={ createProjRule.active }
+                      onChange={ e => setCreateProjRule({ ...createProjRule, active: e.target.checked }) }
+                      borderRadius="lg"
+                      size="lg"
+                    />
+                  </Stack>
+
+                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                    <FormLabel fontSize="sm">Fixed Change</FormLabel>
+                    <NumberInput
+                      size="sm"
+                      step={1.0}
+                      defaultValue={ createProjRule.fixedPriceChange || 0.0 }
+                      onBlur={ e => setCreateProjRule({ ...createProjRule, fixedPriceChange: parseFloat(e.target.value) }) }
+                    >
+                      <NumberInputField borderRadius="lg" background="white"/>
+                    </NumberInput>
+                  </Stack>
+                </Stack>
+              }
+            </Stack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              isLoading={isCreatingProj}
+              loadingText='Saving...'
+              colorScheme='teal'
+              variant='solid'
+              onClick={onCreateProjRule}
+            >
+              Save
+            </Button>
+            <Button variant='ghost' onClick={onCloseCreateProjModal}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       {/* Navbar */}
       <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
@@ -282,7 +427,17 @@ const Navbar = () => {
                       { userName }
                     </Center>
                   </MenuButton>
+
                   <MenuList>
+                    <MenuItem
+                      _hover={{
+                        background:"green.200",
+                      }}
+                      fontWeight="extrabold"
+                      onClick={() => router.push('/')}
+                    >
+                      Tokens
+                    </MenuItem>
                     <MenuItem
                       _hover={{
                         background:"green.200",
@@ -302,6 +457,27 @@ const Navbar = () => {
                       New Wallet
                     </MenuItem>
                     <MenuDivider />
+
+                    <MenuItem
+                      _hover={{
+                        background:"green.200",
+                      }}
+                      fontWeight="extrabold"
+                      onClick={() => router.push('nfts')}
+                    >
+                      NFTs
+                    </MenuItem>
+                    <MenuItem
+                      _hover={{
+                        background:"green.200",
+                      }}
+                      fontWeight="bold"
+                      onClick={onOpenCreateProjModal}
+                    >
+                      New Project Rule
+                    </MenuItem>
+                    <MenuDivider />
+
                     { wallets.length > 0 &&
                       <>
                         <MenuItem fontWeight="bold">

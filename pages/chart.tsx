@@ -146,16 +146,6 @@ const Chart: NextPage = () => {
     onLoadSwapRecords()
   }
 
-  // const reDrawBuySellPoints = () => {
-  //   if ( buySellTimeout ) {
-  //     clearTimeout( buySellTimeout )
-  //   }
-  //   buySellTimeout = undefined
-  //   buySellTimeout = setTimeout(() => {
-  //     calcBuySellHits(combined.swapTarget, combined.baseTarget)
-  //   }, 150 )
-  // }
-
   const onUpdateSwapRule = async () => {
     onUpdating()
     const updatedRule = await SwapRuleService.update( swapRuleUpdate._id, swapRuleUpdate )

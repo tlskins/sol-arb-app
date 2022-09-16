@@ -12,6 +12,7 @@ const getDefaultState = () => {
     tokenSwapRules: [] as ITokenSwapRules[],
     projectRules: [] as ProjectRule[],
     wallets: [] as IWallet[],
+    tags: [] as string[],
   }
 }
 export const { useGlobalState, setGlobalState } = createGlobalState(getDefaultState())

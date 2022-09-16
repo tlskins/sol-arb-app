@@ -20,6 +20,11 @@ interface ProjectsResp {
 
 interface ProfileStatsResp {
   profileStats: ProjectRule[]
+  tags: string[]
+}
+
+interface getProfStatsParams {
+  tags?: string,
 }
 
 class ProjectRuleService {
@@ -73,11 +78,16 @@ class ProjectRuleService {
     }
   }
 
-  getProfileStats = async (): Promise<ProjectRule[] | undefined> => {
+  getProfileStats = async (tags: string): Promise<ProfileStatsResp | undefined> => {
     try {
-      const resp: IResponse<ProfileStatsResp> = await http.get( `project-stats` )
+      const params = {} as getProfStatsParams
+      if ( tags && tags.length > 0 ) {
+        params.tags = tags
+      }
+      console.log('getProfileStats', tags, params )
+      const resp: IResponse<ProfileStatsResp> = await http.get( `project-stats`, { params })
       
-      return resp.data.profileStats
+      return resp.data
     } catch( err ) {
       handleError("Error getting profile stats", err)
     }
@@ -102,6 +112,7 @@ class ProjectRuleService {
       const resp: IResponse<ProjectRule> = await http.put( `project-rule/${ id }`, {
         active: update.active,
         fixedPriceChange: update.fixedPriceChange,
+        tags: update.tags?.join(','),
       } )
 
       return resp.data

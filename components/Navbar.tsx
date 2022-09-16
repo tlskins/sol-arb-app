@@ -78,6 +78,7 @@ const Navbar = () => {
   const [createWallet, setCreateWallet] = useState(WalletService.newWallet())
   const [wallets, setWallets] = useGlobalState('wallets')
 
+  const [availTags, setAvailTags] = useGlobalState('tags')
   const [isCreatingProj, setIsCreatingProj] = useState(false)
   const [createProjRule, setCreateProjRule] = useState(ProjectRuleService.newProjectRule())
   const [, setProjRules] = useGlobalState('projectRules')
@@ -131,22 +132,22 @@ const Navbar = () => {
     if ( resp ) {
       setCreateProjRule(ProjectRuleService.newProjectRule())
       onCloseCreateProjModal()
-      const rules = await ProjectRuleService.getProfileStats()
-      if ( rules ) {
-        setProjRules( rules )
+      const profResp = await ProjectRuleService.getProfileStats('landing')
+      if ( profResp ) {
+        const { profileStats, tags } = profResp
+        setProjRules( profileStats )
+        setAvailTags( tags )
       }
     }
     setIsCreatingProj(false)
   }
 
   const onSearchProject = (searchText: string) => {
-    console.log('onSearchProject', searchText)
     setSearchProj(searchText)
     if ( searchRef.current ) {
       clearTimeout( searchRef.current )
     }
     searchRef.current = setTimeout( async () => {
-      console.log('timeout func called')
       const projects = await ProjectRuleService.searchProjects( searchText )
       if ( projects ) {
         setSearchProjResults( projects )

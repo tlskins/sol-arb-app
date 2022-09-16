@@ -6,6 +6,7 @@ export interface ProjectRule {
   projectId: string,
 
   active: boolean,
+  tags?: string[],
 
   // alerts
   lastAlertPrice?: number,
@@ -22,6 +23,7 @@ export interface UpsertProjectRule {
   projectId?: string,
 
   active?: boolean,
+  tags?: string[],
 
   // alerts
   lastAlertPrice?: number,

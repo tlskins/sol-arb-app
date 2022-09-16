@@ -2,7 +2,6 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
 import {
   Accordion,
   AccordionIcon,
@@ -22,9 +21,14 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
+  FormControl,
 } from '@chakra-ui/react'
 import { toast } from 'react-toastify'
 import { IoMdArrowDropdown, IoMdArrowDropup } from 'react-icons/io'
+import CreatableSelect from 'react-select/creatable'
+import { ActionMeta, OnChangeValue } from 'react-select'
+import Select, { OptionsOrGroups, GroupBase } from 'react-select'
+import makeAnimated from 'react-select/animated'
 
 import ProjectRuleService from '../services/projectRule.service'
 import { setAccessToken } from '../http-common'
@@ -33,12 +37,18 @@ import Navbar from '../components/Navbar'
 import { UpsertProjectRule } from '../types/projectRules'
 import { useGlobalState } from '../services/gloablState'
 
+interface TagOption {
+  value: string,
+  label: string,
+}
 
 const Home: NextPage = () => {
-  const router = useRouter()
+  const animatedComponents = makeAnimated()
   const { data: _sessionData } = useSession()
   const sessionData = _sessionData as any
+  const [tagsFilter, setTagsFilter] = useState(['landing'])
   const [projectRules, setProjectRules] = useGlobalState('projectRules')
+  const [availTags, setAvailTags] = useState([] as string[])
   const [projRuleUpdate, setProjRuleUpdate] = useState({} as UpsertProjectRule)
   const {
     isOpen: isUpdating,
@@ -58,20 +68,26 @@ const Home: NextPage = () => {
     }
   }, [sessionData?.token?.id])
 
+  useEffect(() => {
+    onLoadProjRules()
+  }, [tagsFilter])
 
   const onLoadProjRules = async () => {
     if ( !sessionData ) {
       return
     }
     onRefreshingProjRules()
-    const rules = await ProjectRuleService.getProfileStats()
-    if ( rules ) {
-      setProjectRules( rules.sort((a,b) => ((b.stats?.floor_price || 0) - (a.stats?.floor_price || 0))) )
+    const resp = await ProjectRuleService.getProfileStats(tagsFilter.join(','))
+    if ( resp ) {
+      const { profileStats, tags } = resp
+      setProjectRules( profileStats.sort((a,b) => ((b.stats?.floor_price || 0) - (a.stats?.floor_price || 0))) )
+      setAvailTags( tags )
     }
     onDoneRefreshingProjRules()
   }
 
   const onChangeProjRule = ( ruleId: string, key: string, value: any ) => {
+    console.log('onChangeProjRule', ruleId, key, value )
     const rule = projectRules.find( rule => rule._id === ruleId )
     if ( !rule ) return
     let update = { ...projRuleUpdate }
@@ -90,13 +106,32 @@ const Home: NextPage = () => {
     if ( updatedRule ) {
       onLoadProjRules()
       setProjRuleUpdate({} as UpsertProjectRule)
-      toast.success('Updated Swap Rule!', {
+      toast.success('Updated NFT Rule!', {
         theme: 'dark',
         position: toast.POSITION.TOP_CENTER,
       })
     }
     onUpdated()
   }
+
+  const onChangeTags = ( ruleId: string ) => (
+    newValue: OnChangeValue<TagOption, true>,
+    // actionMeta: ActionMeta<string>
+  ) => {
+    const rule = projectRules.find( rule => rule._id === ruleId )
+    console.log('onchangetags', rule, newValue )
+    if ( !rule ) return
+    onChangeProjRule( ruleId, 'tags', newValue.map( v => v.value ) )
+  }
+
+  const onChangeTagsFilter = (
+    newValue: unknown,
+    actionMeta: ActionMeta<unknown>
+  ) => {
+    setTagsFilter([...newValue as string[]])
+  }
+
+  console.log('nfts', projRuleUpdate )
 
   return (
     <div className={styles.container}>
@@ -114,9 +149,18 @@ const Home: NextPage = () => {
           NFT Rules
         </Text>
 
+        <Select
+          closeMenuOnSelect={false}
+          components={animatedComponents}
+          defaultValue={tagsFilter.map( f => ({ value: f, label: f }))}
+          onChange={ onChangeTagsFilter }
+          options={['landing','hodl', 'sell'].map( v => ({ value: v, label: v }))}
+          isMulti
+        />
+
         { projectRules && projectRules.length > 0 &&
           <>
-            <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]}>
+            <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]} mt="6">
               { projectRules.map( projRule => {
                 return(
                   <AccordionItem key={projRule._id}>
@@ -159,7 +203,19 @@ const Home: NextPage = () => {
                         </Stack>
                       </Stack>
 
-                      <Stack direction="row">
+                      <FormControl>
+                        <FormLabel>
+                          Tags
+                        </FormLabel>
+                        <CreatableSelect
+                          isMulti
+                          onChange={onChangeTags( projRule._id )}
+                          defaultValue={(projRule.tags || []).map( t => ({ value: t, label: t }))}
+                          options={availTags.map( t => ({ value: t, label: t }))}
+                        />
+                      </FormControl>
+
+                      <Stack direction="row" py="6">
                         <Stat>
                           <StatLabel>Floor</StatLabel>
                           <StatNumber>{ projRule.stats?.floor_price || "?" }</StatNumber>

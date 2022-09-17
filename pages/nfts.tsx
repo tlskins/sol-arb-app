@@ -161,6 +161,7 @@ const Home: NextPage = () => {
           <>
             <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]} mt="6">
               { projectRules.map( projRule => {
+                const combined = projRule && projRuleUpdate._id === projRule._id ? { ...projRule, ...projRuleUpdate } : projRule
                 return(
                   <AccordionItem key={projRule._id}>
                     <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }} minWidth="full">
@@ -182,7 +183,7 @@ const Home: NextPage = () => {
                           <FormLabel fontSize="sm">Active?</FormLabel>
                           <Checkbox
                             background="white"
-                            isChecked={ projRule.active }
+                            isChecked={ combined.active }
                             onChange={ e => onChangeProjRule( projRule._id, 'active', e.target.checked ) }
                             borderRadius="lg"
                             size="lg"
@@ -233,7 +234,7 @@ const Home: NextPage = () => {
                           <FormLabel fontSize="sm">On?</FormLabel>
                           <Checkbox
                             background="white"
-                            isChecked={ projRule.floorBelowOn }
+                            isChecked={ combined.floorBelowOn }
                             onChange={ e => onChangeProjRule( projRule._id, 'floorBelowOn', e.target.checked ) }
                             borderRadius="lg"
                             size="lg"
@@ -247,7 +248,7 @@ const Home: NextPage = () => {
                           <NumberInput
                             size="sm"
                             step={1.0}
-                            defaultValue={ projRule.floorAbove || undefined }
+                            defaultValue={ combined.floorAbove || undefined }
                             onBlur={ e => onChangeProjRule( projRule._id, 'floorAbove', e.target.value ? parseFloat(e.target.value) : null ) }
                           >
                             <NumberInputField borderRadius="lg" background="white"/>
@@ -258,7 +259,7 @@ const Home: NextPage = () => {
                           <FormLabel fontSize="sm">On?</FormLabel>
                           <Checkbox
                             background="white"
-                            isChecked={ projRule.floorAboveOn }
+                            isChecked={ combined.floorAboveOn }
                             onChange={ e => onChangeProjRule( projRule._id, 'floorAboveOn', e.target.checked ) }
                             borderRadius="lg"
                             size="lg"

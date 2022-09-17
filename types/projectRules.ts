@@ -10,7 +10,12 @@ export interface ProjectRule {
 
   // alerts
   lastAlertPrice?: number,
-  fixedPriceChange?: number,
+  fixedPriceChange: number | null,
+  critFixedPriceChange: number | null,
+  floorAbove: number | null,
+  floorAboveOn: boolean,
+  floorBelow: number | null,
+  floorBelowOn: boolean
 
   stats?: ProjectStat
 }
@@ -27,7 +32,12 @@ export interface UpsertProjectRule {
 
   // alerts
   lastAlertPrice?: number,
-  fixedPriceChange?: number,
+  fixedPriceChange?: number | null,
+  critFixedPriceChange?: number | null,
+  floorAbove?: number | null,
+  floorAboveOn?: boolean,
+  floorBelow?: number | null,
+  floorBelowOn?: boolean
 }
 
 // hyperspace

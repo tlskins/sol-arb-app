@@ -338,32 +338,34 @@ const Navbar = () => {
               }
 
               { createProjRule.projectId &&
-                <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                <>
                   <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                    <FormLabel>
-                      Active
-                    </FormLabel>
-                    <Checkbox
-                      background="white"
-                      isChecked={ createProjRule.active }
-                      onChange={ e => setCreateProjRule({ ...createProjRule, active: e.target.checked }) }
-                      borderRadius="lg"
-                      size="lg"
-                    />
-                  </Stack>
+                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                      <FormLabel>
+                        Active
+                      </FormLabel>
+                      <Checkbox
+                        background="white"
+                        isChecked={ createProjRule.active }
+                        onChange={ e => setCreateProjRule({ ...createProjRule, active: e.target.checked }) }
+                        borderRadius="lg"
+                        size="lg"
+                      />
+                    </Stack>
 
-                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                    <FormLabel fontSize="sm">Fixed Change</FormLabel>
-                    <NumberInput
-                      size="sm"
-                      step={1.0}
-                      defaultValue={ createProjRule.fixedPriceChange || 0.0 }
-                      onBlur={ e => setCreateProjRule({ ...createProjRule, fixedPriceChange: parseFloat(e.target.value) }) }
-                    >
-                      <NumberInputField borderRadius="lg" background="white"/>
-                    </NumberInput>
+                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                      <FormLabel fontSize="sm">Fixed Change</FormLabel>
+                      <NumberInput
+                        size="sm"
+                        step={1.0}
+                        defaultValue={ createProjRule.fixedPriceChange || 0.0 }
+                        onBlur={ e => setCreateProjRule({ ...createProjRule, fixedPriceChange: e.target.value ? parseFloat(e.target.value) : null }) }
+                      >
+                        <NumberInputField borderRadius="lg" background="white"/>
+                      </NumberInput>
+                    </Stack>
                   </Stack>
-                </Stack>
+                </>
               }
             </Stack>
           </ModalBody>

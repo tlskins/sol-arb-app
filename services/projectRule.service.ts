@@ -35,6 +35,11 @@ class ProjectRuleService {
       projectId: "",
       active: true,
       fixedPriceChange: 5,
+      critFixedPriceChange: null,
+      floorAbove: null,
+      floorAboveOn: false,
+      floorBelow: null,
+      floorBelowOn: false,
     } as ProjectRule
   }
 
@@ -98,7 +103,13 @@ class ProjectRuleService {
       const resp: IResponse<ProjectRule> = await http.post( `project-rule`, {
         projectId: rule.projectId,
         active: rule.active,
+        tags: rule.tags?.join(','),
         fixedPriceChange: rule.fixedPriceChange,
+        critFixedPriceChange: rule.critFixedPriceChange,
+        floorAbove: rule.floorAbove,
+        floorAboveOn: rule.floorAboveOn,
+        floorBelow: rule.floorBelow,
+        floorBelowOn: rule.floorBelowOn,
       } )
 
       return resp.data
@@ -111,8 +122,13 @@ class ProjectRuleService {
     try {
       const resp: IResponse<ProjectRule> = await http.put( `project-rule/${ id }`, {
         active: update.active,
-        fixedPriceChange: update.fixedPriceChange,
         tags: update.tags?.join(','),
+        fixedPriceChange: update.fixedPriceChange,
+        critFixedPriceChange: update.critFixedPriceChange,
+        floorAbove: update.floorAbove,
+        floorAboveOn: update.floorAboveOn,
+        floorBelow: update.floorBelow,
+        floorBelowOn: update.floorBelowOn,
       } )
 
       return resp.data

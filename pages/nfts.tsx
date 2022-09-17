@@ -116,10 +116,8 @@ const Home: NextPage = () => {
 
   const onChangeTags = ( ruleId: string ) => (
     newValue: OnChangeValue<TagOption, true>,
-    // actionMeta: ActionMeta<string>
   ) => {
     const rule = projectRules.find( rule => rule._id === ruleId )
-    console.log('onchangetags', rule, newValue )
     if ( !rule ) return
     onChangeProjRule( ruleId, 'tags', newValue.map( v => v.value ) )
   }
@@ -128,7 +126,8 @@ const Home: NextPage = () => {
     newValue: unknown,
     actionMeta: ActionMeta<unknown>
   ) => {
-    setTagsFilter([...newValue as string[]])
+    const selected = newValue as TagOption[]
+    setTagsFilter([...selected.map( opt => opt.value ) as string[]])
   }
 
   console.log('nfts', projRuleUpdate )
@@ -154,7 +153,7 @@ const Home: NextPage = () => {
           components={animatedComponents}
           defaultValue={tagsFilter.map( f => ({ value: f, label: f }))}
           onChange={ onChangeTagsFilter }
-          options={['landing','hodl', 'sell'].map( v => ({ value: v, label: v }))}
+          options={availTags.map( t => ({ value: t, label: t }))}
           isMulti
         />
 
@@ -189,17 +188,81 @@ const Home: NextPage = () => {
                             size="lg"
                           />
                         </Stack>
+                      </Stack>
 
+                      <Stack direction="row" fontSize="sm" fontWeight="bold">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                           <FormLabel fontSize="sm">Fixed Change</FormLabel>
                           <NumberInput
                             size="sm"
                             step={1.0}
                             defaultValue={ projRule.fixedPriceChange || 0.0 }
-                            onBlur={ e => onChangeProjRule( projRule._id, 'fixedPriceChange', parseFloat(e.target.value)) }
+                            onBlur={ e => onChangeProjRule( projRule._id, 'fixedPriceChange', e.target.value ? parseFloat(e.target.value) : null) }
                           >
                             <NumberInputField borderRadius="lg" background="white"/>
                           </NumberInput>
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Crit. Fixed Change</FormLabel>
+                          <NumberInput
+                            size="sm"
+                            step={1.0}
+                            defaultValue={ projRule.critFixedPriceChange || undefined }
+                            onBlur={ e => onChangeProjRule( projRule._id, 'critFixedPriceChange', e.target.value ? parseFloat(e.target.value) : null) }
+                          >
+                            <NumberInputField borderRadius="lg" background="white"/>
+                          </NumberInput>
+                        </Stack>
+                      </Stack>
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Floor Below</FormLabel>
+                          <NumberInput
+                            size="sm"
+                            step={1.0}
+                            defaultValue={ projRule.floorBelow || undefined }
+                            onBlur={ e => onChangeProjRule( projRule._id, 'floorBelow', e.target.value ? parseFloat(e.target.value) : null ) }
+                          >
+                            <NumberInputField borderRadius="lg" background="white"/>
+                          </NumberInput>
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">On?</FormLabel>
+                          <Checkbox
+                            background="white"
+                            isChecked={ projRule.floorBelowOn }
+                            onChange={ e => onChangeProjRule( projRule._id, 'floorBelowOn', e.target.checked ) }
+                            borderRadius="lg"
+                            size="lg"
+                          />
+                        </Stack>
+                      </Stack>
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Floor Above</FormLabel>
+                          <NumberInput
+                            size="sm"
+                            step={1.0}
+                            defaultValue={ projRule.floorAbove || undefined }
+                            onBlur={ e => onChangeProjRule( projRule._id, 'floorAbove', e.target.value ? parseFloat(e.target.value) : null ) }
+                          >
+                            <NumberInputField borderRadius="lg" background="white"/>
+                          </NumberInput>
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">On?</FormLabel>
+                          <Checkbox
+                            background="white"
+                            isChecked={ projRule.floorAboveOn }
+                            onChange={ e => onChangeProjRule( projRule._id, 'floorAboveOn', e.target.checked ) }
+                            borderRadius="lg"
+                            size="lg"
+                          />
                         </Stack>
                       </Stack>
 

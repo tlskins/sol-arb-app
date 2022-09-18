@@ -48,7 +48,7 @@ const Home: NextPage = () => {
   const sessionData = _sessionData as any
   const [tagsFilter, setTagsFilter] = useState(['landing'])
   const [projectRules, setProjectRules] = useGlobalState('projectRules')
-  const [availTags, setAvailTags] = useState([] as string[])
+  const [availTags, setAvailTags] = useGlobalState('tags')
   const [projRuleUpdate, setProjRuleUpdate] = useState({} as UpsertProjectRule)
   const {
     isOpen: isUpdating,
@@ -177,7 +177,60 @@ const Home: NextPage = () => {
                       <AccordionIcon />
                     </AccordionButton>
 
-                    <AccordionPanel minWidth="full" padding="0.5">
+                    <AccordionPanel minWidth="full" paddingX="0.5" paddingY="3">
+                      <FormControl>
+                        <FormLabel>
+                          Tags
+                        </FormLabel>
+                        <CreatableSelect
+                          isMulti
+                          onChange={onChangeTags( projRule._id )}
+                          defaultValue={(projRule.tags || []).map( t => ({ value: t, label: t }))}
+                          options={availTags.map( t => ({ value: t, label: t }))}
+                        />
+                      </FormControl>
+
+                      <Stack direction="row" py="6">
+                        <Stat>
+                          <StatLabel>Floor</StatLabel>
+                          <StatNumber>{ projRule.stats?.floor_price || "?" }</StatNumber>
+                          <StatHelpText>{ projRule.stats?.floor_price_1day_change?.toFixed(2) || "?" } 1 day change</StatHelpText>
+                        </Stat>
+
+                        <Stat>
+                          <StatLabel>Listed</StatLabel>
+                          <StatNumber>{ ((projRule.stats?.percentage_of_token_listed || 0.0) * 100).toFixed(1) }%</StatNumber>
+                          <StatHelpText>{ projRule.stats?.num_of_token_listed || "?" } listed</StatHelpText>
+                        </Stat>
+                      </Stack>
+
+                      <Stack direction="row">
+                        <Stat>
+                          <StatLabel>Vol 1Hr</StatLabel>
+                          <StatNumber>{ projRule.stats?.volume_1hr || "?" }</StatNumber>
+                        </Stat>
+
+                        <Stat>
+                          <StatLabel>Vol 1Day</StatLabel>
+                          <StatNumber>{ projRule.stats?.volume_1day }</StatNumber>
+                          <StatHelpText>{ ((projRule.stats?.volume_1day_change || 0.0) * 100).toFixed(1) }% change</StatHelpText>
+                        </Stat>
+                      </Stack>
+
+
+                      { projRule._id === projRuleUpdate._id &&
+                        <Button
+                          isLoading={isUpdating}
+                          loadingText='Saving...'
+                          marginY="4"
+                          colorScheme='teal'
+                          variant='solid'
+                          onClick={onUpdateProjRule}
+                        >
+                          Save
+                        </Button>
+                      }
+
                       <Stack direction="row" fontSize="sm" fontWeight="bold">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                           <FormLabel fontSize="sm">Active?</FormLabel>
@@ -205,7 +258,7 @@ const Home: NextPage = () => {
                         </Stack>
 
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Crit. Fixed Change</FormLabel>
+                          <FormLabel fontSize="sm">CritFixed Change</FormLabel>
                           <NumberInput
                             size="sm"
                             step={1.0}
@@ -266,59 +319,6 @@ const Home: NextPage = () => {
                           />
                         </Stack>
                       </Stack>
-
-                      <FormControl>
-                        <FormLabel>
-                          Tags
-                        </FormLabel>
-                        <CreatableSelect
-                          isMulti
-                          onChange={onChangeTags( projRule._id )}
-                          defaultValue={(projRule.tags || []).map( t => ({ value: t, label: t }))}
-                          options={availTags.map( t => ({ value: t, label: t }))}
-                        />
-                      </FormControl>
-
-                      <Stack direction="row" py="6">
-                        <Stat>
-                          <StatLabel>Floor</StatLabel>
-                          <StatNumber>{ projRule.stats?.floor_price || "?" }</StatNumber>
-                          <StatHelpText>{ projRule.stats?.floor_price_1day_change?.toFixed(2) || "?" } 1 day change</StatHelpText>
-                        </Stat>
-
-                        <Stat>
-                          <StatLabel>Listed</StatLabel>
-                          <StatNumber>{ ((projRule.stats?.percentage_of_token_listed || 0.0) * 100).toFixed(1) }%</StatNumber>
-                          <StatHelpText>{ projRule.stats?.num_of_token_listed || "?" } listed</StatHelpText>
-                        </Stat>
-                      </Stack>
-
-                      <Stack direction="row">
-                        <Stat>
-                          <StatLabel>Vol 1Hr</StatLabel>
-                          <StatNumber>{ projRule.stats?.volume_1hr || "?" }</StatNumber>
-                        </Stat>
-
-                        <Stat>
-                          <StatLabel>Vol 1Day</StatLabel>
-                          <StatNumber>{ projRule.stats?.volume_1day }</StatNumber>
-                          <StatHelpText>{ ((projRule.stats?.volume_1day_change || 0.0) * 100).toFixed(1) }% change</StatHelpText>
-                        </Stat>
-                      </Stack>
-
-
-                      { projRule._id === projRuleUpdate._id &&
-                        <Button
-                          isLoading={isUpdating}
-                          loadingText='Saving...'
-                          marginY="4"
-                          colorScheme='teal'
-                          variant='solid'
-                          onClick={onUpdateProjRule}
-                        >
-                          Save
-                        </Button>
-                      }
                     </AccordionPanel>
                   </AccordionItem>
                 )

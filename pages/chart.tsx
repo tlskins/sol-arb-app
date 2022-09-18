@@ -51,7 +51,6 @@ export const ChartRangeFilters = [
   { id: '3 Week', unit: 'week', length: 3 },
 ] as ChartFilter[]
 
-let buySellTimeout = undefined as any
 
 const Chart: NextPage = () => {
   const router = useRouter()
@@ -143,7 +142,6 @@ const Chart: NextPage = () => {
     // @ts-ignore: dynamic access
     update[key] = value
     setSwapRuleUpdate( update )
-    onLoadSwapRecords()
   }
 
   const onUpdateSwapRule = async () => {
@@ -341,8 +339,9 @@ const Chart: NextPage = () => {
             </FormLabel>
             <NumberInput
               size="sm"
+              maxWidth="sm"
               step={1.0}
-              defaultValue={ combined?.baseTarget || 0 }
+              value={ combined?.baseTarget || 0 }
               onChange={ val => onChangeSwapRule( 'baseTarget', parseFloat(val)) }
             >
               <NumberInputField borderRadius="lg" background="white"/>
@@ -358,8 +357,9 @@ const Chart: NextPage = () => {
             </FormLabel>
             <NumberInput
               size="sm"
+              maxWidth="sm"
               step={1.0}
-              defaultValue={ combined?.swapTarget || 0 }
+              value={ combined?.swapTarget || 0 }
               onChange={ val => onChangeSwapRule( 'swapTarget', parseFloat(val)) }
             >
               <NumberInputField borderRadius="lg" background="white"/>

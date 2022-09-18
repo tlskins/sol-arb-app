@@ -83,7 +83,7 @@ class ProjectRuleService {
     }
   }
 
-  getProfileStats = async (tags: string): Promise<ProfileStatsResp | undefined> => {
+  getProfileStats = async (tags?: string): Promise<ProfileStatsResp | undefined> => {
     try {
       const params = {} as getProfStatsParams
       if ( tags && tags.length > 0 ) {

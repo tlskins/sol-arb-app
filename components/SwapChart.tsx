@@ -22,12 +22,13 @@ const SwapChart = ({
   buyTargetPoints: DataPoint[],
   sellTargetPoints: DataPoint[],
 }) => {
+  const currPrice = buyDataPoints[buyDataPoints.length-1]?.y || sellDataPoints[sellDataPoints.length-1]?.y || 0.0
   return(
     <CanvasJSChart
       options={{
         theme: "light2",
         title: {
-          text: `${ swapRule?.swapToken?.symbol || '?' } Prices`
+          text: `${ swapRule?.swapToken?.symbol || '?' } Prices @ ${ currPrice?.toFixed( swapRule?.decimals ) || "?" }`
         },
         axisY: {
           title: `${ swapRule?.swapToken?.symbol || '?' } Price in ${ swapRule?.baseToken?.symbol || '?' }`,

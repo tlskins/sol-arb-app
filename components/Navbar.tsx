@@ -33,6 +33,8 @@ import {
 import { useEffect, useState, useRef } from 'react'
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from 'next/router'
+import CreatableSelect from 'react-select/creatable'
+import { ActionMeta, OnChangeValue } from 'react-select'
 
 import { setAccessToken } from '../http-common'
 import SwapRuleService from '../services/swapRule.service'
@@ -42,7 +44,10 @@ import { pWalletName } from '../presenters/wallets'
 import ProjectRuleService from '../services/projectRule.service'
 import { ProjectStat } from '../types/projectRules'
 
-let projSearchTimer = null as null | NodeJS.Timeout
+interface TagOption {
+  value: string,
+  label: string,
+}
 
 
 const Navbar = () => {
@@ -86,6 +91,8 @@ const Navbar = () => {
   const [searchProjResults, setSearchProjResults] = useState([] as ProjectStat[])
   const searchRef = useRef( undefined as NodeJS.Timeout | undefined )
 
+  console.log('navbar', availTags)
+
   useEffect(() => {
     if ( sessionStatus === "authenticated" ) {
       setAccessToken( sessionData?.token?.access_token )
@@ -124,6 +131,29 @@ const Navbar = () => {
       }
     }
     setIsCreatingWallet(false)
+  }
+
+  const onLoadTags = async () => {
+    if ( !sessionData ) {
+      return
+    }
+    const resp = await ProjectRuleService.getProfileStats()
+    if ( resp ) {
+      setAvailTags( resp.tags )
+    }
+  }
+
+  const onChangeTags = (
+    newValue: OnChangeValue<TagOption, true>,
+  ) => {
+    setCreateProjRule({ ...createProjRule, tags: newValue.map( v => v.value ) })
+  }
+
+  const onOpenCreateProjRule = () => {
+    onOpenCreateProjModal()
+    if ( availTags.length === 0 ) {
+      onLoadTags()
+    }
   }
 
   const onCreateProjRule = async () => {
@@ -365,21 +395,37 @@ const Navbar = () => {
                       </NumberInput>
                     </Stack>
                   </Stack>
+
+                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                    <FormControl>
+                      <FormLabel>
+                        Tags
+                      </FormLabel>
+                      <CreatableSelect
+                        isMulti
+                        onChange={onChangeTags}
+                        defaultValue={(createProjRule.tags || []).map( t => ({ value: t, label: t }))}
+                        options={availTags.map( t => ({ value: t, label: t }))}
+                      />
+                    </FormControl>
+                  </Stack>
                 </>
               }
             </Stack>
           </ModalBody>
 
           <ModalFooter>
-            <Button
-              isLoading={isCreatingProj}
-              loadingText='Saving...'
-              colorScheme='teal'
-              variant='solid'
-              onClick={onCreateProjRule}
-            >
-              Save
-            </Button>
+            { (createProjRule && createProjRule.projectId.length > 0) &&
+              <Button
+                isLoading={isCreatingProj}
+                loadingText='Saving...'
+                colorScheme='teal'
+                variant='solid'
+                onClick={onCreateProjRule}
+              >
+                Save
+              </Button>
+            }
             <Button variant='ghost' onClick={onCloseCreateProjModal}>Close</Button>
           </ModalFooter>
         </ModalContent>
@@ -475,7 +521,7 @@ const Navbar = () => {
                         background:"green.200",
                       }}
                       fontWeight="bold"
-                      onClick={onOpenCreateProjModal}
+                      onClick={onOpenCreateProjRule}
                     >
                       New Project Rule
                     </MenuItem>

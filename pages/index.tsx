@@ -133,10 +133,14 @@ const Home: NextPage = () => {
     // @ts-ignore: dynamic access
     if ( !update[alertType] ) {
       // @ts-ignore: dynamic access
-      update[alertType] = {
-        active: false,
-        fixedPriceChange: 0.05,
-      }
+      update[alertType] = swapRule[alertType] ?
+        // @ts-ignore: dynamic access
+        swapRule[alertType]
+        :
+        {
+          active: false,
+          fixedPriceChange: 0.05,
+        }
     }
     // @ts-ignore: dynamic access
     update[alertType][key] = value

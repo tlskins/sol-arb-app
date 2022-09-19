@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from "next-auth/react"
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Accordion,
   AccordionIcon,
@@ -13,8 +13,6 @@ import {
   Text,
   FormLabel,
   Stack,
-  NumberInput,
-  NumberInputField,
   Checkbox,
   useDisclosure,
   Stat,
@@ -34,6 +32,7 @@ import ProjectRuleService from '../services/projectRule.service'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
+import NumberInput from '../components/NumberInput'
 import { UpsertProjectRule } from '../types/projectRules'
 import { useGlobalState } from '../services/gloablState'
 
@@ -41,6 +40,8 @@ interface TagOption {
   value: string,
   label: string,
 }
+
+// let numberTimer = undefined as NodeJS.Timeout | undefined
 
 const Home: NextPage = () => {
   const animatedComponents = makeAnimated()
@@ -50,6 +51,8 @@ const Home: NextPage = () => {
   const [projectRules, setProjectRules] = useGlobalState('projectRules')
   const [availTags, setAvailTags] = useGlobalState('tags')
   const [projRuleUpdate, setProjRuleUpdate] = useState({} as UpsertProjectRule)
+  const numberTimer = useRef( undefined as NodeJS.Timeout | undefined )
+
   const {
     isOpen: isUpdating,
     onOpen: onUpdating,
@@ -216,21 +219,7 @@ const Home: NextPage = () => {
                           <StatHelpText>{ ((projRule.stats?.volume_1day_change || 0.0) * 100).toFixed(1) }% change</StatHelpText>
                         </Stat>
                       </Stack>
-
-
-                      { projRule._id === projRuleUpdate._id &&
-                        <Button
-                          isLoading={isUpdating}
-                          loadingText='Saving...'
-                          marginY="4"
-                          colorScheme='teal'
-                          variant='solid'
-                          onClick={onUpdateProjRule}
-                        >
-                          Save
-                        </Button>
-                      }
-
+                      
                       <Stack direction="row" fontSize="sm" fontWeight="bold">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                           <FormLabel fontSize="sm">Active?</FormLabel>
@@ -244,43 +233,34 @@ const Home: NextPage = () => {
                         </Stack>
                       </Stack>
 
-                      <Stack direction="row" fontSize="sm" fontWeight="bold">
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                           <FormLabel fontSize="sm">Fixed Change</FormLabel>
                           <NumberInput
-                            size="sm"
-                            step={1.0}
-                            defaultValue={ projRule.fixedPriceChange || 0.0 }
-                            onBlur={ e => onChangeProjRule( projRule._id, 'fixedPriceChange', e.target.value ? parseFloat(e.target.value) : null) }
-                          >
-                            <NumberInputField borderRadius="lg" background="white"/>
-                          </NumberInput>
+                            thousandSeparator={true}
+                            defaultValue={ combined.fixedPriceChange }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'fixedPriceChange', value )}
+                          />
                         </Stack>
 
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">CritFixed Change</FormLabel>
+                          <FormLabel fontSize="sm">Crit-Fixed Change</FormLabel>
                           <NumberInput
-                            size="sm"
-                            step={1.0}
-                            defaultValue={ projRule.critFixedPriceChange || undefined }
-                            onBlur={ e => onChangeProjRule( projRule._id, 'critFixedPriceChange', e.target.value ? parseFloat(e.target.value) : null) }
-                          >
-                            <NumberInputField borderRadius="lg" background="white"/>
-                          </NumberInput>
+                            thousandSeparator={true}
+                            defaultValue={ combined.critFixedPriceChange }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'critFixedPriceChange', value )}
+                          />
                         </Stack>
                       </Stack>
 
-                      <Stack direction="row" fontSize="sm" fontWeight="bold">
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                           <FormLabel fontSize="sm">Floor Below</FormLabel>
                           <NumberInput
-                            size="sm"
-                            step={1.0}
-                            defaultValue={ projRule.floorBelow || undefined }
-                            onBlur={ e => onChangeProjRule( projRule._id, 'floorBelow', e.target.value ? parseFloat(e.target.value) : null ) }
-                          >
-                            <NumberInputField borderRadius="lg" background="white"/>
-                          </NumberInput>
+                            thousandSeparator={true}
+                            defaultValue={ combined.floorBelow }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorBelow', value )}
+                          />
                         </Stack>
 
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
@@ -295,17 +275,14 @@ const Home: NextPage = () => {
                         </Stack>
                       </Stack>
 
-                      <Stack direction="row" fontSize="sm" fontWeight="bold">
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                           <FormLabel fontSize="sm">Floor Above</FormLabel>
                           <NumberInput
-                            size="sm"
-                            step={1.0}
-                            defaultValue={ combined.floorAbove || undefined }
-                            onBlur={ e => onChangeProjRule( projRule._id, 'floorAbove', e.target.value ? parseFloat(e.target.value) : null ) }
-                          >
-                            <NumberInputField borderRadius="lg" background="white"/>
-                          </NumberInput>
+                            thousandSeparator={true}
+                            defaultValue={ combined.floorAbove }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorAbove', value )}
+                          />
                         </Stack>
 
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
@@ -319,6 +296,19 @@ const Home: NextPage = () => {
                           />
                         </Stack>
                       </Stack>
+
+                      { projRule._id === projRuleUpdate._id &&
+                        <Button
+                          isLoading={isUpdating}
+                          loadingText='Saving...'
+                          marginY="4"
+                          colorScheme='teal'
+                          variant='solid'
+                          onClick={onUpdateProjRule}
+                        >
+                          Save
+                        </Button>
+                      }
                     </AccordionPanel>
                   </AccordionItem>
                 )

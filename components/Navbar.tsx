@@ -20,8 +20,6 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  NumberInput,
-  NumberInputField,
   Select,
   Stack,
   FormControl,
@@ -34,7 +32,7 @@ import { useEffect, useState, useRef } from 'react'
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from 'next/router'
 import CreatableSelect from 'react-select/creatable'
-import { ActionMeta, OnChangeValue } from 'react-select'
+import { OnChangeValue } from 'react-select'
 
 import { setAccessToken } from '../http-common'
 import SwapRuleService from '../services/swapRule.service'
@@ -43,6 +41,7 @@ import { useGlobalState, resetGlobalState } from '../services/gloablState'
 import { pWalletName } from '../presenters/wallets'
 import ProjectRuleService from '../services/projectRule.service'
 import { ProjectStat } from '../types/projectRules'
+import NumberInput from './NumberInput'
 
 interface TagOption {
   value: string,
@@ -90,8 +89,6 @@ const Navbar = () => {
   const [searchProj, setSearchProj] = useState("")
   const [searchProjResults, setSearchProjResults] = useState([] as ProjectStat[])
   const searchRef = useRef( undefined as NodeJS.Timeout | undefined )
-
-  console.log('navbar', availTags)
 
   useEffect(() => {
     if ( sessionStatus === "authenticated" ) {
@@ -386,13 +383,10 @@ const Navbar = () => {
                     <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                       <FormLabel fontSize="sm">Fixed Change</FormLabel>
                       <NumberInput
-                        size="sm"
-                        step={1.0}
-                        defaultValue={ createProjRule.fixedPriceChange || 0.0 }
-                        onBlur={ e => setCreateProjRule({ ...createProjRule, fixedPriceChange: e.target.value ? parseFloat(e.target.value) : null }) }
-                      >
-                        <NumberInputField borderRadius="lg" background="white"/>
-                      </NumberInput>
+                        thousandSeparator={true}
+                        defaultValue={ createProjRule.fixedPriceChange }
+                        onValueChange={ value => setCreateProjRule({ ...createProjRule, fixedPriceChange: value }) }
+                      />
                     </Stack>
                   </Stack>
 

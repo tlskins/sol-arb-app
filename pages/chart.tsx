@@ -14,13 +14,10 @@ import type { NextPage } from 'next'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { toast } from 'react-toastify'
-import {
-  useDisclosure,
-  NumberInput,
-  NumberInputField,
-} from '@chakra-ui/react'
+import { useDisclosure } from '@chakra-ui/react'
 
 import Navbar from '../components/Navbar'
+import NumberInput from '../components/NumberInput'
 import swapRecordService from '../services/swapRecord.service'
 import { IUpdateSwapRule, ISwapRule } from '../types/swapRules'
 import { ISwapRecord } from '../types/swapRecord'
@@ -338,14 +335,10 @@ const Chart: NextPage = () => {
               Sell Above
             </FormLabel>
             <NumberInput
-              size="sm"
-              maxWidth="sm"
-              step={1.0}
-              value={ combined?.baseTarget || 0 }
-              onChange={ val => onChangeSwapRule( 'baseTarget', parseFloat(val)) }
-            >
-              <NumberInputField borderRadius="lg" background="white"/>
-            </NumberInput>
+              thousandSeparator={true}
+              defaultValue={ combined?.baseTarget }
+              onValueChange={ value => onChangeSwapRule( 'baseTarget', value ) }
+            />
             <FormLabel fontSize="sm">
               Hits ({ sellHits })
             </FormLabel>
@@ -356,14 +349,10 @@ const Chart: NextPage = () => {
               Buy Below
             </FormLabel>
             <NumberInput
-              size="sm"
-              maxWidth="sm"
-              step={1.0}
-              value={ combined?.swapTarget || 0 }
-              onChange={ val => onChangeSwapRule( 'swapTarget', parseFloat(val)) }
-            >
-              <NumberInputField borderRadius="lg" background="white"/>
-            </NumberInput>
+              thousandSeparator={true}
+              defaultValue={ combined?.swapTarget }
+              onValueChange={ value => onChangeSwapRule( 'swapTarget', value ) }
+            />
             <FormLabel fontSize="sm">
               Hits ({ buyHits })
             </FormLabel>

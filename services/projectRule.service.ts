@@ -136,6 +136,18 @@ class ProjectRuleService {
       handleError("Error updating project rule", err)
     }
   }
+
+  deleteRule = async ( id: string ): Promise<boolean> => {
+    try {
+      await http.delete( `project-rule/${ id }`)
+
+      return true
+    } catch( err ) {
+      handleError("Error deleting project rule", err)
+
+      return false
+    }
+  }
 }
 
 export default new ProjectRuleService()

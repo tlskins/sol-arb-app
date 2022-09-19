@@ -22,6 +22,7 @@ import {
   ModalCloseButton,
   Select,
   Stack,
+  Text,
   FormControl,
   FormLabel,
   Input,
@@ -66,6 +67,11 @@ const Navbar = () => {
     onOpen: onOpenCreateProjModal,
     onClose: onCloseCreateProjModal,
   } = useDisclosure()
+  const {
+    isOpen: isConfirmModalOpen,
+    onOpen: onOpenConfirmModal,
+    onClose: onCloseConfirmModalWindow,
+  } = useDisclosure()
 
   const { data: _sessionData, status: sessionStatus } = useSession();
   const sessionData = _sessionData as any
@@ -90,11 +96,21 @@ const Navbar = () => {
   const [searchProjResults, setSearchProjResults] = useState([] as ProjectStat[])
   const searchRef = useRef( undefined as NodeJS.Timeout | undefined )
 
+  const [confirmModal, setConfirmModal] = useGlobalState('confirmModal')
+
   useEffect(() => {
     if ( sessionStatus === "authenticated" ) {
       setAccessToken( sessionData?.token?.access_token )
     }
   }, [sessionStatus])
+
+  useEffect(() => {
+    if ( confirmModal ) {
+      onOpenConfirmModal()
+    } else {
+      onCloseConfirmModal()
+    }
+  }, [confirmModal])
 
   const onSignOut = () => {
     signOut()
@@ -179,7 +195,12 @@ const Navbar = () => {
       if ( projects ) {
         setSearchProjResults( projects )
       }
-    }, 650)
+    }, 350)
+  }
+
+  const onCloseConfirmModal = () => {
+    setConfirmModal(undefined)
+    onCloseConfirmModalWindow()
   }
 
   return (
@@ -421,6 +442,44 @@ const Navbar = () => {
               </Button>
             }
             <Button variant='ghost' onClick={onCloseCreateProjModal}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Confirm Modal */}
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onClose={onCloseConfirmModal}
+        motionPreset='slideInRight'
+        size="sm"
+        isCentered
+      >
+        <ModalOverlay
+          bg='none'
+          backdropFilter='auto'
+          backdropInvert='80%'
+          backdropBlur='2px'
+        />
+        <ModalContent>
+          <ModalHeader>Confirm</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>
+              { confirmModal?.message }
+            </Text>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              isLoading={isCreatingWallet}
+              loadingText='Saving...'
+              colorScheme='teal'
+              variant='solid'
+              onClick={confirmModal?.callback}
+            >
+              Confirm
+            </Button>
+            <Button variant='ghost' onClick={onCloseConfirmModal}>Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

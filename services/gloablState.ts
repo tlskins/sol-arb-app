@@ -4,7 +4,12 @@ import { ITokenSwapRules, ISwapRule } from '../types/swapRules'
 import { IWallet } from '../types/wallet'
 import { ProjectRule } from '../types/projectRules'
 import { Token } from '../types/jupiter'
-import Moment from 'moment-timezone'
+
+
+interface ConfirmModal {
+  message: string,
+  callback: () => {},
+}
 
 const getDefaultState = () => {
   return {
@@ -13,6 +18,7 @@ const getDefaultState = () => {
     projectRules: [] as ProjectRule[],
     wallets: [] as IWallet[],
     tags: [] as string[],
+    confirmModal: undefined as ConfirmModal | undefined,
   }
 }
 export const { useGlobalState, setGlobalState } = createGlobalState(getDefaultState())

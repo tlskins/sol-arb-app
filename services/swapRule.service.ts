@@ -83,6 +83,18 @@ class SwapRuleService {
       return false
     }
   }
+
+  deleteRule = async ( id: string ): Promise<boolean> => {
+    try {
+      await http.delete( `swap-rule/${ id }`)
+
+      return true
+    } catch( err ) {
+      handleError("Error deleting swap rule", err)
+
+      return false
+    }
+  }
 }
 
 export default new SwapRuleService()

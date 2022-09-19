@@ -33,7 +33,7 @@ import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
 import NumberInput from '../components/NumberInput'
-import { UpsertProjectRule } from '../types/projectRules'
+import { ProjectRule, UpsertProjectRule } from '../types/projectRules'
 import { useGlobalState } from '../services/gloablState'
 
 interface TagOption {
@@ -51,7 +51,7 @@ const Home: NextPage = () => {
   const [projectRules, setProjectRules] = useGlobalState('projectRules')
   const [availTags, setAvailTags] = useGlobalState('tags')
   const [projRuleUpdate, setProjRuleUpdate] = useState({} as UpsertProjectRule)
-  const numberTimer = useRef( undefined as NodeJS.Timeout | undefined )
+  const [, setConfirmModal] = useGlobalState('confirmModal')
 
   const {
     isOpen: isUpdating,
@@ -62,6 +62,11 @@ const Home: NextPage = () => {
     isOpen: isRefreshingProjRules,
     onOpen: onRefreshingProjRules,
     onClose: onDoneRefreshingProjRules,
+  } = useDisclosure()
+  const {
+    isOpen: isDeleting,
+    onOpen: onDeleting,
+    onClose: onDeleted,
   } = useDisclosure()
 
   useEffect(() => {
@@ -133,6 +138,23 @@ const Home: NextPage = () => {
     setTagsFilter([...selected.map( opt => opt.value ) as string[]])
   }
 
+  const onDelete = (projRule: ProjectRule) => () => {
+    const projName = projRule.stats?.project?.display_name || "?"
+    setConfirmModal({
+      message: `Are you sure you want to delete the rule for ${ projName }?`,
+      callback: async () => {
+        if ( isDeleting ) {
+          return
+        }
+        onDeleting()
+        await ProjectRuleService.deleteRule( projRule._id )
+        setConfirmModal(undefined)
+        onDeleted()
+        onLoadProjRules()
+      }
+    })
+  }
+
   console.log('nfts', projRuleUpdate )
 
   return (
@@ -165,11 +187,12 @@ const Home: NextPage = () => {
             <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]} mt="6">
               { projectRules.map( projRule => {
                 const combined = projRule && projRuleUpdate._id === projRule._id ? { ...projRule, ...projRuleUpdate } : projRule
+                const projName = projRule.stats?.project?.display_name || "?"
                 return(
                   <AccordionItem key={projRule._id}>
                     <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }} minWidth="full">
                       <Box flex='1' textAlign='left'>
-                        { projRule.stats?.project?.display_name || "?" }
+                        { projName }
                       </Box>
                         { (projRule.stats?.floor_price_1day_change || 0) > 0 ?
                           <IoMdArrowDropup color="green" size="40"/>
@@ -297,6 +320,17 @@ const Home: NextPage = () => {
                         </Stack>
                       </Stack>
 
+                      <Button
+                        isLoading={isDeleting}
+                        loadingText='Deleting...'
+                        marginY="4"
+                        colorScheme='red'
+                        variant='solid'
+                        onClick={onDelete( projRule )}
+                      >
+                        Delete
+                      </Button>
+
                       { projRule._id === projRuleUpdate._id &&
                         <Button
                           isLoading={isUpdating}
@@ -309,6 +343,7 @@ const Home: NextPage = () => {
                           Save
                         </Button>
                       }
+
                     </AccordionPanel>
                   </AccordionItem>
                 )

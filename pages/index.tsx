@@ -44,6 +44,7 @@ const Home: NextPage = () => {
   const sessionData = _sessionData as any
   const [tokenSwapRules, setTokenSwapRules] = useGlobalState('tokenSwapRules')
   const [wallets, setWallets] = useGlobalState('wallets')
+  const [, setConfirmModal] = useGlobalState('confirmModal')
   const [swapRuleUpdate, setSwapRuleUpdate] = useState({} as IUpdateSwapRule)
   const {
     isOpen: isUpdating,
@@ -55,11 +56,15 @@ const Home: NextPage = () => {
     onOpen: onRefreshingSwapRules,
     onClose: onDoneRefreshingSwapRules,
   } = useDisclosure()
-
   const {
     isOpen: isChecking,
     onOpen: onChecking,
     onClose: onDoneChecking,
+  } = useDisclosure()
+  const {
+    isOpen: isDeleting,
+    onOpen: onDeleting,
+    onClose: onDeleted,
   } = useDisclosure()
 
   useEffect(() => {
@@ -152,6 +157,22 @@ const Home: NextPage = () => {
       onLoadSwapRules()
     }
     onDoneChecking()
+  }
+
+  const onDelete = (swapRule: ISwapRule) => () => {
+    setConfirmModal({
+      message: `Are you sure you want to delete the rule for ${ swapRule.swapToken?.symbol || "?" }?`,
+      callback: async () => {
+        if ( isDeleting ) {
+          return
+        }
+        onDeleting()
+        await SwapRuleService.deleteRule( swapRule._id )
+        setConfirmModal(undefined)
+        onDeleted()
+        onLoadSwapRules()
+      }
+    })
   }
 
   return (
@@ -506,6 +527,17 @@ const Home: NextPage = () => {
                                   </FormControl>
                                   
                                 </SimpleGrid>
+
+                                <Button
+                                  isLoading={isDeleting}
+                                  loadingText='Deleting...'
+                                  marginY="4"
+                                  colorScheme='red'
+                                  variant='solid'
+                                  onClick={onDelete( swapRule )}
+                                >
+                                  Delete
+                                </Button>
 
                                 { swapRuleUpdate._id &&
                                   <Button

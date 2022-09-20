@@ -252,7 +252,7 @@ const Home: NextPage = () => {
                       <Stack direction="row" py="2">
                         <Stat>
                           <StatLabel>Floor</StatLabel>
-                          <StatNumber>{ projRule.stats?.floor_price || "?" }</StatNumber>
+                          <StatNumber>{ projRule.stats?.floor_price?.toFixed(2) || "?" }</StatNumber>
                           <StatHelpText>{ projRule.stats?.floor_price_1day_change?.toFixed(2) || "?" } 1 day change</StatHelpText>
                         </Stat>
 

@@ -405,7 +405,7 @@ const Navbar = () => {
                       <FormLabel fontSize="sm">Fixed Change</FormLabel>
                       <NumberInput
                         thousandSeparator={true}
-                        defaultValue={ createProjRule.fixedPriceChange }
+                        value={ createProjRule.fixedPriceChange }
                         onValueChange={ value => setCreateProjRule({ ...createProjRule, fixedPriceChange: value }) }
                       />
                     </Stack>

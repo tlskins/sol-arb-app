@@ -279,12 +279,12 @@ const Home: NextPage = () => {
                       <Stack direction="row" py="2">
                         <Stat>
                           <StatLabel>Last Support</StatLabel>
-                          <StatNumber>{ projRule.lastSupport || "N/A" }</StatNumber>
+                          <StatNumber>{ projRule.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
                         </Stat>
 
                         <Stat>
                           <StatLabel>Testing Support</StatLabel>
-                          <StatNumber>{ projRule.newSupportTest || "N/A" }</StatNumber>
+                          <StatNumber>{ projRule.newSupportTest?.toFixed( 2 ) || "N/A" }</StatNumber>
                         </Stat>
                       </Stack>
 

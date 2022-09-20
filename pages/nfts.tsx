@@ -109,6 +109,23 @@ const Home: NextPage = () => {
     setProjRuleUpdate( update )
   }
 
+  const onChangeProjRules = ( ruleId: string, keys: string[], values: any[] ) => {
+    console.log('onChangeProjRule', ruleId, keys, values )
+    const rule = projectRules.find( rule => rule._id === ruleId )
+    if ( !rule ) return
+    let update = { ...projRuleUpdate }
+    if ( projRuleUpdate._id !== rule._id) {
+      update = { _id: rule._id }
+    }
+
+    keys.forEach((key,i) => {
+      const value = values[i]
+      // @ts-ignore: dynamic access
+      update[key] = value
+    })
+    setProjRuleUpdate( update )
+  }
+
   const onUpdateProjRule = async () => {
     if ( !projRuleUpdate._id ) return
     onUpdating()
@@ -178,7 +195,7 @@ const Home: NextPage = () => {
         <Select
           closeMenuOnSelect={false}
           components={animatedComponents}
-          defaultValue={tagsFilter.map( f => ({ value: f, label: f }))}
+          value={tagsFilter.map( f => ({ value: f, label: f }))}
           onChange={ onChangeTagsFilter }
           options={availTags.map( t => ({ value: t, label: t }))}
           isMulti
@@ -206,6 +223,20 @@ const Home: NextPage = () => {
                     </AccordionButton>
 
                     <AccordionPanel minWidth="full" paddingX="0.5" paddingY="3">
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Active?</FormLabel>
+                          <Checkbox
+                            background="white"
+                            isChecked={ combined.active }
+                            onChange={ e => onChangeProjRule( projRule._id, 'active', e.target.checked ) }
+                            borderRadius="lg"
+                            size="lg"
+                          />
+                        </Stack>
+                      </Stack>
+
                       <FormControl>
                         <FormLabel>
                           Tags
@@ -213,7 +244,7 @@ const Home: NextPage = () => {
                         <CreatableSelect
                           isMulti
                           onChange={onChangeTags( projRule._id )}
-                          defaultValue={(projRule.tags || []).map( t => ({ value: t, label: t }))}
+                          value={(projRule.tags || []).map( t => ({ value: t, label: t }))}
                           options={availTags.map( t => ({ value: t, label: t }))}
                         />
                       </FormControl>
@@ -244,105 +275,6 @@ const Home: NextPage = () => {
                           <StatHelpText>{ ((projRule.stats?.volume_1day_change || 0.0) * 100).toFixed(1) }% change</StatHelpText>
                         </Stat>
                       </Stack>
-                      
-                      <Stack direction="row" fontSize="sm" fontWeight="bold">
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Active?</FormLabel>
-                          <Checkbox
-                            background="white"
-                            isChecked={ combined.active }
-                            onChange={ e => onChangeProjRule( projRule._id, 'active', e.target.checked ) }
-                            borderRadius="lg"
-                            size="lg"
-                          />
-                        </Stack>
-                      </Stack>
-
-                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Fixed Change</FormLabel>
-                          <NumberInput
-                            thousandSeparator={true}
-                            defaultValue={ combined.fixedPriceChange }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'fixedPriceChange', value )}
-                          />
-                        </Stack>
-
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Crit-Fixed Change</FormLabel>
-                          <NumberInput
-                            thousandSeparator={true}
-                            defaultValue={ combined.critFixedPriceChange }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'critFixedPriceChange', value )}
-                          />
-                        </Stack>
-                      </Stack>
-
-                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Floor Below</FormLabel>
-                          <NumberInput
-                            thousandSeparator={true}
-                            defaultValue={ combined.floorBelow }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorBelow', value )}
-                          />
-                        </Stack>
-
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">On?</FormLabel>
-                          <Checkbox
-                            background="white"
-                            isChecked={ combined.floorBelowOn }
-                            onChange={ e => onChangeProjRule( projRule._id, 'floorBelowOn', e.target.checked ) }
-                            borderRadius="lg"
-                            size="lg"
-                          />
-                        </Stack>
-                      </Stack>
-
-                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Floor Above</FormLabel>
-                          <NumberInput
-                            thousandSeparator={true}
-                            defaultValue={ combined.floorAbove }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorAbove', value )}
-                          />
-                        </Stack>
-
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">On?</FormLabel>
-                          <Checkbox
-                            background="white"
-                            isChecked={ combined.floorAboveOn }
-                            onChange={ e => onChangeProjRule( projRule._id, 'floorAboveOn', e.target.checked ) }
-                            borderRadius="lg"
-                            size="lg"
-                          />
-                        </Stack>
-                      </Stack>
-
-                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Last Support</FormLabel>
-                          <NumberInput
-                            thousandSeparator={true}
-                            defaultValue={ combined.floorAbove }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorAbove', value )}
-                          />
-                        </Stack>
-
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">On?</FormLabel>
-                          <Checkbox
-                            background="white"
-                            isChecked={ combined.floorAboveOn }
-                            onChange={ e => onChangeProjRule( projRule._id, 'floorAboveOn', e.target.checked ) }
-                            borderRadius="lg"
-                            size="lg"
-                          />
-                        </Stack>
-                      </Stack>
 
                       <Stack direction="row" py="2">
                         <Stat>
@@ -361,8 +293,16 @@ const Home: NextPage = () => {
                           <FormLabel fontSize="sm">Support Break %</FormLabel>
                           <NumberInput
                             thousandSeparator={false}
-                            defaultValue={ combined.supportBreakPct }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'supportBreakPct', value )}
+                            value={ combined.supportBreakPct }
+                            onValueChange={ value => {
+                              const keys = ['supportBreakPct']
+                              const values = [value]
+                              if ( combined.stopPct == null && value !== null ) {
+                                keys.push('stopPct')
+                                values.push(value * .2)
+                              }
+                              onChangeProjRules( projRule._id, keys, values )
+                            }}
                           />
                         </Stack>
 
@@ -370,7 +310,7 @@ const Home: NextPage = () => {
                           <FormLabel fontSize="sm">Stop %</FormLabel>
                           <NumberInput
                             thousandSeparator={false}
-                            defaultValue={ combined.stopPct }
+                            value={ combined.stopPct }
                             onValueChange={ value => onChangeProjRule( projRule._id, 'stopPct', value )}
                           />
                         </Stack>
@@ -392,6 +332,70 @@ const Home: NextPage = () => {
                           </SelectOptions>
                         </FormControl>
                       }
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Fixed Change</FormLabel>
+                          <NumberInput
+                            thousandSeparator={true}
+                            value={ combined.fixedPriceChange }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'fixedPriceChange', value )}
+                          />
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Crit-Fixed Change</FormLabel>
+                          <NumberInput
+                            thousandSeparator={true}
+                            value={ combined.critFixedPriceChange }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'critFixedPriceChange', value )}
+                          />
+                        </Stack>
+                      </Stack>
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Floor Below</FormLabel>
+                          <NumberInput
+                            thousandSeparator={true}
+                            value={ combined.floorBelow }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorBelow', value )}
+                          />
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">On?</FormLabel>
+                          <Checkbox
+                            background="white"
+                            isChecked={ combined.floorBelowOn }
+                            onChange={ e => onChangeProjRule( projRule._id, 'floorBelowOn', e.target.checked ) }
+                            borderRadius="lg"
+                            size="lg"
+                          />
+                        </Stack>
+                      </Stack>
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Floor Above</FormLabel>
+                          <NumberInput
+                            thousandSeparator={true}
+                            value={ combined.floorAbove }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorAbove', value )}
+                          />
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">On?</FormLabel>
+                          <Checkbox
+                            background="white"
+                            isChecked={ combined.floorAboveOn }
+                            onChange={ e => onChangeProjRule( projRule._id, 'floorAboveOn', e.target.checked ) }
+                            borderRadius="lg"
+                            size="lg"
+                          />
+                        </Stack>
+                      </Stack>
 
                       <Button
                         isLoading={isDeleting}

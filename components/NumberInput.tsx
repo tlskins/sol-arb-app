@@ -1,23 +1,28 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { NumericFormat } from 'react-number-format'
 
 const NumberInput = ({
-  defaultValue,
+  value,
   onValueChange,
   thousandSeparator,
   delay,
   maxWidth,
   onlyInt,
 }: {
-  defaultValue: number | null | undefined,
+  value: number | null | undefined,
   onValueChange: (arg0: number | null) => void,
   thousandSeparator?: boolean,
   delay?: number,
   maxWidth?: number
   onlyInt?: boolean
 }) => {
+  const [localValue, setLocalValue] = useState(value || "")
   const numberTimer = useRef( undefined as NodeJS.Timeout | undefined )
   const onChangeDelay = delay == undefined ? 300 : delay
+
+  useEffect(() => {
+    setLocalValue(value || "")
+  }, [value])
 
   return(
     <NumericFormat
@@ -28,7 +33,9 @@ const NumberInput = ({
         maxWidth: `${maxWidth || 85}px`
       }}
       thousandSeparator={thousandSeparator}
-      defaultValue={ defaultValue }
+      // defaultValue={ defaultValue }
+      value={ localValue }
+      onChange={ e => setLocalValue(e.target.value) }
       onValueChange={ values => {
         if ( numberTimer.current ) {
           clearTimeout( numberTimer.current )

@@ -336,7 +336,7 @@ const Chart: NextPage = () => {
             </FormLabel>
             <NumberInput
               thousandSeparator={true}
-              defaultValue={ combined?.baseTarget }
+              value={ combined?.baseTarget }
               onValueChange={ value => onChangeSwapRule( 'baseTarget', value ) }
             />
             <FormLabel fontSize="sm">
@@ -350,7 +350,7 @@ const Chart: NextPage = () => {
             </FormLabel>
             <NumberInput
               thousandSeparator={true}
-              defaultValue={ combined?.swapTarget }
+              value={ combined?.swapTarget }
               onValueChange={ value => onChangeSwapRule( 'swapTarget', value ) }
             />
             <FormLabel fontSize="sm">

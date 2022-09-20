@@ -332,7 +332,7 @@ const Home: NextPage = () => {
                                       <NumberInput
                                         onlyInt={true}
                                         maxWidth={50}
-                                        defaultValue={ combined.decimals }
+                                        value={ combined.decimals }
                                         onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'decimals', value) }
                                       />
                                     </FormControl>
@@ -342,7 +342,7 @@ const Home: NextPage = () => {
                                       <NumberInput
                                         onlyInt={true}
                                         maxWidth={50}
-                                        defaultValue={ combined.slippage }
+                                        value={ combined.slippage }
                                         onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'decimals', value) }
                                       />
                                     </FormControl>
@@ -435,7 +435,7 @@ const Home: NextPage = () => {
                                           Amount { combined.baseToken.symbol }
                                         </FormLabel>
                                         <NumberInput
-                                          defaultValue={ combined.baseInput }
+                                          value={ combined.baseInput }
                                           onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', value) }
                                         />
                                       </FormControl>
@@ -445,7 +445,7 @@ const Home: NextPage = () => {
                                           Buy Below
                                         </FormLabel>
                                         <NumberInput
-                                          defaultValue={ combined.swapTarget }
+                                          value={ combined.swapTarget }
                                           onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapTarget', value) }
                                         />
                                       </FormControl>
@@ -461,7 +461,7 @@ const Home: NextPage = () => {
                                           Amount { combined.swapToken.symbol }
                                         </FormLabel>
                                         <NumberInput
-                                          defaultValue={ combined.swapInput }
+                                          value={ combined.swapInput }
                                           onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', value) }
                                         />
                                       </FormControl>
@@ -471,7 +471,7 @@ const Home: NextPage = () => {
                                           Sell Above
                                         </FormLabel>
                                         <NumberInput
-                                          defaultValue={ combined.baseTarget }
+                                          value={ combined.baseTarget }
                                           onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseTarget', value) }
                                         />
                                       </FormControl>
@@ -497,7 +497,7 @@ const Home: NextPage = () => {
                                   <FormControl>
                                     <FormLabel fontSize="sm">Fixed Change</FormLabel>
                                     <NumberInput
-                                      defaultValue={ combined.buyAlertSettings?.fixedPriceChange }
+                                      value={ combined.buyAlertSettings?.fixedPriceChange }
                                       onValueChange={ value => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'buyAlertSettings', 'fixedPriceChange', value) }
                                     />
                                   </FormControl>
@@ -505,7 +505,7 @@ const Home: NextPage = () => {
                                   <FormControl>
                                     <FormLabel fontSize="sm">Fixed Change</FormLabel>
                                     <NumberInput
-                                      defaultValue={ combined.sellAlertSettings?.fixedPriceChange }
+                                      value={ combined.sellAlertSettings?.fixedPriceChange }
                                       onValueChange={ value => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'sellAlertSettings', 'fixedPriceChange', value) }
                                     />
                                   </FormControl>

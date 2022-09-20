@@ -40,6 +40,10 @@ class ProjectRuleService {
       floorAboveOn: false,
       floorBelow: null,
       floorBelowOn: false,
+      lastSupport: null,
+      newSupportTest: null,
+      supportBreakPct: null,
+      stopPct: null,
     } as ProjectRule
   }
 
@@ -110,6 +114,8 @@ class ProjectRuleService {
         floorAboveOn: rule.floorAboveOn,
         floorBelow: rule.floorBelow,
         floorBelowOn: rule.floorBelowOn,
+        supportBreakPct: rule.supportBreakPct,
+        stopPct: rule.stopPct,
       } )
 
       return resp.data
@@ -129,6 +135,8 @@ class ProjectRuleService {
         floorAboveOn: update.floorAboveOn,
         floorBelow: update.floorBelow,
         floorBelowOn: update.floorBelowOn,
+        supportBreakPct: update.supportBreakPct,
+        stopPct: update.stopPct,
       } )
 
       return resp.data

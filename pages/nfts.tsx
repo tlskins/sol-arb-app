@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from "next-auth/react"
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Accordion,
   AccordionIcon,
@@ -15,6 +15,7 @@ import {
   Stack,
   Checkbox,
   useDisclosure,
+  Select as SelectOptions,
   Stat,
   StatLabel,
   StatNumber,
@@ -35,6 +36,7 @@ import Navbar from '../components/Navbar'
 import NumberInput from '../components/NumberInput'
 import { ProjectRule, UpsertProjectRule } from '../types/projectRules'
 import { useGlobalState } from '../services/gloablState'
+import moment from 'moment-timezone'
 
 interface TagOption {
   value: string,
@@ -216,7 +218,7 @@ const Home: NextPage = () => {
                         />
                       </FormControl>
 
-                      <Stack direction="row" py="6">
+                      <Stack direction="row" py="2">
                         <Stat>
                           <StatLabel>Floor</StatLabel>
                           <StatNumber>{ projRule.stats?.floor_price || "?" }</StatNumber>
@@ -230,7 +232,7 @@ const Home: NextPage = () => {
                         </Stat>
                       </Stack>
 
-                      <Stack direction="row">
+                      <Stack direction="row" py="2">
                         <Stat>
                           <StatLabel>Vol 1Hr</StatLabel>
                           <StatNumber>{ projRule.stats?.volume_1hr || "?" }</StatNumber>
@@ -320,6 +322,77 @@ const Home: NextPage = () => {
                         </Stack>
                       </Stack>
 
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Last Support</FormLabel>
+                          <NumberInput
+                            thousandSeparator={true}
+                            defaultValue={ combined.floorAbove }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'floorAbove', value )}
+                          />
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">On?</FormLabel>
+                          <Checkbox
+                            background="white"
+                            isChecked={ combined.floorAboveOn }
+                            onChange={ e => onChangeProjRule( projRule._id, 'floorAboveOn', e.target.checked ) }
+                            borderRadius="lg"
+                            size="lg"
+                          />
+                        </Stack>
+                      </Stack>
+
+                      <Stack direction="row" py="2">
+                        <Stat>
+                          <StatLabel>Last Support</StatLabel>
+                          <StatNumber>{ projRule.lastSupport || "N/A" }</StatNumber>
+                        </Stat>
+
+                        <Stat>
+                          <StatLabel>Testing Support</StatLabel>
+                          <StatNumber>{ projRule.newSupportTest || "N/A" }</StatNumber>
+                        </Stat>
+                      </Stack>
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Support Break %</FormLabel>
+                          <NumberInput
+                            thousandSeparator={false}
+                            defaultValue={ combined.supportBreakPct }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'supportBreakPct', value )}
+                          />
+                        </Stack>
+
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Stop %</FormLabel>
+                          <NumberInput
+                            thousandSeparator={false}
+                            defaultValue={ combined.stopPct }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'stopPct', value )}
+                          />
+                        </Stack>
+                      </Stack>
+
+                      { (combined.supportHistory?.length || 0) > 0 &&
+                        <FormControl fontSize="sm">
+                          <SelectOptions size="sm"
+                            fontSize="sm"
+                            background="white"
+                            borderRadius="lg"
+                          >
+                            <option value="">Support History</option>
+                            { (combined?.supportHistory || []).map( ({ timestamp, floor }) => <option
+                              key={timestamp}
+                            >
+                              { floor } @ { moment( timestamp ).format('MMM D hh:mm a') }
+                            </option> )}
+                          </SelectOptions>
+                        </FormControl>
+                      }
+
                       <Button
                         isLoading={isDeleting}
                         loadingText='Deleting...'
@@ -335,7 +408,7 @@ const Home: NextPage = () => {
                         <Button
                           isLoading={isUpdating}
                           loadingText='Saving...'
-                          marginY="4"
+                          margin="4"
                           colorScheme='teal'
                           variant='solid'
                           onClick={onUpdateProjRule}

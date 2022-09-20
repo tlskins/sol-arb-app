@@ -17,7 +17,19 @@ export interface ProjectRule {
   floorBelow: number | null,
   floorBelowOn: boolean
 
+  // stop loss gain
+  lastSupport: number | null,
+  newSupportTest: number | null,
+  supportBreakPct: number | null, // % change to trigger a break in support
+  stopPct: number | null, // % change to trigger a reversion from a break
+  supportHistory: FloorSnap[] | null,
+
   stats?: ProjectStat
+}
+
+interface FloorSnap {
+  floor: number,
+  timestamp: string,
 }
 
 export interface UpsertProjectRule {
@@ -38,6 +50,13 @@ export interface UpsertProjectRule {
   floorAboveOn?: boolean,
   floorBelow?: number | null,
   floorBelowOn?: boolean
+
+  // stop loss gain
+  lastSupport?: number | null,
+  newSupportTest?: number | null,
+  supportBreakPct?: number | null, // % change to trigger a break in support
+  stopPct?: number | null, // % change to trigger a reversion from a break
+  supportHistory?: FloorSnap[] | null,
 }
 
 // hyperspace

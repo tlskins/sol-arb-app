@@ -379,9 +379,9 @@ const Home: NextPage = () => {
                         </Stat>
 
                         <Stat>
-                          <StatLabel>Listed</StatLabel>
+                          <StatLabel>Listed ({ ((projRule.stats?.num_of_token_listed || 1) / (projRule.stats?.percentage_of_token_listed || 1)).toFixed() } total)</StatLabel>
                           <StatNumber>{ ((projRule.stats?.percentage_of_token_listed || 0.0) * 100).toFixed(1) }%</StatNumber>
-                          <StatHelpText>{ projRule.stats?.num_of_token_listed || "?" } listed</StatHelpText>
+                          <StatHelpText>{ projRule.stats?.num_of_token_listed || "?" } listed | { projRule.stats?.num_of_token_holders || "?" } holders</StatHelpText>
                         </Stat>
                       </Stack>
 

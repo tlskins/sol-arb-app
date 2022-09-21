@@ -43,6 +43,14 @@ interface TagOption {
   label: string,
 }
 
+const ActionsMode = 'Actions'
+const BulkUpdateStopLoss = 'Bulk Update Stop Loss / Gain %s'
+
+const Modes = [
+  ActionsMode,
+  BulkUpdateStopLoss,
+]
+
 // let numberTimer = undefined as NodeJS.Timeout | undefined
 
 const Home: NextPage = () => {
@@ -54,6 +62,10 @@ const Home: NextPage = () => {
   const [availTags, setAvailTags] = useGlobalState('tags')
   const [projRuleUpdate, setProjRuleUpdate] = useState({} as UpsertProjectRule)
   const [, setConfirmModal] = useGlobalState('confirmModal')
+  const [selectedRules, setSelectedRules] = useState(undefined as {[key: string]: ProjectRule | undefined} | undefined)
+  const [selectedMode, setSelectedMode] = useState(ActionsMode as string | undefined)
+  const [bulkSupporBreakPct, setBulkSupportBreakPct] = useState(25 as number | null)
+  const [bulkStopPct, setBulkStopPct] = useState(5 as number | null)
 
   const {
     isOpen: isUpdating,
@@ -69,6 +81,11 @@ const Home: NextPage = () => {
     isOpen: isDeleting,
     onOpen: onDeleting,
     onClose: onDeleted,
+  } = useDisclosure()
+  const {
+    isOpen: isBulkStopLoss,
+    onOpen: onBulkStopLoss,
+    onClose: onDidBulkStopLoss,
   } = useDisclosure()
 
   useEffect(() => {
@@ -174,6 +191,46 @@ const Home: NextPage = () => {
     })
   }
 
+  const onSelectMode = (mode: string | undefined) => {
+    if ( mode === BulkUpdateStopLoss ) {
+      setSelectedRules({})
+    }
+    setSelectedMode(mode)
+  }
+
+  const onSelectAll = (selected: boolean) => {
+    if ( selected ) {
+      setSelectedRules(projectRules.reduce((acc, projRule) => {
+        acc[projRule._id] = projRule
+        return acc
+      }, {} as { [key: string]: ProjectRule}))
+    } else {
+      setSelectedRules({})
+    }
+  }
+
+  const onBulkUpdateStopLoss = async () => {
+    if ( isBulkStopLoss || !selectedRules ) {
+      return
+    }
+    onBulkStopLoss()
+    const bulkRules = Object.values( selectedRules )
+    for (let i=0; i < bulkRules.length; i++ ) {
+      const projRule = bulkRules[i]
+      if ( !projRule ) continue
+      await ProjectRuleService.updateRule(projRule._id, {
+        _id: projRule._id,
+        supportBreakPct: bulkSupporBreakPct,
+        stopPct: bulkStopPct,
+      })
+    }
+    onDidBulkStopLoss()
+    onSelectMode(undefined)
+    setSelectedRules(undefined)
+    onLoadProjRules()
+    onSelectMode(ActionsMode)
+  }
+
   console.log('nfts', projRuleUpdate )
 
   return (
@@ -201,9 +258,65 @@ const Home: NextPage = () => {
           isMulti
         />
 
+        <SelectOptions mt="4" onChange={ e => onSelectMode(e.target.value)} value={selectedMode}>
+          { Modes.map( mode => (
+            <option key={mode} value={mode}> { mode }</option>
+          ))}
+        </SelectOptions>
+
+        <Stack direction="row" mt="2" alignItems="center" alignContent="center" justifyContent="center">
+          { selectedMode === BulkUpdateStopLoss &&
+            <>
+              <Stack direction="column" alignItems="center" alignContent="center" justifyContent="left" m="2">
+                <FormLabel fontSize="xs">Support Break%</FormLabel>
+                <NumberInput
+                  thousandSeparator={false}
+                  value={ bulkSupporBreakPct }
+                  onValueChange={ value => setBulkSupportBreakPct(value)}
+                />
+              </Stack>
+
+              <Stack direction="column" alignItems="center" alignContent="center" justifyContent="left" m="2">
+                <FormLabel fontSize="xs">Stop%</FormLabel>
+                <NumberInput
+                  thousandSeparator={false}
+                  value={ bulkStopPct }
+                  onValueChange={ value => setBulkStopPct(value)}
+                />
+              </Stack>
+
+              <Button
+                isLoading={isBulkStopLoss}
+                loadingText='Updating...'
+                marginY="4"
+                colorScheme='yellow'
+                variant='solid'
+                onClick={onBulkUpdateStopLoss}
+              >
+                Save
+              </Button>
+            </>
+          }
+        </Stack>
+
         { projectRules && projectRules.length > 0 &&
-          <>
-            <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]} mt="6">
+          <Box mt="6">
+            { selectedRules &&
+              <Stack direction="row" mt="2" alignItems="center" alignContent="right" justifyContent="right" width="full">
+                <FormLabel>
+                  Select All
+                </FormLabel>
+                <Checkbox
+                  background="white"
+                  isChecked={ Object.keys( selectedRules ).length === projectRules.length }
+                  onChange={ e => onSelectAll(e.target.checked) }
+                  borderRadius="lg"
+                  size="lg"
+                />
+              </Stack>
+            }
+
+            <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]} mt="1">
               { projectRules.map( projRule => {
                 const combined = projRule && projRuleUpdate._id === projRule._id ? { ...projRule, ...projRuleUpdate } : projRule
                 const projName = projRule.stats?.project?.display_name || "?"
@@ -213,17 +326,26 @@ const Home: NextPage = () => {
                       <Box flex='1' textAlign='left'>
                         { projName }
                       </Box>
-                        { (projRule.stats?.floor_price_1day_change || 0) > 0 ?
-                          <IoMdArrowDropup color="green" size="40"/>
-                          :
-                          <IoMdArrowDropdown color="red" size="40"/>
-                        }
-                        { projRule.stats?.floor_price?.toFixed(2) || "?" }
-                      <AccordionIcon />
+                      { (projRule.stats?.floor_price_1day_change || 0) > 0 ?
+                        <IoMdArrowDropup color="green" size="35"/>
+                        :
+                        <IoMdArrowDropdown color="red" size="35"/>
+                      }
+
+                      { projRule.stats?.floor_price?.toFixed(2) || "?" } ({ ((projRule.stats?.percentage_of_token_listed || 0.0) * 100).toFixed(1) }%)
+
+                      { selectedRules &&
+                        <Checkbox
+                          background="white"
+                          isChecked={ !!selectedRules[projRule._id] }
+                          onChange={ e => setSelectedRules({ ...selectedRules, [projRule._id]: e.target.checked ? projRule : undefined }) }
+                          borderRadius="lg"
+                          size="lg"
+                        />
+                      }
                     </AccordionButton>
 
-                    <AccordionPanel minWidth="full" paddingX="0.5" paddingY="3">
-
+                    <AccordionPanel minWidth="full" py="3" px="2" bg="blue.100">
                       <Stack direction="row" fontSize="sm" fontWeight="bold">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                           <FormLabel fontSize="sm">Active?</FormLabel>
@@ -249,7 +371,7 @@ const Home: NextPage = () => {
                         />
                       </FormControl>
 
-                      <Stack direction="row" py="2">
+                      <Stack direction="row" mt="2" mb="1">
                         <Stat>
                           <StatLabel>Floor</StatLabel>
                           <StatNumber>{ projRule.stats?.floor_price?.toFixed(2) || "?" }</StatNumber>
@@ -263,7 +385,7 @@ const Home: NextPage = () => {
                         </Stat>
                       </Stack>
 
-                      <Stack direction="row" py="2">
+                      <Stack direction="row" py="1">
                         <Stat>
                           <StatLabel>Vol 1Hr</StatLabel>
                           <StatNumber>{ projRule.stats?.volume_1hr || "?" }</StatNumber>
@@ -276,7 +398,7 @@ const Home: NextPage = () => {
                         </Stat>
                       </Stack>
 
-                      <Stack direction="row" py="2">
+                      <Stack direction="row" py="1">
                         <Stat>
                           <StatLabel>Last Support</StatLabel>
                           <StatNumber>{ projRule.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
@@ -290,7 +412,7 @@ const Home: NextPage = () => {
 
                       <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Support Break %</FormLabel>
+                          <FormLabel fontSize="sm">Support Break%</FormLabel>
                           <NumberInput
                             thousandSeparator={false}
                             value={ combined.supportBreakPct }
@@ -307,7 +429,7 @@ const Home: NextPage = () => {
                         </Stack>
 
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Stop %</FormLabel>
+                          <FormLabel fontSize="sm">Stop%</FormLabel>
                           <NumberInput
                             thousandSeparator={false}
                             value={ combined.stopPct }
@@ -344,7 +466,7 @@ const Home: NextPage = () => {
                         </Stack>
 
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Crit-Fixed Change</FormLabel>
+                          <FormLabel fontSize="sm">Crit Change</FormLabel>
                           <NumberInput
                             thousandSeparator={true}
                             value={ combined.critFixedPriceChange }
@@ -426,7 +548,7 @@ const Home: NextPage = () => {
                 )
               })}
             </Accordion>
-          </>
+          </Box>
         }
 
         <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">

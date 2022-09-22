@@ -544,6 +544,7 @@ const Home: NextPage = () => {
                                     colorScheme='teal'
                                     variant='solid'
                                     onClick={onUpdateSwapRule}
+                                    mx="4"
                                   >
                                     Save
                                   </Button>

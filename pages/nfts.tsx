@@ -559,7 +559,7 @@ const Home: NextPage = () => {
                         <Button
                           isLoading={isUpdating}
                           loadingText='Saving...'
-                          margin="4"
+                          mx="4"
                           colorScheme='teal'
                           variant='solid'
                           onClick={onUpdateProjRule}

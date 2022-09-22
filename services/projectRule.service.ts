@@ -49,7 +49,7 @@ class ProjectRuleService {
 
   getRule = async (id: string): Promise<ProjectRule | undefined> => {
     try {
-      const resp: IResponse<ProjectRuleResp> = await http.get( `project-rule/${ id }` )
+      const resp: IResponse<ProjectRuleResp> = await http.get( `project-stats/${ id }` )
       
       return resp.data.projectRule
     } catch( err ) {
@@ -67,11 +67,11 @@ class ProjectRuleService {
     }
   }
 
-  getProjectStats = async (projId: string): Promise<ProjectStat | undefined> => {
+  getProjectStats = async (projId: string): Promise<ProjectRule | undefined> => {
     try {
-      const resp: IResponse<ProjectStatsResp> = await http.get( `project-stats/${ projId }` )
+      const resp: IResponse<ProjectRuleResp> = await http.get( `project-stats/${ projId }` )
       
-      return resp.data.projectStats
+      return resp.data.projectRule
     } catch( err ) {
       handleError("Error getting project stats", err)
     }

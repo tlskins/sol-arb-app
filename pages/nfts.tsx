@@ -2,9 +2,9 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import {
   Accordion,
-  AccordionIcon,
   AccordionItem,
   AccordionButton,
   AccordionPanel,
@@ -22,12 +22,14 @@ import {
   StatHelpText,
   FormControl,
 } from '@chakra-ui/react'
+import { FaChartLine } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { IoMdArrowDropdown, IoMdArrowDropup } from 'react-icons/io'
 import CreatableSelect from 'react-select/creatable'
 import { ActionMeta, OnChangeValue } from 'react-select'
 import Select, { OptionsOrGroups, GroupBase } from 'react-select'
 import makeAnimated from 'react-select/animated'
+import { ChartRangeFilters } from './nftchart'
 
 import ProjectRuleService from '../services/projectRule.service'
 import { setAccessToken } from '../http-common'
@@ -54,6 +56,7 @@ const Modes = [
 // let numberTimer = undefined as NodeJS.Timeout | undefined
 
 const Home: NextPage = () => {
+  const router = useRouter()
   const animatedComponents = makeAnimated()
   const { data: _sessionData } = useSession()
   const sessionData = _sessionData as any
@@ -100,7 +103,7 @@ const Home: NextPage = () => {
   }, [tagsFilter])
 
   const onLoadProjRules = async () => {
-    if ( !sessionData ) {
+    if ( !sessionData || isRefreshingProjRules ) {
       return
     }
     onRefreshingProjRules()
@@ -196,6 +199,10 @@ const Home: NextPage = () => {
       setSelectedRules({})
     }
     setSelectedMode(mode)
+  }
+
+  const onOpenNftChart = (projRule: ProjectRule, filterId: string) => {
+    router.push(`nftchart/?projId=${projRule.projectId}&filterId=${filterId}`)
   }
 
   const onSelectAll = (selected: boolean) => {
@@ -357,6 +364,24 @@ const Home: NextPage = () => {
                             size="lg"
                           />
                         </Stack>
+
+                        <FormControl fontSize="sm">
+                          <SelectOptions size="sm"
+                            fontSize="sm"
+                            icon={<FaChartLine />}
+                            background="white"
+                            borderRadius="lg"
+                            onChange={ e => onOpenNftChart(projRule, e.target.value) }
+                          >
+                            <option value="">Chart</option>
+                            { ChartRangeFilters.map( ({ id }) => <option
+                              key={id}
+                              value={id}
+                            >
+                              { id }
+                            </option> )}
+                          </SelectOptions>
+                        </FormControl>
                       </Stack>
 
                       <FormControl>

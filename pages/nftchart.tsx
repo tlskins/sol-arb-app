@@ -148,6 +148,7 @@ const NftChart: NextPage = () => {
         theme: 'dark',
         position: toast.POSITION.TOP_CENTER,
       })
+      onLoadProjRule()
     }
     onUpdated()
   }

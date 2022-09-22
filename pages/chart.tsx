@@ -150,6 +150,7 @@ const Chart: NextPage = () => {
         theme: 'dark',
         position: toast.POSITION.TOP_CENTER,
       })
+      onLoadSwapRule()
     }
     onUpdated()
   }

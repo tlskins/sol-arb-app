@@ -576,7 +576,7 @@ const Home: NextPage = () => {
           </Box>
         }
 
-        <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.300" width="full" pb="4">
+        <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
           <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
             <Button
               isLoading={isRefreshingProjRules}

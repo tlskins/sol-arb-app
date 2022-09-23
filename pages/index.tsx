@@ -209,458 +209,458 @@ const Home: NextPage = () => {
         </Text>
 
         { tokenSwapRules && tokenSwapRules.length > 0 &&
-          <>
-            <Accordion minWidth="full" allowMultiple={true} defaultIndex={Array.from(Array(tokenSwapRules.length).keys())}>
-              { tokenSwapRules.map( (tokenSwapRule) => {
-                return(
-                  <AccordionItem key={tokenSwapRule.swapTokenSymbol}>
+          <Accordion minWidth="full" allowMultiple={true} defaultIndex={Array.from(Array(tokenSwapRules.length).keys())}>
+            { tokenSwapRules.map( (tokenSwapRule) => {
+              return(
+                <AccordionItem key={tokenSwapRule.swapTokenSymbol}>
 
-                    <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }} minWidth="full">
-                      <Box flex='1' textAlign='left'>
-                        { tokenSwapRule.swapTokenSymbol }
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
+                  <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }} minWidth="full">
+                    <Box flex='1' textAlign='left'>
+                      { tokenSwapRule.swapTokenSymbol }
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
 
-                    <AccordionPanel minWidth="full" padding="0.5">
-                      { tokenSwapRule.swapRules.map( (swapRule, idx) => {
-                        const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
-                        const margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
-                        const wallet = wallets.find( wallet => swapRule.walletId === wallet._id )
-                        const buyDiff = (combined.lastBuyUnitPrice || 0) - combined.swapTarget
-                        const sellDiff = combined.baseTarget - (combined.lastSellUnitPrice || 0)
-                        const isLeanBuy = buyDiff < sellDiff
-                        const hitBuy = buyDiff <= 0
-                        const hitSell = sellDiff <= 0
-                        return(
-                          <Accordion
-                            key={swapRule._id}
-                            minWidth="full"
-                            allowMultiple={true}
-                            defaultIndex={[]}
-                          >
+                  <AccordionPanel minWidth="full" padding="0.5">
+                    { tokenSwapRule.swapRules.map( (swapRule, idx) => {
+                      const combined = swapRuleUpdate && swapRuleUpdate._id === swapRule._id ? { ...swapRule, ...swapRuleUpdate } : swapRule
+                      const margin = `(${((combined.baseTarget - combined.swapTarget) / combined.swapTarget * 100).toFixed(0)}%)`
+                      const wallet = wallets.find( wallet => swapRule.walletId === wallet._id )
+                      const buyDiff = (combined.lastBuyUnitPrice || 0) - combined.swapTarget
+                      const sellDiff = combined.baseTarget - (combined.lastSellUnitPrice || 0)
+                      const isLeanBuy = buyDiff < sellDiff
+                      const hitBuy = buyDiff <= 0
+                      const hitSell = sellDiff <= 0
+                      return(
+                        <Accordion
+                          key={swapRule._id}
+                          minWidth="full"
+                          allowMultiple={true}
+                          defaultIndex={[]}
+                        >
 
-                            {/* Header */}
+                          {/* Header */}
 
-                            <AccordionItem>
-                              <AccordionButton _expanded={{ bg: 'blue.200' }}>
-                                <Stack textAlign='left' direction="row" paddingRight="2">
-                                  <Stack direction="column" fontSize="sm" fontWeight="bold">
-                                    <Text marginRight="2">
-                                      { combined.baseToken.symbol }
+                          <AccordionItem>
+                            <AccordionButton _expanded={{ bg: 'blue.200' }}>
+                              <Stack textAlign='left' direction="row" paddingRight="2">
+                                <Stack direction="column" fontSize="sm" fontWeight="bold">
+                                  <Text marginRight="2">
+                                    { combined.baseToken.symbol }
+                                  </Text>
+                                  { (combined.baseInput && combined.swapInput) &&
+                                    <Text textColor={ isLeanBuy ? 'green' : 'red' }>
+                                      { isLeanBuy ? 'BUY' : 'SELL' }
                                     </Text>
-                                    { (combined.baseInput && combined.swapInput) &&
-                                      <Text textColor={ isLeanBuy ? 'green' : 'red' }>
-                                        { isLeanBuy ? 'BUY' : 'SELL' }
-                                      </Text>
-                                    }
+                                  }
+                                </Stack>
+                                <Stack direction="column" fontSize="xs" spacing="2">
+                                  { combined.baseInput &&
+                                    <Text borderRadius="lg" background={ hitBuy ? "green.100" : ""} p={ hitBuy ? "0.5" : ""}>
+                                      { `BUY Price @ $${ combined.lastBuyUnitPrice || "?" } (${Moment().diff(Moment(combined.lastBuyCheckAt), 'minutes')} mins ago) IF <= ${ combined.swapTarget } ` }
+                                    </Text>
+                                  }
+                                  { combined.swapInput && 
+                                    <Text borderRadius="lg" background={ hitSell ? "red.100" : ""} p={ hitSell ? "0.5" : ""}>
+                                      { `SELL Price @ $${ combined.lastSellUnitPrice || "?" } (${Moment().diff(Moment(combined.lastSellCheckAt), 'minutes')} mins ago) IF >= ${ combined.baseTarget } ` }
+                                    </Text>
+                                  }
+                                  <Text>
+                                    { !wallet && "No Wallet Linked" }
+                                    { wallet && `${ wallet.balances[swapRule.baseToken.symbol] || 0 } ${ swapRule.baseToken.symbol } |
+                                    ${ wallet.balances[swapRule.swapToken.symbol] || 0 } ${ swapRule.swapToken.symbol }` }
+                                  </Text>
+                                </Stack>
+                              </Stack>
+                            </AccordionButton>
+
+                            {/* Panel */}
+
+                            <AccordionPanel background="blue.50">
+
+                              <SimpleGrid columns={2} spacing={2} alignItems="center" marginY="2">
+
+                                {/* Row 1 */}
+
+                                <Stack direction="column">
+                                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                                    <FormLabel fontSize="sm">Active?</FormLabel>
+                                    <Checkbox
+                                      background="white"
+                                      isChecked={ combined.active }
+                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
+                                      borderRadius="lg"
+                                      size="lg"
+                                    />
                                   </Stack>
-                                  <Stack direction="column" fontSize="xs" spacing="2">
-                                    { combined.baseInput &&
-                                      <Text borderRadius="lg" background={ hitBuy ? "green.100" : ""} p={ hitBuy ? "0.5" : ""}>
-                                        { `BUY Price @ $${ combined.lastBuyUnitPrice || "?" } (${Moment().diff(Moment(combined.lastBuyCheckAt), 'minutes')} mins ago) IF <= ${ combined.swapTarget } ` }
-                                      </Text>
-                                    }
-                                    { combined.swapInput && 
-                                      <Text borderRadius="lg" background={ hitSell ? "red.100" : ""} p={ hitSell ? "0.5" : ""}>
-                                        { `SELL Price @ $${ combined.lastSellUnitPrice || "?" } (${Moment().diff(Moment(combined.lastSellCheckAt), 'minutes')} mins ago) IF >= ${ combined.baseTarget } ` }
-                                      </Text>
-                                    }
-                                    <Text>
-                                      { !wallet && "No Wallet Linked" }
-                                      { wallet && `${ wallet.balances[swapRule.baseToken.symbol] || 0 } ${ swapRule.baseToken.symbol } |
-                                      ${ wallet.balances[swapRule.swapToken.symbol] || 0 } ${ swapRule.swapToken.symbol }` }
-                                    </Text>
+
+                                  <FormControl fontSize="sm">
+                                    <Select size="sm"
+                                      fontSize="sm"
+                                      icon={<FaChartLine />}
+                                      background="white"
+                                      borderRadius="lg"
+                                      onChange={ e => onOpenSwapChart(swapRule, e.target.value) }
+                                    >
+                                      <option value="">Chart</option>
+                                      { ChartRangeFilters.map( ({ id }) => <option
+                                        key={id}
+                                        value={id}
+                                      >
+                                        { id }
+                                      </option> )}
+                                    </Select>
+                                  </FormControl>
+                                </Stack>
+
+                                <Stack direction="column">
+                                  <FormLabel fontSize="sm">Inactive Before </FormLabel>
+                                  <DatePicker
+                                    className="filter-calendar full-width"
+                                    selected={combined.inactiveBefore ? Moment( combined.inactiveBefore ).toDate() : null }
+                                    dateFormat="Pp"
+                                    onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveBefore', date?.toISOString() || '' ) }
+                                    showTimeSelect
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    timeCaption="time"
+                                    isClearable
+                                  />
+                                  <FormLabel fontSize="sm">Inactive After </FormLabel>
+                                  <DatePicker
+                                    className="filter-calendar full-width"
+                                    selected={combined.inactiveAfter ? Moment( combined.inactiveAfter ).toDate() : null }
+                                    dateFormat="Pp"
+                                    onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveAfter', date?.toISOString() || '' ) }
+                                    showTimeSelect
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    timeCaption="time"
+                                    isClearable
+                                  />
+                                </Stack>
+
+                                {/* Row 2 */}
+
+                                <Stack direction="row">
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Decimals</FormLabel>
+                                    <NumberInput
+                                      onlyInt={true}
+                                      maxWidth={50}
+                                      value={ combined.decimals }
+                                      onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'decimals', value) }
+                                    />
+                                  </FormControl>
+
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Slippage</FormLabel>
+                                    <NumberInput
+                                      onlyInt={true}
+                                      maxWidth={50}
+                                      value={ combined.slippage }
+                                      onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'decimals', value) }
+                                    />
+                                  </FormControl>
+                                </Stack>
+
+                                <Stack direction="column">
+                                  <FormLabel fontSize="sm" marginY="0">Wallet</FormLabel>
+                                  <Select variant='outline'
+                                    size="sm"
+                                    background="white"
+                                    borderRadius="lg"
+                                    value={combined.walletId}
+                                    fontSize="sm"
+                                    padding="0.5"
+                                    onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'walletId', e.target.value === 'None' ? null : e.target.value ) }
+                                  >
+                                    <option value="None">None</option>
+                                    { wallets.map( wallet => (
+                                      <option key={wallet._id} value={wallet._id}> 
+                                        { pWalletName( wallet ) }
+                                      </option>
+                                    ))}
+                                  </Select>
+                                </Stack>
+
+                                {/* Stop Loss */}
+
+                                <Stack direction="row" py="1">
+                                  <Stat>
+                                    <StatLabel>Last Support</StatLabel>
+                                    <StatNumber>{ combined.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
+                                  </Stat>
+
+                                  <Stat>
+                                    <StatLabel>Testing Support</StatLabel>
+                                    <StatNumber>{ combined.newSupportTest?.toFixed( 2 ) || "N/A" }</StatNumber>
+                                  </Stat>
+                                </Stack>
+
+                                <Stack direction="column" fontSize="sm" fontWeight="bold" my="2">
+                                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                                    <FormLabel fontSize="sm">Support Break%</FormLabel>
+                                    <NumberInput
+                                      thousandSeparator={false}
+                                      value={ combined.supportBreakPct }
+                                      onValueChange={ value => {
+                                        const keys = ['supportBreakPct']
+                                        const values = [value]
+                                        if ( combined.stopPct == null && value !== null ) {
+                                          keys.push('stopPct')
+                                          values.push(value * .2)
+                                        }
+                                        onChangeSwapRules( tokenSwapRule.swapTokenSymbol, idx, keys, values )
+                                      }}
+                                    />
+                                  </Stack>
+
+                                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                                    <FormLabel fontSize="sm">Stop%</FormLabel>
+                                    <NumberInput
+                                      thousandSeparator={false}
+                                      value={ combined.stopPct }
+                                      onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'stopPct', value )}
+                                    />
                                   </Stack>
                                 </Stack>
-                              </AccordionButton>
 
-                              {/* Panel */}
-
-                              <AccordionPanel background="blue.50">
-
-                                <SimpleGrid columns={2} spacing={2} alignItems="center" marginY="2">
-
-                                  {/* Row 1 */}
-
-                                  <Stack direction="column">
-                                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                                      <FormLabel fontSize="sm">Active?</FormLabel>
-                                      <Checkbox
-                                        background="white"
-                                        isChecked={ combined.active }
-                                        onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'active', e.target.checked ) }
-                                        borderRadius="lg"
-                                        size="lg"
-                                      />
-                                    </Stack>
-
-                                    <FormControl fontSize="sm">
-                                      <Select size="sm"
-                                        fontSize="sm"
-                                        icon={<FaChartLine />}
-                                        background="white"
-                                        borderRadius="lg"
-                                        onChange={ e => onOpenSwapChart(swapRule, e.target.value) }
-                                      >
-                                        <option value="">Chart</option>
-                                        { ChartRangeFilters.map( ({ id }) => <option
-                                          key={id}
-                                          value={id}
-                                        >
-                                          { id }
-                                        </option> )}
-                                      </Select>
-                                    </FormControl>
-                                  </Stack>
-
-                                  <Stack direction="column">
-                                    <FormLabel fontSize="sm">Inactive Before </FormLabel>
-                                    <DatePicker
-                                      className="filter-calendar full-width"
-                                      selected={combined.inactiveBefore ? Moment( combined.inactiveBefore ).toDate() : null }
-                                      dateFormat="Pp"
-                                      onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveBefore', date?.toISOString() || '' ) }
-                                      showTimeSelect
-                                      timeFormat="HH:mm"
-                                      timeIntervals={15}
-                                      timeCaption="time"
-                                      isClearable
-                                    />
-                                    <FormLabel fontSize="sm">Inactive After </FormLabel>
-                                    <DatePicker
-                                      className="filter-calendar full-width"
-                                      selected={combined.inactiveAfter ? Moment( combined.inactiveAfter ).toDate() : null }
-                                      dateFormat="Pp"
-                                      onChange={ date => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'inactiveAfter', date?.toISOString() || '' ) }
-                                      showTimeSelect
-                                      timeFormat="HH:mm"
-                                      timeIntervals={15}
-                                      timeCaption="time"
-                                      isClearable
-                                    />
-                                  </Stack>
-
-                                  {/* Row 2 */}
-
-                                  <Stack direction="row">
-                                    <FormControl>
-                                      <FormLabel fontSize="sm">Decimals</FormLabel>
-                                      <NumberInput
-                                        onlyInt={true}
-                                        maxWidth={50}
-                                        value={ combined.decimals }
-                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'decimals', value) }
-                                      />
-                                    </FormControl>
-
-                                    <FormControl>
-                                      <FormLabel fontSize="sm">Slippage</FormLabel>
-                                      <NumberInput
-                                        onlyInt={true}
-                                        maxWidth={50}
-                                        value={ combined.slippage }
-                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'decimals', value) }
-                                      />
-                                    </FormControl>
-                                  </Stack>
-
-                                  <Stack direction="column">
-                                    <FormLabel fontSize="sm" marginY="0">Wallet</FormLabel>
-                                    <Select variant='outline'
-                                      size="sm"
-                                      background="white"
-                                      borderRadius="lg"
-                                      value={combined.walletId}
+                                { (combined.supportHistory?.length || 0) > 0 &&
+                                  <FormControl fontSize="sm">
+                                    <Select size="sm"
                                       fontSize="sm"
-                                      padding="0.5"
-                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'walletId', e.target.value === 'None' ? null : e.target.value ) }
+                                      background="white"
+                                      borderRadius="lg"
                                     >
-                                      <option value="None">None</option>
-                                      { wallets.map( wallet => (
-                                        <option key={wallet._id} value={wallet._id}> 
-                                          { pWalletName( wallet ) }
-                                        </option>
-                                      ))}
-                                    </Select>
-                                  </Stack>
-
-                                  {/* Stop Loss */}
-
-                                  <Stack direction="row" py="1">
-                                    <Stat>
-                                      <StatLabel>Last Support</StatLabel>
-                                      <StatNumber>{ combined.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
-                                    </Stat>
-
-                                    <Stat>
-                                      <StatLabel>Testing Support</StatLabel>
-                                      <StatNumber>{ combined.newSupportTest?.toFixed( 2 ) || "N/A" }</StatNumber>
-                                    </Stat>
-                                  </Stack>
-
-                                  <Stack direction="column" fontSize="sm" fontWeight="bold" my="2">
-                                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                                      <FormLabel fontSize="sm">Support Break%</FormLabel>
-                                      <NumberInput
-                                        thousandSeparator={false}
-                                        value={ combined.supportBreakPct }
-                                        onValueChange={ value => {
-                                          const keys = ['supportBreakPct']
-                                          const values = [value]
-                                          if ( combined.stopPct == null && value !== null ) {
-                                            keys.push('stopPct')
-                                            values.push(value * .2)
-                                          }
-                                          onChangeSwapRules( tokenSwapRule.swapTokenSymbol, idx, keys, values )
-                                        }}
-                                      />
-                                    </Stack>
-
-                                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                                      <FormLabel fontSize="sm">Stop%</FormLabel>
-                                      <NumberInput
-                                        thousandSeparator={false}
-                                        value={ combined.stopPct }
-                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'stopPct', value )}
-                                      />
-                                    </Stack>
-                                  </Stack>
-
-                                  { (combined.supportHistory?.length || 0) > 0 &&
-                                    <FormControl fontSize="sm">
-                                      <Select size="sm"
-                                        fontSize="sm"
-                                        background="white"
-                                        borderRadius="lg"
+                                      <option value="">Support History</option>
+                                      { (combined?.supportHistory || []).map( ({ timestamp, price }) => <option
+                                        key={timestamp}
                                       >
-                                        <option value="">Support History</option>
-                                        { (combined?.supportHistory || []).map( ({ timestamp, price }) => <option
-                                          key={timestamp}
-                                        >
-                                          { price } @ { Moment( timestamp ).format('MMM D hh:mm a') }
-                                        </option> )}
-                                      </Select>
-                                    </FormControl>
-                                  }
-
-                                  {/* Execute Buy / Sell  */}
-
-                                  { combined.baseInput !== 0 ?
-                                    <Stack direction="row" marginTop="4">
-                                      <Checkbox
-                                        isChecked={ combined.isExecuteBuy }
-                                        onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteBuy', e.target.checked ) }
-                                        borderRadius="lg"
-                                        size="lg"
-                                        background="white"
-                                      />
-                                      <FormLabel fontSize="sm">
-                                        Execute Buys
-                                      </FormLabel>
-                                    </Stack> 
-                                    :
-                                    <Box />
-                                  }
-
-                                  { combined.swapInput !== 0 ?
-                                    <Stack direction="row" marginTop="4">
-                                      <Checkbox
-                                        isChecked={ combined.isExecuteSell }
-                                        onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteSell', e.target.checked ) }
-                                        borderRadius="lg"
-                                        size="lg"
-                                        background="white"
-                                      />
-                                      <FormLabel fontSize="sm">
-                                        Execute Sell
-                                      </FormLabel>
-                                    </Stack>
-                                    :
-                                    <Box />
-                                  }
-
-                                  <Stack direction="row">
-                                    <Checkbox
-                                      background="white"
-                                      isChecked={ combined.buyAlertSettings?.active || false }
-                                      onChange={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'buyAlertSettings', 'active', e.target.checked ) }
-                                      borderRadius="lg"
-                                      size="lg"
-                                    />
-                                    <FormLabel fontSize="sm">Alert Buy</FormLabel>
-                                  </Stack>
-
-                                  <Stack direction="row">
-                                    <Checkbox
-                                      background="white"
-                                      isChecked={ combined.sellAlertSettings?.active || false }
-                                      onChange={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'sellAlertSettings', 'active', e.target.checked ) }
-                                      borderRadius="lg"
-                                      size="lg"
-                                    />
-                                    <FormLabel fontSize="sm">Alert Sell</FormLabel>
-                                  </Stack>
-
-                                  {/* Targets Row  */}
-
-                                  { combined.baseInput !== 0 ?
-                                    <Stack marginY="2" direction="column">
-                                      <FormControl>
-                                        <FormLabel fontSize="sm">
-                                          Amount { combined.baseToken.symbol }
-                                        </FormLabel>
-                                        <NumberInput
-                                          value={ combined.baseInput }
-                                          onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', value) }
-                                        />
-                                      </FormControl>
-
-                                      <FormControl>
-                                        <FormLabel fontSize="sm">
-                                          Buy Below
-                                        </FormLabel>
-                                        <NumberInput
-                                          value={ combined.swapTarget }
-                                          onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapTarget', value) }
-                                        />
-                                      </FormControl>
-                                    </Stack>
-                                    :
-                                    <Box/>
-                                  }
-                                  
-                                  { combined.swapInput !== 0 ?
-                                    <Stack marginY="2" direction="column">
-                                      <FormControl>
-                                        <FormLabel fontSize="sm">
-                                          Amount { combined.swapToken.symbol }
-                                        </FormLabel>
-                                        <NumberInput
-                                          value={ combined.swapInput }
-                                          onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', value) }
-                                        />
-                                      </FormControl>
-
-                                      <FormControl>
-                                        <FormLabel fontSize="sm">
-                                          Sell Above
-                                        </FormLabel>
-                                        <NumberInput
-                                          value={ combined.baseTarget }
-                                          onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseTarget', value) }
-                                        />
-                                      </FormControl>
-                                    </Stack>
-                                    :
-                                    <Box/>
-                                  }
-
-                                  {/* Margin Row  */}
-
-                                  { (combined.baseTarget && combined.swapTarget) ?
-                                    <Text fontSize="sm" fontWeight="bold">
-                                      Margin { margin }
-                                    </Text>
-                                    :
-                                    <Box />
-                                  }
-
-                                  <Box />
-                                  
-                                  {/* Alerts Row */}
-                                  
-                                  <FormControl>
-                                    <FormLabel fontSize="sm">Fixed Change</FormLabel>
-                                    <NumberInput
-                                      value={ combined.buyAlertSettings?.fixedPriceChange }
-                                      onValueChange={ value => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'buyAlertSettings', 'fixedPriceChange', value) }
-                                    />
+                                        { price } @ { Moment( timestamp ).format('MMM D hh:mm a') }
+                                      </option> )}
+                                    </Select>
                                   </FormControl>
-
-                                  <FormControl>
-                                    <FormLabel fontSize="sm">Fixed Change</FormLabel>
-                                    <NumberInput
-                                      value={ combined.sellAlertSettings?.fixedPriceChange }
-                                      onValueChange={ value => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'sellAlertSettings', 'fixedPriceChange', value) }
-                                    />
-                                  </FormControl>
-
-                                  <FormControl>
-                                    <FormLabel fontSize="sm">
-                                      { (combined.buyAlertSettings && combined.buyAlertSettings?.lastAlertUnitPrice != null) &&
-                                        `Last: $${ combined.buyAlertSettings?.lastAlertUnitPrice?.toFixed( combined.decimals ) }`
-                                      }
-                                    </FormLabel>
-                                  </FormControl>
-
-                                  <FormControl>
-                                    <FormLabel fontSize="sm">
-                                      { (combined.sellAlertSettings && combined.sellAlertSettings?.lastAlertUnitPrice != null) &&
-                                        `Last: $${ combined.sellAlertSettings?.lastAlertUnitPrice?.toFixed( combined.decimals ) }`
-                                      }
-                                    </FormLabel>
-                                  </FormControl>
-                                  
-                                </SimpleGrid>
-
-                                <Button
-                                  isLoading={isDeleting}
-                                  loadingText='Deleting...'
-                                  marginY="4"
-                                  colorScheme='red'
-                                  variant='solid'
-                                  onClick={onDelete( swapRule )}
-                                >
-                                  Delete
-                                </Button>
-
-                                { swapRuleUpdate._id &&
-                                  <Button
-                                    isLoading={isUpdating}
-                                    loadingText='Saving...'
-                                    colorScheme='teal'
-                                    variant='solid'
-                                    onClick={onUpdateSwapRule}
-                                    mx="4"
-                                  >
-                                    Save
-                                  </Button>
                                 }
-                              </AccordionPanel>
-                            </AccordionItem>
-                          </Accordion>
-                        )
-                      })}
-                    </AccordionPanel>
-                  </AccordionItem>
-                )
-              })}
-            </Accordion>
 
-            <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
-              <Button
-                isLoading={isRefreshingSwapRules}
-                loadingText='Refreshing...'
-                colorScheme="green"
-                variant='solid'
-                onClick={onLoadSwapRules}
-              >
-                Refresh
-              </Button>
+                                {/* Execute Buy / Sell  */}
 
-              <Button
-                isLoading={isChecking}
-                loadingText='Checking...'
-                colorScheme="blue"
-                variant='solid'
-                onClick={onCheckSwapRules}
-              >
-                Check Rules
-              </Button>
-            </Stack>
-          </>
+                                { combined.baseInput !== 0 ?
+                                  <Stack direction="row" marginTop="4">
+                                    <Checkbox
+                                      isChecked={ combined.isExecuteBuy }
+                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteBuy', e.target.checked ) }
+                                      borderRadius="lg"
+                                      size="lg"
+                                      background="white"
+                                    />
+                                    <FormLabel fontSize="sm">
+                                      Execute Buys
+                                    </FormLabel>
+                                  </Stack> 
+                                  :
+                                  <Box />
+                                }
+
+                                { combined.swapInput !== 0 ?
+                                  <Stack direction="row" marginTop="4">
+                                    <Checkbox
+                                      isChecked={ combined.isExecuteSell }
+                                      onChange={ e => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'isExecuteSell', e.target.checked ) }
+                                      borderRadius="lg"
+                                      size="lg"
+                                      background="white"
+                                    />
+                                    <FormLabel fontSize="sm">
+                                      Execute Sell
+                                    </FormLabel>
+                                  </Stack>
+                                  :
+                                  <Box />
+                                }
+
+                                <Stack direction="row">
+                                  <Checkbox
+                                    background="white"
+                                    isChecked={ combined.buyAlertSettings?.active || false }
+                                    onChange={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'buyAlertSettings', 'active', e.target.checked ) }
+                                    borderRadius="lg"
+                                    size="lg"
+                                  />
+                                  <FormLabel fontSize="sm">Alert Buy</FormLabel>
+                                </Stack>
+
+                                <Stack direction="row">
+                                  <Checkbox
+                                    background="white"
+                                    isChecked={ combined.sellAlertSettings?.active || false }
+                                    onChange={ e => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'sellAlertSettings', 'active', e.target.checked ) }
+                                    borderRadius="lg"
+                                    size="lg"
+                                  />
+                                  <FormLabel fontSize="sm">Alert Sell</FormLabel>
+                                </Stack>
+
+                                {/* Targets Row  */}
+
+                                { combined.baseInput !== 0 ?
+                                  <Stack marginY="2" direction="column">
+                                    <FormControl>
+                                      <FormLabel fontSize="sm">
+                                        Amount { combined.baseToken.symbol }
+                                      </FormLabel>
+                                      <NumberInput
+                                        value={ combined.baseInput }
+                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseInput', value) }
+                                      />
+                                    </FormControl>
+
+                                    <FormControl>
+                                      <FormLabel fontSize="sm">
+                                        Buy Below
+                                      </FormLabel>
+                                      <NumberInput
+                                        value={ combined.swapTarget }
+                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapTarget', value) }
+                                      />
+                                    </FormControl>
+                                  </Stack>
+                                  :
+                                  <Box/>
+                                }
+                                
+                                { combined.swapInput !== 0 ?
+                                  <Stack marginY="2" direction="column">
+                                    <FormControl>
+                                      <FormLabel fontSize="sm">
+                                        Amount { combined.swapToken.symbol }
+                                      </FormLabel>
+                                      <NumberInput
+                                        value={ combined.swapInput }
+                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'swapInput', value) }
+                                      />
+                                    </FormControl>
+
+                                    <FormControl>
+                                      <FormLabel fontSize="sm">
+                                        Sell Above
+                                      </FormLabel>
+                                      <NumberInput
+                                        value={ combined.baseTarget }
+                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'baseTarget', value) }
+                                      />
+                                    </FormControl>
+                                  </Stack>
+                                  :
+                                  <Box/>
+                                }
+
+                                {/* Margin Row  */}
+
+                                { (combined.baseTarget && combined.swapTarget) ?
+                                  <Text fontSize="sm" fontWeight="bold">
+                                    Margin { margin }
+                                  </Text>
+                                  :
+                                  <Box />
+                                }
+
+                                <Box />
+                                
+                                {/* Alerts Row */}
+                                
+                                <FormControl>
+                                  <FormLabel fontSize="sm">Fixed Change</FormLabel>
+                                  <NumberInput
+                                    value={ combined.buyAlertSettings?.fixedPriceChange }
+                                    onValueChange={ value => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'buyAlertSettings', 'fixedPriceChange', value) }
+                                  />
+                                </FormControl>
+
+                                <FormControl>
+                                  <FormLabel fontSize="sm">Fixed Change</FormLabel>
+                                  <NumberInput
+                                    value={ combined.sellAlertSettings?.fixedPriceChange }
+                                    onValueChange={ value => onChangeAlert( tokenSwapRule.swapTokenSymbol, idx, 'sellAlertSettings', 'fixedPriceChange', value) }
+                                  />
+                                </FormControl>
+
+                                <FormControl>
+                                  <FormLabel fontSize="sm">
+                                    { (combined.buyAlertSettings && combined.buyAlertSettings?.lastAlertUnitPrice != null) &&
+                                      `Last: $${ combined.buyAlertSettings?.lastAlertUnitPrice?.toFixed( combined.decimals ) }`
+                                    }
+                                  </FormLabel>
+                                </FormControl>
+
+                                <FormControl>
+                                  <FormLabel fontSize="sm">
+                                    { (combined.sellAlertSettings && combined.sellAlertSettings?.lastAlertUnitPrice != null) &&
+                                      `Last: $${ combined.sellAlertSettings?.lastAlertUnitPrice?.toFixed( combined.decimals ) }`
+                                    }
+                                  </FormLabel>
+                                </FormControl>
+                                
+                              </SimpleGrid>
+
+                              <Button
+                                isLoading={isDeleting}
+                                loadingText='Deleting...'
+                                marginY="4"
+                                colorScheme='red'
+                                variant='solid'
+                                onClick={onDelete( swapRule )}
+                              >
+                                Delete
+                              </Button>
+
+                              { swapRuleUpdate._id &&
+                                <Button
+                                  isLoading={isUpdating}
+                                  loadingText='Saving...'
+                                  colorScheme='teal'
+                                  variant='solid'
+                                  onClick={onUpdateSwapRule}
+                                  mx="4"
+                                >
+                                  Save
+                                </Button>
+                              }
+                            </AccordionPanel>
+                          </AccordionItem>
+                        </Accordion>
+                      )
+                    })}
+                  </AccordionPanel>
+                </AccordionItem>
+              )
+            })}
+          </Accordion>
         }
+
+        <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.300" width="full" pb="4">
+          <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+            <Button
+              isLoading={isRefreshingSwapRules}
+              loadingText='Refreshing...'
+              colorScheme="yellow"
+              variant='solid'
+              onClick={onLoadSwapRules}
+            >
+              Refresh
+            </Button>
+
+            <Button
+              isLoading={isChecking}
+              loadingText='Checking...'
+              colorScheme="red"
+              variant='solid'
+              onClick={onCheckSwapRules}
+            >
+              Check Rules
+            </Button>
+          </Stack>
+        </Box>
       </main>
     </div>
   )

@@ -31,6 +31,17 @@ export interface ISwapRule {
   walletId?: string,
   buyAlertSettings?: AlertSettings,
   sellAlertSettings?: AlertSettings, 
+  // stop loss gain
+  lastSupport: number | null,
+  newSupportTest: number | null,
+  supportBreakPct: number | null, // % change to trigger a break in support
+  stopPct: number | null, // % change to trigger a reversion from a break
+  supportHistory: PriceSnap[] | null,
+}
+
+interface PriceSnap {
+  price: number,
+  timestamp: string,
 }
 
 export interface IUpdateSwapRule {
@@ -50,6 +61,12 @@ export interface IUpdateSwapRule {
   inactiveBefore?: string,
   inactiveAfter?: string,
   walletId?: string,
+  // stop loss gain
+  lastSupport?: number | null,
+  newSupportTest?: number | null,
+  supportBreakPct?: number | null, // % change to trigger a break in support
+  stopPct?: number | null, // % change to trigger a reversion from a break
+  supportHistory?: PriceSnap[] | null,
 }
 
 export interface ICreateSwapRule {

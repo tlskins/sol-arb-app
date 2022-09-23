@@ -20,6 +20,9 @@ import {
   useDisclosure,
   SimpleGrid,
   Select,
+  Stat,
+  StatLabel,
+  StatNumber,
 } from '@chakra-ui/react'
 import { toast } from 'react-toastify'
 import DatePicker from "react-datepicker"
@@ -122,6 +125,22 @@ const Home: NextPage = () => {
     }
     // @ts-ignore: dynamic access
     update[key] = value
+    setSwapRuleUpdate( update )
+  }
+
+  const onChangeSwapRules = ( swapSymbol: string, idx: number, keys: string[], values: any[] ) => {
+    const swapRule = tokenSwapRules.find( tokenSwapRule => tokenSwapRule.swapTokenSymbol === swapSymbol)?.swapRules[idx]
+    if ( !swapRule ) return
+    let update = { ...swapRuleUpdate }
+    if ( swapRuleUpdate._id !== swapRule._id) {
+      update = { _id: swapRule._id }
+    }
+
+    keys.forEach((key,i) => {
+      const value = values[i]
+      // @ts-ignore: dynamic access
+      update[key] = value
+    })
     setSwapRuleUpdate( update )
   }
 
@@ -365,6 +384,65 @@ const Home: NextPage = () => {
                                       ))}
                                     </Select>
                                   </Stack>
+
+                                  {/* Stop Loss */}
+
+                                  <Stack direction="row" py="1">
+                                    <Stat>
+                                      <StatLabel>Last Support</StatLabel>
+                                      <StatNumber>{ combined.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
+                                    </Stat>
+
+                                    <Stat>
+                                      <StatLabel>Testing Support</StatLabel>
+                                      <StatNumber>{ combined.newSupportTest?.toFixed( 2 ) || "N/A" }</StatNumber>
+                                    </Stat>
+                                  </Stack>
+
+                                  <Stack direction="column" fontSize="sm" fontWeight="bold" my="2">
+                                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                                      <FormLabel fontSize="sm">Support Break%</FormLabel>
+                                      <NumberInput
+                                        thousandSeparator={false}
+                                        value={ combined.supportBreakPct }
+                                        onValueChange={ value => {
+                                          const keys = ['supportBreakPct']
+                                          const values = [value]
+                                          if ( combined.stopPct == null && value !== null ) {
+                                            keys.push('stopPct')
+                                            values.push(value * .2)
+                                          }
+                                          onChangeSwapRules( tokenSwapRule.swapTokenSymbol, idx, keys, values )
+                                        }}
+                                      />
+                                    </Stack>
+
+                                    <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                                      <FormLabel fontSize="sm">Stop%</FormLabel>
+                                      <NumberInput
+                                        thousandSeparator={false}
+                                        value={ combined.stopPct }
+                                        onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'stopPct', value )}
+                                      />
+                                    </Stack>
+                                  </Stack>
+
+                                  { (combined.supportHistory?.length || 0) > 0 &&
+                                    <FormControl fontSize="sm">
+                                      <Select size="sm"
+                                        fontSize="sm"
+                                        background="white"
+                                        borderRadius="lg"
+                                      >
+                                        <option value="">Support History</option>
+                                        { (combined?.supportHistory || []).map( ({ timestamp, price }) => <option
+                                          key={timestamp}
+                                        >
+                                          { price } @ { Moment( timestamp ).format('MMM D hh:mm a') }
+                                        </option> )}
+                                      </Select>
+                                    </FormControl>
+                                  }
 
                                   {/* Execute Buy / Sell  */}
 

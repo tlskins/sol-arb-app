@@ -391,7 +391,7 @@ const Home: NextPage = () => {
                         <CreatableSelect
                           isMulti
                           onChange={onChangeTags( projRule._id )}
-                          value={(projRule.tags || []).map( t => ({ value: t, label: t }))}
+                          value={(combined.tags || []).map( t => ({ value: t, label: t }))}
                           options={availTags.map( t => ({ value: t, label: t }))}
                         />
                       </FormControl>

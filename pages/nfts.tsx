@@ -250,7 +250,7 @@ const Home: NextPage = () => {
 
       <Navbar />
 
-      <main className={styles.main}>
+      <main className={styles.main} >
 
         <Text fontSize='lg' marginY="4" fontWeight="bold" textDecoration="underline">
           NFT Rules
@@ -575,21 +575,25 @@ const Home: NextPage = () => {
             </Accordion>
           </Box>
         }
-
-        <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
-          <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
-            <Button
-              isLoading={isRefreshingProjRules}
-              loadingText='Refreshing...'
-              colorScheme="yellow"
-              variant='solid'
-              onClick={onLoadProjRules}
-            >
-              Refresh
-            </Button>
-          </Stack>
-        </Box>
       </main>
+
+      <Box className={styles.footer}>
+        { sessionData?.token?.id &&
+          <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
+            <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+              <Button
+                isLoading={isRefreshingProjRules}
+                loadingText='Refreshing...'
+                colorScheme="yellow"
+                variant='solid'
+                onClick={onLoadProjRules}
+              >
+                Refresh
+              </Button>
+            </Stack>
+          </Box>
+        }
+      </Box>
     </div>
   )
 }

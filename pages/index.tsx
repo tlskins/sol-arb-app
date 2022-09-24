@@ -15,6 +15,7 @@ import {
   Text,
   FormControl,
   FormLabel,
+  Spacer,
   Stack,
   Checkbox,
   useDisclosure,
@@ -311,6 +312,28 @@ const Home: NextPage = () => {
                                       </option> )}
                                     </Select>
                                   </FormControl>
+
+                                  <Button
+                                    size="xs"
+                                    colorScheme='teal'
+                                    variant='solid'
+                                    onClick={() => {
+                                      router.push(`quickSwap/?ruleId=${swapRule._id}&isBuy=true&inputAmount=${ swapRule.baseInput }&targetPrice=${ swapRule.swapTarget }&slippage=${ swapRule.slippage }`)
+                                    }}
+                                  >
+                                    GOTO Quick Buy
+                                  </Button>
+
+                                  <Button
+                                    size="xs"
+                                    colorScheme='red'
+                                    variant='solid'
+                                    onClick={() => {
+                                      router.push(`quickSwap/?ruleId=${swapRule._id}&isBuy=false&inputAmount=${ swapRule.swapInput }&targetPrice=${ swapRule.baseInput }&slippage=${ swapRule.slippage }`)
+                                    }}
+                                  >
+                                    GOTO Quick Sell
+                                  </Button>
                                 </Stack>
 
                                 <Stack direction="column">
@@ -399,7 +422,7 @@ const Home: NextPage = () => {
                                 </Stack>
 
                                 <Stack direction="column" fontSize="sm" fontWeight="bold" my="2">
-                                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                                  <Stack direction="row">
                                     <FormLabel fontSize="sm">Support Break%</FormLabel>
                                     <NumberInput
                                       thousandSeparator={false}
@@ -416,8 +439,8 @@ const Home: NextPage = () => {
                                     />
                                   </Stack>
 
-                                  <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                                    <FormLabel fontSize="sm">Stop%</FormLabel>
+                                  <Stack direction="row">
+                                    <FormLabel fontSize="sm">Stop Break%</FormLabel>
                                     <NumberInput
                                       thousandSeparator={false}
                                       value={ combined.stopPct }

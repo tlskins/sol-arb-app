@@ -11,6 +11,19 @@ interface SwapRuleResp {
   swapRule: ISwapRule
 }
 
+interface QuickSwapReq {
+  ruleId: string,
+  isBuy: boolean,
+  inputAmount: number,
+  targetPrice: number,
+  slippage: number,
+}
+
+interface QuickSwapResp {
+  msg: string,
+  swapSuccessful: boolean,
+}
+
 class SwapRuleService {
   newSwapRule = (): ICreateSwapRule => {
     return {
@@ -69,6 +82,16 @@ class SwapRuleService {
       return resp.data
     } catch( err ) {
       handleError("Error updating swap rule", err)
+    }
+  }
+
+  quickSwap = async (req: QuickSwapReq): Promise<QuickSwapResp | undefined> => {
+    try {
+      const resp: IResponse<QuickSwapResp> = await http.post( `quick-swap`, req )
+
+      return resp.data
+    } catch( err ) {
+      handleError("Error swapping", err)
     }
   }
 

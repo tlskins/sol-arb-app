@@ -15,6 +15,7 @@ import {
   Stack,
   Checkbox,
   useDisclosure,
+  Spacer,
   Select as SelectOptions,
   Stat,
   StatLabel,

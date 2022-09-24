@@ -220,16 +220,28 @@ const QuickSwap: NextPage = () => {
 
       <Box className={styles.footer}>
         <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
-          <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+          <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4" px="4">
             { isSwapReqValid &&
               <>
                 <Button
+                  size="sm"
+                  colorScheme='yellow'
+                  variant='solid'
+                  onClick={() => router.push( '/' )}
+                >
+                  Back
+                </Button>
+
+                <Spacer />
+
+                <Button
                   isLoading={isSwapping}
+                  onClick={onSwap}
                   loadingText='Swapping...'
                   colorScheme='teal'
                   variant='solid'
-                  onClick={onSwap}
                   marginX="8"
+                  size="sm"
                 >
                   Swap
                 </Button>

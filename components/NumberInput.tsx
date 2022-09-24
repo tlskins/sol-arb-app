@@ -18,7 +18,7 @@ const NumberInput = ({
 }) => {
   const [localValue, setLocalValue] = useState(value || "")
   const numberTimer = useRef( undefined as NodeJS.Timeout | undefined )
-  const onChangeDelay = delay == undefined ? 300 : delay
+  const onChangeDelay = delay == undefined ? 350 : delay
 
   useEffect(() => {
     setLocalValue(value || "")

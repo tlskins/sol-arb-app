@@ -266,7 +266,11 @@ const Home: NextPage = () => {
           isMulti
         />
 
-        <SelectOptions mt="4" onChange={ e => onSelectMode(e.target.value)} value={selectedMode}>
+        <SelectOptions
+          size="sm"
+          mt="4"
+          onChange={ e => onSelectMode(e.target.value)} value={selectedMode}
+        >
           { Modes.map( mode => (
             <option key={mode} value={mode}> { mode }</option>
           ))}
@@ -367,7 +371,8 @@ const Home: NextPage = () => {
                         </Stack>
 
                         <FormControl fontSize="sm">
-                          <SelectOptions size="sm"
+                          <SelectOptions
+                            size="sm"
                             fontSize="sm"
                             icon={<FaChartLine />}
                             background="white"

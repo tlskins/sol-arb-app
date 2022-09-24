@@ -340,7 +340,7 @@ const NftChart: NextPage = () => {
           <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
             <Button
               size="sm"
-              colorScheme='teal'
+              colorScheme='yellow'
               variant='solid'
               onClick={() => router.push( '/nfts' )}
             >
@@ -360,9 +360,10 @@ const NftChart: NextPage = () => {
 
             { projRuleUpdate._id &&
               <Button
+                size="sm"
                 isLoading={isUpdating}
                 loadingText='Saving...'
-                colorScheme='teal'
+                colorScheme='green'
                 variant='solid'
                 onClick={onUpdateProjRule}
               >

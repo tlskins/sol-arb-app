@@ -383,7 +383,7 @@ const Chart: NextPage = () => {
           <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
             <Button
               size="sm"
-              colorScheme='red'
+              colorScheme='yellow'
               variant='solid'
               onClick={() => router.push( '/' )}
             >
@@ -394,7 +394,7 @@ const Chart: NextPage = () => {
               size="sm"
               isLoading={isLoading}
               loadingText='Loading...'
-              colorScheme='yellow'
+              colorScheme='teal'
               variant='solid'
               onClick={onLoadSwapRecords}
             >
@@ -406,7 +406,7 @@ const Chart: NextPage = () => {
                 size="sm"
                 isLoading={isUpdating}
                 loadingText='Saving...'
-                colorScheme='teal'
+                colorScheme='green'
                 variant='solid'
                 onClick={onUpdateSwapRule}
               >

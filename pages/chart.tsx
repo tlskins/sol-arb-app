@@ -3,6 +3,7 @@ import Moment from 'moment-timezone'
 import { useSession } from "next-auth/react"
 import DatePicker from "react-datepicker"
 import {
+  Box,
   Button,
   FormLabel,
   Stack,
@@ -10,6 +11,7 @@ import {
   FormControl,
   Select,
 } from '@chakra-ui/react'
+import Head from 'next/head'
 import type { NextPage } from 'next'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
@@ -23,7 +25,7 @@ import { IUpdateSwapRule, ISwapRule } from '../types/swapRules'
 import { ISwapRecord } from '../types/swapRecord'
 import SwapRuleService from '../services/swapRule.service'
 const SwapChart = dynamic(() => import("../components/SwapChart"), { ssr: false })
-
+import styles from '../styles/Home.module.css'
 
 interface DataPoint {
   x: Date,
@@ -247,164 +249,174 @@ const Chart: NextPage = () => {
   }
 
   return(
-    <Stack p="2">
+    <div className={styles.container}>
+      <Head>
+        <title>NFADYOR</title>
+        <meta name="description" content="notfinancialadvicedoyourownresearch" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
       <Navbar />
 
-      { !isLoading && swapRule &&
-        <SwapChart
-          swapRule={swapRule}
-          buyDataPoints={buyDataPoints}
-          sellDataPoints={sellDataPoints}
-          buyTargetPoints={buyTargetPoints}
-          sellTargetPoints={sellTargetPoints}
-        />
-      }
+      <main className={styles.main}>
+        { !isLoading && swapRule &&
+          <SwapChart
+            swapRule={swapRule}
+            buyDataPoints={buyDataPoints}
+            sellDataPoints={sellDataPoints}
+            buyTargetPoints={buyTargetPoints}
+            sellTargetPoints={sellTargetPoints}
+          />
+        }
 
-      <Stack direction="column" marginY="4" alignContent="center" alignItems="center" justifyContent="center" fontWeight="bold">
-        <Stack direction="row" fontSize="sm">
-          <Stack direction="column">
-            <Text> Min Price </Text>
-            <Text> ${ minPrice?.toFixed( swapRule?.decimals ) || "?" } </Text>
+        <Stack direction="column" marginY="4" alignContent="center" alignItems="center" justifyContent="center" fontWeight="bold">
+          <Stack direction="row" fontSize="sm">
+            <Stack direction="column">
+              <Text> Min Price </Text>
+              <Text> ${ minPrice?.toFixed( swapRule?.decimals ) || "?" } </Text>
+            </Stack>
+            <Stack direction="column">
+              <Text> Avg Price </Text>
+              <Text> ${ avgPrice?.toFixed( swapRule?.decimals ) || "?" } </Text>
+            </Stack>
+            <Stack direction="column">
+              <Text> Max Price </Text>
+              <Text> ${ maxPrice?.toFixed( swapRule?.decimals ) || "?" } </Text>
+            </Stack>
+            <Stack direction="column">
+              <Text> Spread </Text>
+              <Text> { ((((maxPrice || 0) - (minPrice || 0)) / (minPrice || 1)) * 100).toFixed(0) }% </Text>
+            </Stack>
           </Stack>
-          <Stack direction="column">
-            <Text> Avg Price </Text>
-            <Text> ${ avgPrice?.toFixed( swapRule?.decimals ) || "?" } </Text>
-          </Stack>
-          <Stack direction="column">
-            <Text> Max Price </Text>
-            <Text> ${ maxPrice?.toFixed( swapRule?.decimals ) || "?" } </Text>
-          </Stack>
-          <Stack direction="column">
-            <Text> Spread </Text>
-            <Text> { ((((maxPrice || 0) - (minPrice || 0)) / (minPrice || 1)) * 100).toFixed(0) }% </Text>
-          </Stack>
-        </Stack>
 
-        <Stack direction="column">
-          <FormControl fontSize="sm">
-            <Select size="sm"
-              fontSize="sm"
-              background="white"
-              borderRadius="lg"
-              onChange={ e => setFilterId(e.target.value)}
-              value={ filterId }
-            >
-              <option value="">Chart</option>
-              { ChartRangeFilters.map( ({ id }) => <option
-                key={id}
-                value={id}
+          <Stack direction="column">
+            <FormControl fontSize="sm">
+              <Select size="sm"
+                fontSize="sm"
+                background="white"
+                borderRadius="lg"
+                onChange={ e => setFilterId(e.target.value)}
+                value={ filterId }
               >
-                { id }
-              </option> )}
-            </Select>
-          </FormControl>
+                <option value="">Chart</option>
+                { ChartRangeFilters.map( ({ id }) => <option
+                  key={id}
+                  value={id}
+                >
+                  { id }
+                </option> )}
+              </Select>
+            </FormControl>
 
-          <Stack direction="row">
-            <FormLabel fontSize="sm">Start</FormLabel>
-            <DatePicker
-              className="filter-calendar full-width"
-              selected={chartStart?.toDate()}
-              dateFormat="Pp"
-              onChange={ date => setChartStart(date ? Moment(date) : undefined) }
-              showTimeSelect
-              isClearable={true}
-              timeFormat="HH:mm"
-              timeIntervals={60}
-              timeCaption="time"
-            />
+            <Stack direction="row">
+              <FormLabel fontSize="sm">Start</FormLabel>
+              <DatePicker
+                className="filter-calendar full-width"
+                selected={chartStart?.toDate()}
+                dateFormat="Pp"
+                onChange={ date => setChartStart(date ? Moment(date) : undefined) }
+                showTimeSelect
+                isClearable={true}
+                timeFormat="HH:mm"
+                timeIntervals={60}
+                timeCaption="time"
+              />
+            </Stack>
+
+            <Stack direction="row">
+              <FormLabel fontSize="sm">End </FormLabel>
+              <DatePicker
+                className="filter-calendar full-width"
+                selected={chartEnd?.toDate()}
+                dateFormat="Pp"
+                onChange={ date => setChartEnd(date ? Moment(date) : undefined) }
+                showTimeSelect
+                isClearable={true}
+                timeFormat="HH:mm"
+                timeIntervals={60}
+                timeCaption="time"
+              />
+            </Stack>
           </Stack>
 
-          <Stack direction="row">
-            <FormLabel fontSize="sm">End </FormLabel>
-            <DatePicker
-              className="filter-calendar full-width"
-              selected={chartEnd?.toDate()}
-              dateFormat="Pp"
-              onChange={ date => setChartEnd(date ? Moment(date) : undefined) }
-              showTimeSelect
-              isClearable={true}
-              timeFormat="HH:mm"
-              timeIntervals={60}
-              timeCaption="time"
-            />
+          <Stack direction="column">
+            <Stack direction="row">
+              <FormLabel fontSize="sm">
+                Sell Above
+              </FormLabel>
+              <NumberInput
+                thousandSeparator={true}
+                value={ combined?.baseTarget }
+                onValueChange={ value => onChangeSwapRule( 'baseTarget', value ) }
+              />
+              <FormLabel fontSize="sm">
+                Hits ({ sellHits })
+              </FormLabel>
+            </Stack>
+
+            <Stack direction="row">
+              <FormLabel fontSize="sm">
+                Buy Below
+              </FormLabel>
+              <NumberInput
+                thousandSeparator={true}
+                value={ combined?.swapTarget }
+                onValueChange={ value => onChangeSwapRule( 'swapTarget', value ) }
+              />
+              <FormLabel fontSize="sm">
+                Hits ({ buyHits })
+              </FormLabel>
+
+            </Stack>
+          </Stack>
+
+          <Stack>
+            <Text fontSize="sm" fontWeight="bold">
+              Margin { margin }
+            </Text>
           </Stack>
         </Stack>
+      </main>
 
-        <Stack direction="column">
-          <Stack direction="row">
-            <FormLabel fontSize="sm">
-              Sell Above
-            </FormLabel>
-            <NumberInput
-              thousandSeparator={true}
-              value={ combined?.baseTarget }
-              onValueChange={ value => onChangeSwapRule( 'baseTarget', value ) }
-            />
-            <FormLabel fontSize="sm">
-              Hits ({ sellHits })
-            </FormLabel>
-          </Stack>
-
-          <Stack direction="row">
-            <FormLabel fontSize="sm">
-              Buy Below
-            </FormLabel>
-            <NumberInput
-              thousandSeparator={true}
-              value={ combined?.swapTarget }
-              onValueChange={ value => onChangeSwapRule( 'swapTarget', value ) }
-            />
-            <FormLabel fontSize="sm">
-              Hits ({ buyHits })
-            </FormLabel>
-
-          </Stack>
-        </Stack>
-
-        <Stack>
-          <Text fontSize="sm" fontWeight="bold">
-            Margin { margin }
-          </Text>
-        </Stack>
-
-        <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginBottom="12">
-          <Button
-            size="sm"
-            colorScheme='teal'
-            variant='solid'
-            onClick={() => router.push( '/' )}
-          >
-            Back
-          </Button>
-
-          <Button
-            size="sm"
-            isLoading={isLoading}
-            loadingText='Loading...'
-            colorScheme='teal'
-            variant='solid'
-            onClick={onLoadSwapRecords}
-          >
-            Refresh
-          </Button>
-        </Stack>
-
-        <Stack direction="row">
-          { swapRuleUpdate._id &&
+      <Box className={styles.footer}>
+        <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
+          <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
             <Button
-              isLoading={isUpdating}
-              loadingText='Saving...'
-              colorScheme='teal'
+              size="sm"
+              colorScheme='red'
               variant='solid'
-              onClick={onUpdateSwapRule}
+              onClick={() => router.push( '/' )}
             >
-              Save
+              Back
             </Button>
-          }
-        </Stack>
-        
-      </Stack>
-    </Stack>
+
+            <Button
+              size="sm"
+              isLoading={isLoading}
+              loadingText='Loading...'
+              colorScheme='yellow'
+              variant='solid'
+              onClick={onLoadSwapRecords}
+            >
+              Refresh
+            </Button>
+
+            { swapRuleUpdate._id &&
+              <Button
+                size="sm"
+                isLoading={isUpdating}
+                loadingText='Saving...'
+                colorScheme='teal'
+                variant='solid'
+                onClick={onUpdateSwapRule}
+              >
+                Save
+              </Button>
+            }
+          </Stack>
+        </Box>
+      </Box>
+    </div>
   )
 }
 

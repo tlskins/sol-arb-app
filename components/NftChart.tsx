@@ -12,26 +12,37 @@ interface DataPoint {
 const NftChart = ({
   projRule,
   floorDataPoints,
+  listingDataPoints,
   alertBelowPoints,
   alertAbovePoints,
 }: {
   projRule: ProjectRule | undefined,
   floorDataPoints: DataPoint[],
+  listingDataPoints: DataPoint[],
   alertBelowPoints: DataPoint[],
   alertAbovePoints: DataPoint[],
 }) => {
   console.log('nftchart', projRule)
   const currFloor = floorDataPoints[floorDataPoints.length-1]?.y || 0.0
+  const currListings = listingDataPoints[listingDataPoints.length-1]?.y || 0.0
   return(
     <CanvasJSChart
       options={{
         theme: "light2",
         title: {
-          text: `${ projRule?.stats?.project?.display_name || '?' } Floor @ ${ currFloor?.toFixed( 2 ) || "?" }`
+          text: `${ projRule?.stats?.project?.display_name || '?' }`
         },
+        subtitles: [
+          { text: `Floor @ ${ currFloor?.toFixed( 2 ) || "?" }`, fontColor: "blue" },
+          { text: `Listings @ ${ currListings?.toFixed( 2 ) || "?" }`, fontColor: "red" },
+        ],
         axisY: {
           title: 'Floor',
           prefix: "$",
+        },
+        axisY2: {
+          title: 'Listings',
+          prefix: "#",
         },
         data: [
           {
@@ -39,6 +50,7 @@ const NftChart = ({
             xValueFormatString: "MM hh:mm",
             yValueFormatString: "$#,##0.00",
             dataPoints: floorDataPoints,
+            color: "blue",
           },
           {
             type: "line",
@@ -51,6 +63,14 @@ const NftChart = ({
             xValueFormatString: "MM hh:mm",
             yValueFormatString: "$#,##0.00",
             dataPoints: alertBelowPoints,
+          },
+          {
+            type: "line",
+            axisYType: "secondary",
+            xValueFormatString: "MM hh:mm",
+            yValueFormatString: "#0",
+            dataPoints: listingDataPoints,
+            color: "red",
           },
         ]
       }}

@@ -66,6 +66,7 @@ const NftChart: NextPage = () => {
   
   const [isLoading, setIsLoading] = useState(false)
   const [floorDataPoints, setFloorDataPoints] = useState([] as DataPoint[])
+  const [listingDataPoints, setListingDataPoints] = useState([] as DataPoint[])
   const [alertBelowPoints, setAlertBelowPoints] = useState([] as DataPoint[])
   const [alertAbovePoints, setAlertAbovePoints] = useState([] as DataPoint[])
   const [renderStart, setRenderStart] = useState(undefined as Date | undefined)
@@ -179,6 +180,11 @@ const NftChart: NextPage = () => {
       x: Moment(record.timestamp).toDate(),
       y: record.floor,
     })))
+    setListingDataPoints(projRecords.map( record => ({
+      label: 'Listings',
+      x: Moment(record.timestamp).toDate(),
+      y: record.listings,
+    })))
   }
 
   const drawAlertPoints = (start?: Date, end?: Date, alertBelow?: number | null, alertAbove?: number | null) => {
@@ -227,6 +233,7 @@ const NftChart: NextPage = () => {
           <SwapChart
             projRule={projRule}
             floorDataPoints={floorDataPoints}
+            listingDataPoints={listingDataPoints}
             alertBelowPoints={alertBelowPoints}
             alertAbovePoints={alertAbovePoints}
           />

@@ -5,4 +5,5 @@ export interface IProjectRecord {
   listings: number,
   listingsPct: number,
   numHolders: number,
+  hr1Volume: number,
 }

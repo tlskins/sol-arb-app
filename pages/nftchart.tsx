@@ -67,6 +67,9 @@ const NftChart: NextPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [floorDataPoints, setFloorDataPoints] = useState([] as DataPoint[])
   const [listingDataPoints, setListingDataPoints] = useState([] as DataPoint[])
+  const [numHolderDataPoints, setNumHolderDataPoints] = useState([] as DataPoint[])
+  const [hr1VolumeDataPoints, setHr1VolumeDataPoints] = useState([] as DataPoint[])
+
   const [alertBelowPoints, setAlertBelowPoints] = useState([] as DataPoint[])
   const [alertAbovePoints, setAlertAbovePoints] = useState([] as DataPoint[])
   const [renderStart, setRenderStart] = useState(undefined as Date | undefined)
@@ -185,6 +188,16 @@ const NftChart: NextPage = () => {
       x: Moment(record.timestamp).toDate(),
       y: record.listings,
     })))
+    setNumHolderDataPoints(projRecords.map( record => ({
+      label: '# Unique Holders',
+      x: Moment(record.timestamp).toDate(),
+      y: record.numHolders,
+    })))
+    setHr1VolumeDataPoints(projRecords.map( record => ({
+      label: '1 Hr Vol',
+      x: Moment(record.timestamp).toDate(),
+      y: record.hr1Volume,
+    })))
   }
 
   const drawAlertPoints = (start?: Date, end?: Date, alertBelow?: number | null, alertAbove?: number | null) => {
@@ -234,6 +247,8 @@ const NftChart: NextPage = () => {
             projRule={projRule}
             floorDataPoints={floorDataPoints}
             listingDataPoints={listingDataPoints}
+            numHolderDataPoints={numHolderDataPoints}
+            hr1VolumeDataPoints={hr1VolumeDataPoints}
             alertBelowPoints={alertBelowPoints}
             alertAbovePoints={alertAbovePoints}
           />

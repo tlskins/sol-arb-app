@@ -3,7 +3,6 @@ import Head from 'next/head'
 import { useSession } from "next-auth/react"
 import React, { useEffect, useState } from 'react'
 import Moment from 'moment-timezone'
-import { useRouter } from 'next/router'
 import {
   Flex,
   Box,
@@ -37,17 +36,14 @@ import {
   Tbody,
   Td,
   Tfoot,
-  Textarea,
-  InputRightAddon,
-  InputLeftAddon,
-  InputGroup,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, EditIcon, LinkIcon } from '@chakra-ui/icons'
-import { FaChartLine } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import DatePicker from "react-datepicker"
 import moment from 'moment-timezone'
 
+import { FilterDateRange, DftFilterDateRanges, filterDateToISOString } from '../services/helpers'
 import alphaService, { SearchAliasesReq } from '../services/alpha.service'
 import { EntityType, EntityTypes, IEntityAlias, IUpdateEntityAlias, IMessage, IEntity } from '../types/alpha'
 import { setAccessToken } from '../http-common'
@@ -57,6 +53,7 @@ import NumberInput from '../components/NumberInput'
 import MessageList from '../components/MessageList'
 import EntityFinder from '../components/EntityFinder'
 
+
 const searchLimit = 25
 
 const getDefaultSearch = (): SearchAliasesReq => {
@@ -64,7 +61,7 @@ const getDefaultSearch = (): SearchAliasesReq => {
     limit: searchLimit,
     offset: 0,
     ignore: false,
-    after: Moment().add(-24, 'hours').toISOString(),
+    after: FilterDateRange.Hours12,
     orderBy: OrderOption.COUNT,
     orderDirection: OrderDirection.DESC,
   }
@@ -128,7 +125,12 @@ const Home: NextPage = () => {
       return
     }
     onLoadingAliases()
-    const resp = await alphaService.searchAliases(searchEntityAlias)
+    const { before, after } = searchEntityAlias
+    const resp = await alphaService.searchAliases({
+      ...searchEntityAlias,
+      before: before && filterDateToISOString( before ),
+      after: after && filterDateToISOString( after ),
+    })
     if ( resp ) {
       setEntityAliases(resp)
     }
@@ -233,7 +235,10 @@ const Home: NextPage = () => {
                 <FormControl>
                   <Input type="text"
                     value={ searchEntityAlias.entityAliasNameLike }
-                    onChange={ e => setSearchEntityAlias({ ...searchEntityAlias, entityAliasNameLike: e.target.value === "" ? undefined : e.target.value }) }
+                    onChange={ e => setSearchEntityAlias({
+                      ...searchEntityAlias,
+                      entityAliasNameLike: e.target.value === "" ? undefined : e.target.value
+                    }) }
                   />
                 </FormControl>
               </Box>
@@ -282,26 +287,6 @@ const Home: NextPage = () => {
               </Box>
 
               <Box>
-                <FormLabel fontSize="sm"> After </FormLabel>
-                <FormControl>
-                  <DatePicker
-                    className="filter-calendar full-width"
-                    selected={ searchEntityAlias.after ? Moment( searchEntityAlias.after ).toDate() : null }
-                    dateFormat="Pp"
-                    onChange={ date => setSearchEntityAlias({
-                      ...searchEntityAlias,
-                      after: date?.toISOString(),
-                    })}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={60}
-                    timeCaption="time"
-                    isClearable
-                  />
-                </FormControl>
-              </Box>
-
-              <Box>
                 <FormLabel fontSize="sm"> Before </FormLabel>
                 <FormControl>
                   <DatePicker
@@ -318,6 +303,24 @@ const Home: NextPage = () => {
                     timeCaption="time"
                     isClearable
                   />
+                </FormControl>
+              </Box>
+
+              <Box>
+                <FormLabel fontSize="sm"> After </FormLabel>
+                <FormControl>
+                  <Select size="sm"
+                    fontSize="sm"
+                    background="white"
+                    borderRadius="lg"
+                    value={ searchEntityAlias.after }
+                    onChange={ e => setSearchEntityAlias({
+                      ...searchEntityAlias,
+                      after: e.target.value,
+                    })}
+                  >
+                    { DftFilterDateRanges.map( filter => <option value={filter} key={filter}> { filter } </option>) }
+                  </Select>
                 </FormControl>
               </Box>
 
@@ -485,7 +488,7 @@ const Home: NextPage = () => {
 
       <Box className={styles.footer}>
         { sessionData?.token?.id &&
-          <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
+          <Box position="fixed" zIndex="sticky" bottom="0" bg={useColorModeValue('gray.100', 'gray.900')} width="full" pb="4">
             <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
               { (searchEntityAlias?.offset || 0) > 0 &&
                 <IconButton
@@ -505,19 +508,19 @@ const Home: NextPage = () => {
               <Button
                 isLoading={isLoadingAliases}
                 loadingText='Refreshing...'
-                colorScheme="yellow"
+                colorScheme='teal'
                 variant='solid'
                 onClick={onLoadAliases}
               >
                 Refresh
               </Button>
 
-              <Text color="white" fontWeight="bold">
+              <Text color="teal.800" fontWeight="bold">
                 Page { (((searchEntityAlias?.offset || 0) / searchLimit) + 1).toFixed(0) }
               </Text>
 
               <Button
-                colorScheme="yellow"
+                colorScheme='teal'
                 variant='solid'
                 onClick={onFilterAliasView}
               >

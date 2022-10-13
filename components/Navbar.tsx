@@ -607,8 +607,17 @@ const Navbar = () => {
                     >
                       Alpha
                     </MenuItem>
+                    <MenuItem
+                      _hover={{
+                        background:"green.200",
+                      }}
+                      fontWeight="extrabold"
+                      onClick={() => router.push('alpha-tagging')}
+                    >
+                      Tagging
+                    </MenuItem>
                     <MenuDivider />
-                    
+
                     <MenuItem onClick={onSignOut}>
                       Sign Out
                     </MenuItem>

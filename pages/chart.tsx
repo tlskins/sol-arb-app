@@ -10,6 +10,7 @@ import {
   Text,
   FormControl,
   Select,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import Head from 'next/head'
 import type { NextPage } from 'next'
@@ -379,11 +380,11 @@ const Chart: NextPage = () => {
       </main>
 
       <Box className={styles.footer}>
-        <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
+        <Box position="fixed" zIndex="sticky" bottom="0" bg={useColorModeValue('gray.100', 'gray.900')} width="full" pb="4">
           <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
             <Button
               size="sm"
-              colorScheme='yellow'
+              colorScheme='teal'
               variant='solid'
               onClick={() => router.push( '/' )}
             >

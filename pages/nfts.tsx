@@ -21,6 +21,7 @@ import {
   StatNumber,
   StatHelpText,
   FormControl,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { FaChartLine } from 'react-icons/fa'
 import { toast } from 'react-toastify'
@@ -583,21 +584,21 @@ const Home: NextPage = () => {
       </main>
 
       <Box className={styles.footer}>
-        { sessionData?.token?.id &&
-          <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
-            <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
-              <Button
-                isLoading={isRefreshingProjRules}
-                loadingText='Refreshing...'
-                colorScheme="yellow"
-                variant='solid'
-                onClick={onLoadProjRules}
-              >
-                Refresh
-              </Button>
-            </Stack>
+          <Box position="fixed" zIndex="sticky" bottom="0" bg={useColorModeValue('gray.100', 'gray.900')} width="full" pb="4">
+            { sessionData?.token?.id &&
+              <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+                <Button
+                  isLoading={isRefreshingProjRules}
+                  loadingText='Refreshing...'
+                  colorScheme="teal"
+                  variant='solid'
+                  onClick={onLoadProjRules}
+                >
+                  Refresh
+                </Button>
+              </Stack>
+            }
           </Box>
-        }
       </Box>
     </div>
   )

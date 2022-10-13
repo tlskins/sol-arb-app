@@ -24,6 +24,7 @@ import {
   Stat,
   StatLabel,
   StatNumber,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { toast } from 'react-toastify'
 import DatePicker from "react-datepicker"
@@ -663,13 +664,13 @@ const Home: NextPage = () => {
       </main>
 
       <Box className={styles.footer}>
-        { sessionData?.token?.id &&
-          <Box position="fixed" zIndex="sticky" bottom="0" bg="blue.600" width="full" pb="4">
+        <Box position="fixed" zIndex="sticky" bottom="0" bg={useColorModeValue('gray.100', 'gray.900')} width="full" pb="4">
+          { sessionData?.token?.id &&
             <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
               <Button
                 isLoading={isRefreshingSwapRules}
                 loadingText='Refreshing...'
-                colorScheme="yellow"
+                colorScheme="teal"
                 variant='solid'
                 onClick={onLoadSwapRules}
               >
@@ -679,15 +680,15 @@ const Home: NextPage = () => {
               <Button
                 isLoading={isChecking}
                 loadingText='Checking...'
-                colorScheme="red"
+                colorScheme="teal"
                 variant='solid'
                 onClick={onCheckSwapRules}
               >
                 Check Rules
               </Button>
             </Stack>
-          </Box>
-        }
+          }
+        </Box>
       </Box>
     </div>
   )

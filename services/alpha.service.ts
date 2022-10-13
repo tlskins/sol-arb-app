@@ -4,15 +4,18 @@ import { IEntity, INewEntity, IUpdateEntity, EntityType, IEntityAlias, IUpdateEn
 
 // entity types
 export interface SearchEntitiesReq {
+  id?: number,
   name?: string,
   projectId?: string,
   type?: string,
   after?: string,
   before?: string,
   limit?: number,
+  offset?: number,
   orderBy?: string,
   orderDirection?: string,
 }
+
 interface EntityResp {
   entity: IEntity
 }
@@ -24,6 +27,8 @@ interface EntitiesResp {
 // alias types
 
 export interface SearchAliasesReq {
+  id?: number,
+  entityAliasNameLike?: string,
   entityId?: number,
   countAbove?: number,
   countBelow?: number,
@@ -32,6 +37,7 @@ export interface SearchAliasesReq {
   after?: string,
   before?: string,
   limit?: number,
+  offset?: number,
   orderBy?: string ,
   orderDirection?: string,
 }
@@ -50,6 +56,8 @@ export interface SearchMessagesReq {
   entityName?: string,
   entityType?: string,
   entityIds?: string,
+  aliasIds?: string,
+  channelIds?: string,
   after?: string,
   before?: string,
   projectId?: string,
@@ -122,9 +130,11 @@ class AlphaService {
 
   updateEntityAlias = async ( id: number, req: IUpdateEntityAlias ): Promise<IEntityAlias | undefined> => {
     try {
-      const resp: IResponse<EntityAliasResp> = await http.put( `entity-alias/${ id }`, req )
+      await http.put( `entity-alias/${ id }`, req )
+      const resp: IResponse<EntityAliasesResp> = await http.get( `entity-alias`, { params: { id }} )
+      if ( resp.data.results.length === 0 ) return
 
-      return resp.data.entityAlias
+      return resp.data.results[0]
     } catch( err ) {
       handleError("Error updating alias", err)
     }

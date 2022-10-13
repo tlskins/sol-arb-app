@@ -4,6 +4,7 @@ export enum EntityType {
   Project = "Project",
   Premint = "Premint",
   Trading = "Trading",
+  Alpha = "Alpha",
 }
 
 export const EntityTypes = [
@@ -11,6 +12,7 @@ export const EntityTypes = [
   EntityType.Project,
   EntityType.Premint,
   EntityType.Trading,
+  EntityType.Alpha,
 ]
 
 export interface INewEntity {
@@ -53,6 +55,7 @@ export interface IEntityAlias {
   entity: IEntity | null | undefined,
   messages: IMessage[] | null | undefined,
   // dynamic
+  entityName?: string,
   lastMention?: string,
   mentions?: number,
 }
@@ -86,6 +89,8 @@ export interface IMessage {
   processed_at: string | null,
   entities: any[] | null, // Entity[]
   entities_count: number | null,
+  createdAt: string,
+  updatedAt: string,
   // associations
   entityAliases: IEntityAlias[] | null | undefined,
 }
@@ -96,3 +101,8 @@ interface DiscordAuthor {
   discriminator: string,
   avatar: string,
 }
+
+export const ChannelsMap = new Map<string, string>()
+ChannelsMap.set("927396163135631397", "Degods Alpha")
+ChannelsMap.set("899081166999670814", "Famous Fox Alpha")
+ChannelsMap.set("924069784444882964", "Degen Bible Test")

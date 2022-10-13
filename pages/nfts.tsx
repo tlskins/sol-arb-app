@@ -27,7 +27,7 @@ import { toast } from 'react-toastify'
 import { IoMdArrowDropdown, IoMdArrowDropup } from 'react-icons/io'
 import CreatableSelect from 'react-select/creatable'
 import { ActionMeta, OnChangeValue } from 'react-select'
-import Select, { OptionsOrGroups, GroupBase } from 'react-select'
+import Select from 'react-select'
 import makeAnimated from 'react-select/animated'
 import { ChartRangeFilters } from './nftchart'
 

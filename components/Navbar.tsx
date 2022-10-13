@@ -597,6 +597,18 @@ const Navbar = () => {
                         <MenuDivider />
                       </>
                     }
+
+                    <MenuItem
+                      _hover={{
+                        background:"green.200",
+                      }}
+                      fontWeight="extrabold"
+                      onClick={() => router.push('alpha')}
+                    >
+                      Alpha
+                    </MenuItem>
+                    <MenuDivider />
+                    
                     <MenuItem onClick={onSignOut}>
                       Sign Out
                     </MenuItem>

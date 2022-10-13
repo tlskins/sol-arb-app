@@ -381,7 +381,8 @@ const Home: NextPage = () => {
             </Button>
             <Button colorScheme='blue'
               onClick={() => {
-                onLoadAliases()
+                setSearchEntityAlias({ ...searchEntityAlias, offset: 0 })
+                setRefreshSearch(true)
                 endFilterAliasView()
               }}
             >

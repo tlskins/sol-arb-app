@@ -56,7 +56,7 @@ const getDefaultSearch = (): SearchEntitiesReq => {
     limit: searchLimit,
     type: `${EntityType.Alpha},${EntityType.Premint},${EntityType.Project},${EntityType.Trading}`,
     offset: 0,
-    after: FilterDateRange.Hours12,
+    after: FilterDateRange.Hours6,
     orderBy: OrderOption.COUNT,
     orderDirection: OrderDirection.DESC,
   }
@@ -355,7 +355,8 @@ const Home: NextPage = () => {
             </Button>
             <Button colorScheme='blue'
               onClick={() => {
-                onLoadEntities()
+                setSearchEntity({ ...searchEntity, offset: 0 })
+                setRefreshSearch(true)
                 endFilterView()
               }}
             >

@@ -54,7 +54,7 @@ const searchLimit = 25
 const getDefaultSearch = (): SearchEntitiesReq => {
   return {
     limit: searchLimit,
-    type: `${EntityType.Alpha},${EntityType.Premint},${EntityType.Project},%${EntityType.Trading}`,
+    type: `${EntityType.Alpha},${EntityType.Premint},${EntityType.Project},${EntityType.Trading}`,
     offset: 0,
     after: FilterDateRange.Hours12,
     orderBy: OrderOption.COUNT,

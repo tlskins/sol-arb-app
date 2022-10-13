@@ -10,6 +10,8 @@ export interface SearchEntitiesReq {
   type?: string,
   after?: string,
   before?: string,
+  countAbove?: number,
+  countBelow?: number,
   limit?: number,
   offset?: number,
   orderBy?: string,

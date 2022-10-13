@@ -12,6 +12,11 @@ import {
   Stack,
   Checkbox,
   useDisclosure,
+  Select as SelectOptions,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
   FormControl,
   Drawer,
   DrawerOverlay,
@@ -31,16 +36,16 @@ import {
   Tbody,
   Td,
   Tfoot,
-  Link,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, EditIcon, LinkIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify'
 import DatePicker from "react-datepicker"
+import moment from 'moment-timezone'
 
 import { FilterDateRange, DftFilterDateRanges, filterDateToISOString, OrderOption, OrderDirection } from '../services/helpers'
-import alphaService, { SearchEntitiesReq } from '../services/alpha.service'
-import { EntityType, EntityTypes, IMessage, IEntity } from '../types/alpha'
+import alphaService, { SearchAliasesReq } from '../services/alpha.service'
+import { EntityType, EntityTypes, IEntityAlias, IMessage, IEntity } from '../types/alpha'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
@@ -51,18 +56,17 @@ import EntityFinder from '../components/EntityFinder'
 
 const searchLimit = 25
 
-const getDefaultSearch = (): SearchEntitiesReq => {
+const getDefaultSearch = (): SearchAliasesReq => {
   return {
     limit: searchLimit,
-    type: `${EntityType.Alpha},${EntityType.Premint},${EntityType.Project},%${EntityType.Trading}`,
     offset: 0,
+    ignore: false,
     after: FilterDateRange.Hours12,
     orderBy: OrderOption.COUNT,
     orderDirection: OrderDirection.DESC,
   }
 }
-
-interface IEntityMessagesMap {
+interface IAliasMessagesMap {
   [key: string]: IMessage[] | undefined
 }
 
@@ -71,22 +75,22 @@ const Home: NextPage = () => {
   const sessionData = _sessionData as any
 
   const [refreshSearch, setRefreshSearch] = useState(true)
-  const [searchEntity, setSearchEntity] = useState(getDefaultSearch() as SearchEntitiesReq)
-  const [entities, setEntities] = useState([] as IEntity[])
-  const [editEntity, setEditEntity] = useState(undefined as IEntity | undefined)
-  const [entityMessagesMap, setEntityMessagesMap] = useState({} as IEntityMessagesMap)
+  const [searchEntityAlias, setSearchEntityAlias] = useState(getDefaultSearch() as SearchAliasesReq)
+  const [entityAliases, setEntityAliases] = useState([] as IEntityAlias[])
+  const [aliasMessagesMap, setAliasMessagesMap] = useState({} as IAliasMessagesMap)
   const [viewMsgs, setViewMsgs] = useState([] as IMessage[])
   const [viewMsgsTitle, setViewMsgsTitle] = useState("")
+  const [taggingAlias, setTaggingAlias] = useState(undefined as IEntityAlias | undefined)
 
   const {
-    isOpen: isFilterView,
-    onOpen: onFilterView,
-    onClose: endFilterView,
+    isOpen: isFilterAliasView,
+    onOpen: onFilterAliasView,
+    onClose: endFilterAliasView,
   } = useDisclosure()
   const {
-    isOpen: isLoadingEntities,
-    onOpen: onLoadingEntities,
-    onClose: endLoadingEntities,
+    isOpen: isLoadingAliases,
+    onOpen: onLoadingAliases,
+    onClose: endLoadingAliases,
   } = useDisclosure()
   const {
     isOpen: isViewMsgs,
@@ -102,80 +106,82 @@ const Home: NextPage = () => {
   useEffect(() => {
     if ( sessionData?.token?.id && refreshSearch) {
       setAccessToken( sessionData?.token?.access_token )
-      onLoadEntities()
+      onLoadAliases()
       setRefreshSearch(false)
     }
   }, [sessionData?.token?.id, refreshSearch])
 
-  const onLoadEntities = async () => {
-    if ( !sessionData || isLoadingEntities ) {
+  const onLoadAliases = async () => {
+    if ( !sessionData || isLoadingAliases ) {
       return
     }
-    onLoadingEntities()
-    const { before, after } = searchEntity
-    const resp = await alphaService.searchEntities({
-      ...searchEntity,
+    onLoadingAliases()
+    const { before, after } = searchEntityAlias
+    const resp = await alphaService.searchAliases({
+      ...searchEntityAlias,
       before: before && filterDateToISOString( before ),
       after: after && filterDateToISOString( after ),
     })
-    endLoadingEntities()
     if ( resp ) {
-      setEntities(resp)
+      setEntityAliases(resp)
     }
+    endLoadingAliases()
   }
 
-  const onUpdateEntity = async (entityId: number, key: string, value: any) => {
-    const updatedEntity = await alphaService.updateEntity(entityId, { id: entityId, [key]: value })
-    if ( updatedEntity ) {
-      replaceEntity( updatedEntity )
-      toast.success('Updated Entity!', {
+  const onUpdateAlias = async (aliasId: number, key: string, value: any) => {
+    const updatedAlias = await alphaService.updateEntityAlias(aliasId, { [key]: value })
+    if ( updatedAlias ) {
+      replaceAlias( updatedAlias )
+      toast.success('Updated Alias!', {
         theme: 'dark',
         position: toast.POSITION.TOP_CENTER,
       })
     }
-    onLoadEntities()
+    onLoadAliases()
   }
 
-  const onLoadEntityMessages = (entityId: number) => async () => {
+  const onLoadAliasMessages = (aliasId: number) => async () => {
     if ( !sessionData ) {
       return
     }
-    const entity = entities.find( entity => entity.id === entityId )
-    setViewMsgsTitle(`Messages containing "${ entity?.name || "?" }"`)
-    setViewMsgs(entityMessagesMap[entityId] || [])
+    const alias = entityAliases.find( alias => alias.id === aliasId )
+    setViewMsgsTitle(`Messages containing "${ alias?.name || "?" }"`)
+    setViewMsgs(aliasMessagesMap[aliasId] || [])
     onViewMsgs()
     const resp = await alphaService.searchMessages({
-      entityIds: entityId.toString(),
-      after: searchEntity.after && filterDateToISOString(searchEntity.after),
-      before: searchEntity.before && filterDateToISOString(searchEntity.before),
+      aliasIds: aliasId.toString(),
+      before: searchEntityAlias.before && filterDateToISOString( searchEntityAlias.before ),
+      after: searchEntityAlias.after && filterDateToISOString( searchEntityAlias.after ),
       orderBy: "TIMESTAMP",
       orderDirection: "DESC",
       limit: 10,
     })
     if ( resp ) {
-      setEntityMessagesMap({ ...entityMessagesMap, [entityId]: resp })
+      setAliasMessagesMap({ ...aliasMessagesMap, [aliasId]: resp })
       setViewMsgs(resp)
     }
   }
 
-  const onReloadEntity = async (entity: IEntity) => {
-    const entities = await alphaService.searchEntities({ id: entity.id })
-    if ( entities && entities.length > 0 ) {
-      replaceEntity(entities[0])
-      toast.success('Updated Entity!', {
+  const onFoundEntityAndTag = async (entity: IEntity) => {
+    if (!taggingAlias) return
+    const updatedAlias = await alphaService.updateEntityAlias(taggingAlias.id, { entityId: entity.id })
+    setTaggingAlias(undefined)
+    if ( updatedAlias ) {
+      replaceAlias( updatedAlias )
+      toast.success('Updated Alias!', {
         theme: 'dark',
         position: toast.POSITION.TOP_CENTER,
       })
     }
   }
 
-  const replaceEntity = (updatedEntity: IEntity) => {
-    const idx = entities.findIndex( entity => entity.id === updatedEntity.id )
-    const oldEntity = entities[idx]
-    setEntities([
-      ...entities.slice(0, idx),
-      { ...oldEntity, ...updatedEntity },
-      ...entities.slice(idx+1, entities.length),
+  const replaceAlias = (updatedAlias: IEntityAlias) => {
+    const idx = entityAliases.findIndex( alias => alias.id === updatedAlias.id )
+    const oldAlias = entityAliases[idx]
+    setEntityAliases([
+      ...entityAliases.slice(0, idx),
+      { ...oldAlias, ...updatedAlias },
+      ...entityAliases.slice(idx+1, entityAliases.length),
     ])
   }
 
@@ -197,22 +203,22 @@ const Home: NextPage = () => {
       />
 
       <EntityFinder
-        entityId={editEntity?.id || undefined}
+        entityId={taggingAlias?.entityId || undefined}
         isOpen={isShowEntityFinder}
         onClose={endShowEntityFinder}
-        onFindEntity={onReloadEntity}
+        onFindEntity={onFoundEntityAndTag}
       />
 
       <Drawer
-        isOpen={isFilterView}
+        isOpen={isFilterAliasView}
         placement='right'
-        onClose={endFilterView}
+        onClose={endFilterAliasView}
       >
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader borderBottomWidth='1px'>
-            Entity Filters
+            Entity Alias Filters
           </DrawerHeader>
 
           <DrawerBody>
@@ -221,10 +227,10 @@ const Home: NextPage = () => {
                 <FormLabel fontSize="sm"> Entity Name </FormLabel>
                 <FormControl>
                   <Input type="text"
-                    value={ searchEntity.name }
-                    onChange={ e => setSearchEntity({
-                      ...searchEntity,
-                      name: e.target.value === "" ? undefined : e.target.value
+                    value={ searchEntityAlias.entityAliasNameLike }
+                    onChange={ e => setSearchEntityAlias({
+                      ...searchEntityAlias,
+                      entityAliasNameLike: e.target.value === "" ? undefined : e.target.value
                     }) }
                   />
                 </FormControl>
@@ -237,9 +243,9 @@ const Home: NextPage = () => {
                     fontSize="sm"
                     background="white"
                     borderRadius="lg"
-                    onChange={ e => setSearchEntity({
-                      ...searchEntity,
-                      type: e.target.value === "" ? undefined : e.target.value,
+                    onChange={ e => setSearchEntityAlias({
+                      ...searchEntityAlias,
+                      entityType: e.target.value === "" ? undefined : e.target.value,
                     }) }
                   >
                     <option value={""}> None </option>
@@ -254,14 +260,34 @@ const Home: NextPage = () => {
               </Box>
 
               <Box>
+                <FormLabel>Ignore</FormLabel>
+                <FormControl fontSize="sm">
+                  <Select size="sm"
+                    fontSize="sm"
+                    background="white"
+                    borderRadius="lg"
+                    value={searchEntityAlias.ignore === undefined ? "all" : (searchEntityAlias.ignore ? "true" : "false")}
+                    onChange={ e => setSearchEntityAlias({
+                      ...searchEntityAlias,
+                      ignore: e.target.value === "all" ? undefined : e.target.value === "true",
+                    }) }
+                  >
+                    <option value={"all"}> all </option>
+                    <option value={"true"}> true </option>
+                    <option value={"false"}> false </option>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box>
                 <FormLabel fontSize="sm"> Before </FormLabel>
                 <FormControl>
                   <DatePicker
                     className="filter-calendar full-width"
-                    selected={ searchEntity.before ? Moment( searchEntity.before ).toDate() : null }
+                    selected={ searchEntityAlias.before ? Moment( searchEntityAlias.before ).toDate() : null }
                     dateFormat="Pp"
-                    onChange={ date => setSearchEntity({
-                      ...searchEntity,
+                    onChange={ date => setSearchEntityAlias({
+                      ...searchEntityAlias,
                       before: date?.toISOString(),
                     })}
                     showTimeSelect
@@ -280,9 +306,9 @@ const Home: NextPage = () => {
                     fontSize="sm"
                     background="white"
                     borderRadius="lg"
-                    value={ searchEntity.after }
-                    onChange={ e => setSearchEntity({
-                      ...searchEntity,
+                    value={ searchEntityAlias.after }
+                    onChange={ e => setSearchEntityAlias({
+                      ...searchEntityAlias,
                       after: e.target.value,
                     })}
                   >
@@ -299,8 +325,8 @@ const Home: NextPage = () => {
                     <NumberInput
                       onlyInt={true}
                       maxWidth={50}
-                      value={ searchEntity.countAbove }
-                      onValueChange={ value => setSearchEntity({ ...searchEntity, countAbove: value == null ? undefined : value }) }
+                      value={ searchEntityAlias.countAbove }
+                      onValueChange={ value => setSearchEntityAlias({ ...searchEntityAlias, countAbove: value == null ? undefined : value }) }
                     />
                   </Box>
                   <Box>
@@ -308,8 +334,8 @@ const Home: NextPage = () => {
                     <NumberInput
                       onlyInt={true}
                       maxWidth={50}
-                      value={ searchEntity.countBelow }
-                      onValueChange={ value => setSearchEntity({ ...searchEntity, countBelow: value == null ? undefined : value }) }
+                      value={ searchEntityAlias.countBelow }
+                      onValueChange={ value => setSearchEntityAlias({ ...searchEntityAlias, countBelow: value == null ? undefined : value }) }
                     />
                   </Box>
                 </Stack>
@@ -322,8 +348,8 @@ const Home: NextPage = () => {
                     fontSize="sm"
                     background="white"
                     borderRadius="lg"
-                    value={searchEntity.orderBy}
-                    onChange={ e => setSearchEntity({ ...searchEntity, orderBy: e.target.value }) }
+                    value={searchEntityAlias.orderBy}
+                    onChange={ e => setSearchEntityAlias({ ...searchEntityAlias, orderBy: e.target.value }) }
                   >
                     <option value={OrderOption.COUNT}> # mentions </option>
                     <option value={OrderOption.TIMESTAMP}> last mention </option>
@@ -338,8 +364,8 @@ const Home: NextPage = () => {
                     fontSize="sm"
                     background="white"
                     borderRadius="lg"
-                    value={searchEntity.orderDirection}
-                    onChange={ e => setSearchEntity({ ...searchEntity, orderDirection: e.target.value }) }
+                    value={searchEntityAlias.orderDirection}
+                    onChange={ e => setSearchEntityAlias({ ...searchEntityAlias, orderDirection: e.target.value }) }
                   >
                     <option value={OrderDirection.ASC}> asc </option>
                     <option value={OrderDirection.DESC}> desc </option>
@@ -350,13 +376,13 @@ const Home: NextPage = () => {
           </DrawerBody>
 
           <DrawerFooter borderTopWidth='1px'>
-            <Button variant='outline' mr={3} onClick={endFilterView}>
+            <Button variant='outline' mr={3} onClick={endFilterAliasView}>
               Cancel
             </Button>
             <Button colorScheme='blue'
               onClick={() => {
-                onLoadEntities()
-                endFilterView()
+                onLoadAliases()
+                endFilterAliasView()
               }}
             >
               Search
@@ -374,16 +400,15 @@ const Home: NextPage = () => {
                 <Th>Name</Th>
                 <Th isNumeric>Mentions</Th>
                 <Th>Last Mention</Th>
-                <Th>Type</Th>
-                <Th>Marketplace</Th>
-                <Th>Edit</Th>
+                <Th>Ignore</Th>
+                <Th>Tag Entity</Th>
               </Tr>
             </Thead>
             <Tbody py="4">
-              { entities.map( entity => {
+              { entityAliases.map( alias => {
                 return(
                   <>
-                    <Tr key={entity.id}>
+                    <Tr key={alias.id}>
                       <Td>
                         <IconButton
                           icon={<ChatIcon/>}
@@ -392,37 +417,50 @@ const Home: NextPage = () => {
                           colorScheme='teal'
                           variant='solid'
                           mr="1"
-                          onClick={onLoadEntityMessages(entity.id)}
+                          onClick={onLoadAliasMessages(alias.id)}
                         />
-                        { entity.name }
+                        { alias.name }
                       </Td>
-                      <Td isNumeric>{ entity.mentions }</Td>
-                      <Td>{ entity.lastMention ? Moment(entity.lastMention).format('MMM D HH:mm a') : 'N/A' }</Td>
+                      <Td isNumeric>{ alias.mentions }</Td>
+                      <Td>{ alias.lastMention ? Moment(alias.lastMention).format('MMM D HH:mm a') : 'N/A' }</Td>
                       <Td>
-                        <Text>
-                          { entity.type }
-                        </Text>
+                        <Checkbox
+                          background="white"
+                          isChecked={ !!alias.ignore }
+                          onChange={ e => onUpdateAlias( alias.id, "ignore", e.target.checked ) }
+                          borderRadius="lg"
+                          size="lg"
+                        />
                       </Td>
                       <Td>
-                        { entity.hyperspaceUrl &&
-                          <Link href={entity.hyperspaceUrl} isExternal>
-                            <ExternalLinkIcon mx='2px' />
-                          </Link>
+                        { alias.entityName ?
+                          <Button
+                            size="xs"
+                            aria-label='Update entity'
+                            colorScheme='teal'
+                            variant='solid'
+                            mr="1"
+                            onClick={() => {
+                              onShowEntityFinder()
+                              setTaggingAlias(alias)
+                            }}
+                          >
+                            { alias.entityName }
+                          </Button>
+                          :
+                          <IconButton
+                            icon={<LinkIcon/>}
+                            size="xs"
+                            aria-label='Link entity to alias'
+                            colorScheme='teal'
+                            variant='solid'
+                            mr="1"
+                            onClick={() => {
+                              onShowEntityFinder()
+                              setTaggingAlias(alias)
+                            }}
+                          />
                         }
-                      </Td>
-                      <Td>
-                        <IconButton
-                          icon={<EditIcon/>}
-                          size="xs"
-                          aria-label='Edit'
-                          colorScheme='teal'
-                          variant='solid'
-                          mr="1"
-                          onClick={() => {
-                            setEditEntity(entity)
-                            onShowEntityFinder()
-                          }}
-                        />
                       </Td>
                     </Tr>
                   </>
@@ -432,7 +470,7 @@ const Home: NextPage = () => {
             <Tfoot>
               <Tr>
                 <Th>Total</Th>
-                <Th>{ entities.length }</Th>
+                <Th>{ entityAliases.length }</Th>
                 <Th />
               </Tr>
             </Tfoot>
@@ -444,7 +482,7 @@ const Home: NextPage = () => {
       <Box className={styles.footer}>
         <Box position="fixed" zIndex="sticky" bottom="0" bg={useColorModeValue('gray.100', 'gray.900')} width="full" pb="4">
           <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
-            { (searchEntity?.offset || 0) > 0 &&
+            { (searchEntityAlias?.offset || 0) > 0 &&
               <IconButton
                 icon={<ChevronLeftIcon/>}
                 size="xs"
@@ -453,35 +491,35 @@ const Home: NextPage = () => {
                 variant='solid'
                 mr="1"
                 onClick={() => {
-                  setSearchEntity({ ...searchEntity, offset: (searchEntity?.offset || 0) - searchLimit })
-                  onLoadEntities()
+                  setSearchEntityAlias({ ...searchEntityAlias, offset: (searchEntityAlias?.offset || 0) - searchLimit })
+                  onLoadAliases()
                 }}
               />
             }
 
             <Button
-              isLoading={isLoadingEntities}
+              isLoading={isLoadingAliases}
               loadingText='Refreshing...'
               colorScheme='teal'
               variant='solid'
-              onClick={onLoadEntities}
+              onClick={onLoadAliases}
             >
               Refresh
             </Button>
 
             <Text color="teal.800" fontWeight="bold">
-              Page { (((searchEntity?.offset || 0) / searchLimit) + 1).toFixed(0) }
+              Page { (((searchEntityAlias?.offset || 0) / searchLimit) + 1).toFixed(0) }
             </Text>
 
             <Button
               colorScheme='teal'
               variant='solid'
-              onClick={onFilterView}
+              onClick={onFilterAliasView}
             >
               Filter
             </Button>
 
-            { (entities.length % searchLimit) === 0 &&
+            { (entityAliases.length % searchLimit) === 0 &&
               <IconButton
                 icon={<ChevronRightIcon/>}
                 size="xs"
@@ -490,7 +528,7 @@ const Home: NextPage = () => {
                 variant='solid'
                 mr="1"
                 onClick={() => {
-                  setSearchEntity({ ...searchEntity, offset: (searchEntity?.offset || 0) + searchLimit })
+                  setSearchEntityAlias({ ...searchEntityAlias, offset: (searchEntityAlias?.offset || 0) + searchLimit })
                   setRefreshSearch(true)
                 }}
               />

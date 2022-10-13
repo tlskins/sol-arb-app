@@ -41,6 +41,9 @@ export interface IEntity {
   // associations
   entityAliases: IEntityAlias[] | null | undefined,
   messages: IMessage[] | null | undefined,
+  // dynamic
+  lastMention?: string,
+  mentions?: number,
 }
 
 export interface IEntityAlias {
@@ -70,7 +73,7 @@ export interface IMessage {
   type: number, // https://discord-api-types.dev/api/discord-api-types-v10/enum/MessageType
   tts: false, // Whether or not the message was Text-To-Speech
   timestamp: string, // 2022-09-28T03:06:12.024000+00:00
-  referenced_message: any | null, // DiscordMessage
+  referenced_message: IMessage | null, // DiscordMessage
   pinned: boolean,
   nonce: string,
   author: DiscordAuthor,

@@ -229,6 +229,34 @@ const Message = ({ message, isRoot }: { message: IMessage, isRoot: boolean }) =>
       bg={isRoot ? "white" : "gray.100"}
       borderRadius="md"
     >
+
+      { message.referenced_message &&
+        <Flex
+          bg="gray.300"
+          color="black"
+          borderRadius="md"
+          p="1.5"
+          m="2"
+        >
+          <Text wordBreak="break-word" fontSize="xs">
+            <Text
+              as="span"
+              whiteSpace="nowrap"
+              borderRadius='full'
+              variant='solid'
+              bgColor="blue.200"
+              px="1.5"
+              py="0.5"
+              mr="1"
+            >
+              { message.referenced_message.author.username }: 
+            </Text>
+            { message.referenced_message.content.slice(0,125) }
+            { message.referenced_message.content.length > 125 && "..." }
+          </Text>
+        </Flex>
+      }
+
       <Flex
         color="black"
         p="1.5"
@@ -255,7 +283,7 @@ const Message = ({ message, isRoot }: { message: IMessage, isRoot: boolean }) =>
           size="xs"
           fontSize="xx-small"
           borderRadius='full'
-          textColor="purple.800"
+          textColor="blue.600"
           fontWeight="bold"
           mr="1"
           px="1"

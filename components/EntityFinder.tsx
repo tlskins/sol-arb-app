@@ -45,20 +45,21 @@ const getDefaultEntity = (): IEntity => {
   }
 }
 
+let searchTimer = undefined as NodeJS.Timer | undefined
+
 const EntityFinder = ({
   entityId,
   isOpen,
   onClose,
   onFindEntity,
-  scrollBehavior,
 }: {
   entityId: number | undefined,
   isOpen: boolean,
   onClose: ()=>void,
-  onFindEntity: (arg1: IEntity) => Promise<void>,
-  scrollBehavior?: string,
+  onFindEntity?: (arg1: IEntity) => Promise<void>,
 }) => {
   const [entity, setEntity] = useState(undefined as IEntity | undefined)
+  console.log('entity', entity)
 
   const {
     isOpen: isSearchingEntity,
@@ -141,7 +142,7 @@ const EntityFinder = ({
     if ( result ) {
       setEntity(undefined)
       onClose()
-      onFindEntity( result )
+      onFindEntity && onFindEntity( result )
     }
   }
 
@@ -149,7 +150,6 @@ const EntityFinder = ({
     <Modal
       onClose={onClose}
       isOpen={isOpen}
-      // scrollBehavior={scrollBehavior}
       >
       <ModalOverlay />
       <ModalContent>
@@ -191,7 +191,7 @@ const EntityFinder = ({
                         newEntity.name = value
                         newEntity.type = EntityType.Other
                       }
-                      console.log('onchange', newEntity)
+                      if ( entityId ) newEntity.id = entityId
                       setEntity(newEntity)
                     }}
                   />

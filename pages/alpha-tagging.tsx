@@ -129,10 +129,13 @@ const Home: NextPage = () => {
   }
 
   const onUpdateAlias = async (aliasId: number, key: string, value: any) => {
+    const currAlias = entityAliases.find( alias => alias.id === aliasId )
+    // @ts-ignore: dynamic access
+    replaceAlias({ ...currAlias, [key]: value })
     const updatedAlias = await alphaService.updateEntityAlias(aliasId, { [key]: value })
     if ( updatedAlias ) {
       replaceAlias( updatedAlias )
-      toast.success('Updated Alias!', {
+      toast.success(`Updated "${ updatedAlias.name }"`, {
         theme: 'dark',
         position: toast.POSITION.TOP_CENTER,
       })

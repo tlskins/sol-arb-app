@@ -65,6 +65,7 @@ export interface SearchMessagesReq {
   projectId?: string,
   ids?: string,
   limit?: number,
+  offset?: number,
   orderBy?: string,
   orderDirection?: string,
 }

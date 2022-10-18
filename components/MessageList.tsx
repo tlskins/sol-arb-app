@@ -4,9 +4,6 @@ import {
   Stack,
   Text,
   Tag,
-  Wrap,
-  WrapItem,
-  Box,
   Flex,
   Modal,
   ModalOverlay,
@@ -57,7 +54,10 @@ const MessageList = ({
   const onLoadNeighbors = ( branchIdx: number, root: IMessage, isAfter: boolean ) => async (): Promise<void> => {
     if ( isLoadingNeigh ) return
     onLoadNeigh()
-    const params = { channelIds: root.channel_id, orderBy: "TIMESTAMP", limit: 5 } as SearchMessagesReq
+    const existBranch = msgBranches[branchIdx]
+    const rootIdx = existBranch.messages.findIndex( msg => msg.id === root.id )
+    const offset = existBranch.messages.length - rootIdx - 1
+    const params = { channelIds: root.channel_id, orderBy: "TIMESTAMP", limit: 5, offset } as SearchMessagesReq
     if ( isAfter ) {
       params.after = root.createdAt
       params.orderDirection = "ASC"

@@ -251,6 +251,7 @@ const Home: NextPage = () => {
     if ( isBulkPctList || !selectedRules ) {
       return
     }
+    console.log('onBulkUpdatePctList', bulkListPct)
     onBulkPctList()
     const bulkRules = Object.values( selectedRules )
     for (let i=0; i < bulkRules.length; i++ ) {

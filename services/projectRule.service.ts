@@ -142,6 +142,7 @@ class ProjectRuleService {
         floorBelowOn: update.floorBelowOn,
         supportBreakPct: update.supportBreakPct,
         stopPct: update.stopPct,
+        pctListingChange: update.pctListingChange,
       } )
 
       return resp.data

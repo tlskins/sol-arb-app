@@ -48,10 +48,12 @@ interface TagOption {
 
 const ActionsMode = 'Actions'
 const BulkUpdateStopLoss = 'Bulk Update Stop Loss / Gain %s'
+const BulkUpdatePctList = 'Bulk Update % Listings'
 
 const Modes = [
   ActionsMode,
   BulkUpdateStopLoss,
+  BulkUpdatePctList,
 ]
 
 // let numberTimer = undefined as NodeJS.Timeout | undefined
@@ -70,6 +72,7 @@ const Home: NextPage = () => {
   const [selectedMode, setSelectedMode] = useState(ActionsMode as string | undefined)
   const [bulkSupporBreakPct, setBulkSupportBreakPct] = useState(25 as number | null)
   const [bulkStopPct, setBulkStopPct] = useState(5 as number | null)
+  const [bulkListPct, setBulkListPct] = useState(5 as number | null)
 
   const {
     isOpen: isUpdating,
@@ -90,6 +93,11 @@ const Home: NextPage = () => {
     isOpen: isBulkStopLoss,
     onOpen: onBulkStopLoss,
     onClose: onDidBulkStopLoss,
+  } = useDisclosure()
+  const {
+    isOpen: isBulkPctList,
+    onOpen: onBulkPctList,
+    onClose: onDidBulkPctList,
   } = useDisclosure()
 
   useEffect(() => {
@@ -196,7 +204,7 @@ const Home: NextPage = () => {
   }
 
   const onSelectMode = (mode: string | undefined) => {
-    if ( mode === BulkUpdateStopLoss ) {
+    if ( mode && [BulkUpdateStopLoss as string, BulkUpdatePctList as string].includes( mode )) {
       setSelectedRules({})
     }
     setSelectedMode(mode)
@@ -233,6 +241,27 @@ const Home: NextPage = () => {
       })
     }
     onDidBulkStopLoss()
+    onSelectMode(undefined)
+    setSelectedRules(undefined)
+    onLoadProjRules()
+    onSelectMode(ActionsMode)
+  }
+
+  const onBulkUpdatePctList = async () => {
+    if ( isBulkPctList || !selectedRules ) {
+      return
+    }
+    onBulkPctList()
+    const bulkRules = Object.values( selectedRules )
+    for (let i=0; i < bulkRules.length; i++ ) {
+      const projRule = bulkRules[i]
+      if ( !projRule ) continue
+      await ProjectRuleService.updateRule(projRule._id, {
+        _id: projRule._id,
+        pctListingChange: bulkListPct,
+      })
+    }
+    onDidBulkPctList()
     onSelectMode(undefined)
     setSelectedRules(undefined)
     onLoadProjRules()
@@ -304,6 +333,30 @@ const Home: NextPage = () => {
                 colorScheme='yellow'
                 variant='solid'
                 onClick={onBulkUpdateStopLoss}
+              >
+                Save
+              </Button>
+            </>
+          }
+
+          { selectedMode === BulkUpdatePctList &&
+            <>
+              <Stack direction="column" alignItems="center" alignContent="center" justifyContent="left" m="2">
+                <FormLabel fontSize="xs">Listing % Change</FormLabel>
+                <NumberInput
+                  thousandSeparator={false}
+                  value={ bulkListPct }
+                  onValueChange={ value => setBulkListPct(value)}
+                />
+              </Stack>
+
+              <Button
+                isLoading={isBulkPctList}
+                loadingText='Updating...'
+                marginY="4"
+                colorScheme='yellow'
+                variant='solid'
+                onClick={onBulkUpdatePctList}
               >
                 Save
               </Button>
@@ -436,35 +489,51 @@ const Home: NextPage = () => {
                         </Stat>
 
                         <Stat>
-                          <StatLabel>Testing Support</StatLabel>
-                          <StatNumber>{ projRule.newSupportTest?.toFixed( 2 ) || "N/A" }</StatNumber>
+                          <StatLabel>Low</StatLabel>
+                          <StatNumber>{ projRule.newSupportLowTest?.toFixed( 2 ) || "N/A" }</StatNumber>
+                        </Stat>
+
+                        <Stat>
+                          <StatLabel>High</StatLabel>
+                          <StatNumber>{ projRule.newSupportHighTest?.toFixed( 2 ) || "N/A" }</StatNumber>
                         </Stat>
                       </Stack>
 
                       <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Support Break%</FormLabel>
-                          <NumberInput
-                            thousandSeparator={false}
-                            value={ combined.supportBreakPct }
-                            onValueChange={ value => {
-                              const keys = ['supportBreakPct']
-                              const values = [value]
-                              if ( combined.stopPct == null && value !== null ) {
-                                keys.push('stopPct')
-                                values.push(value * .2)
-                              }
-                              onChangeProjRules( projRule._id, keys, values )
-                            }}
-                          />
+                        <Stack direction="column">
+                          <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                            <FormLabel fontSize="sm">Support Break%</FormLabel>
+                            <NumberInput
+                              thousandSeparator={false}
+                              value={ combined.supportBreakPct }
+                              onValueChange={ value => {
+                                const keys = ['supportBreakPct']
+                                const values = [value]
+                                if ( combined.stopPct == null && value !== null ) {
+                                  keys.push('stopPct')
+                                  values.push(value * .2)
+                                }
+                                onChangeProjRules( projRule._id, keys, values )
+                              }}
+                            />
+                          </Stack>
+
+                          <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                            <FormLabel fontSize="sm">Stop%</FormLabel>
+                            <NumberInput
+                              thousandSeparator={false}
+                              value={ combined.stopPct }
+                              onValueChange={ value => onChangeProjRule( projRule._id, 'stopPct', value )}
+                            />
+                          </Stack>
                         </Stack>
 
                         <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Stop%</FormLabel>
+                          <FormLabel fontSize="sm">Custom Support</FormLabel>
                           <NumberInput
                             thousandSeparator={false}
-                            value={ combined.stopPct }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'stopPct', value )}
+                            value={ combined.customSupport }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'customSupport', value )}
                           />
                         </Stack>
                       </Stack>
@@ -546,6 +615,17 @@ const Home: NextPage = () => {
                             onChange={ e => onChangeProjRule( projRule._id, 'floorAboveOn', e.target.checked ) }
                             borderRadius="lg"
                             size="lg"
+                          />
+                        </Stack>
+                      </Stack>
+
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
+                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
+                          <FormLabel fontSize="sm">Listing % Change</FormLabel>
+                          <NumberInput
+                            thousandSeparator={true}
+                            value={ combined.pctListingChange }
+                            onValueChange={ value => onChangeProjRule( projRule._id, 'pctListingChange', value )}
                           />
                         </Stack>
                       </Stack>

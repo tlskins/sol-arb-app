@@ -33,7 +33,9 @@ export interface ISwapRule {
   sellAlertSettings?: AlertSettings, 
   // stop loss gain
   lastSupport: number | null,
-  newSupportTest: number | null,
+  newSupportHighTest: number | null,
+  newSupportLowTest: number | null,
+  customSupport: number | null,
   supportBreakPct: number | null, // % change to trigger a break in support
   stopPct: number | null, // % change to trigger a reversion from a break
   supportHistory: PriceSnap[] | null,
@@ -63,7 +65,9 @@ export interface IUpdateSwapRule {
   walletId?: string,
   // stop loss gain
   lastSupport?: number | null,
-  newSupportTest?: number | null,
+  newSupportHighTest?: number | null,
+  newSupportLowTest?: number | null,
+  customSupport?: number | null,
   supportBreakPct?: number | null, // % change to trigger a break in support
   stopPct?: number | null, // % change to trigger a reversion from a break
   supportHistory?: PriceSnap[] | null,

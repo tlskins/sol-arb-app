@@ -12,6 +12,7 @@ export interface ProjectRule {
   lastAlertPrice?: number,
   fixedPriceChange: number | null,
   critFixedPriceChange: number | null,
+  pctListingChange: number | null,
   floorAbove: number | null,
   floorAboveOn: boolean,
   floorBelow: number | null,
@@ -19,7 +20,9 @@ export interface ProjectRule {
 
   // stop loss gain
   lastSupport: number | null,
-  newSupportTest: number | null,
+  newSupportHighTest: number | null,
+  newSupportLowTest: number | null,
+  customSupport: number | null,
   supportBreakPct: number | null, // % change to trigger a break in support
   stopPct: number | null, // % change to trigger a reversion from a break
   supportHistory: FloorSnap[] | null,
@@ -46,6 +49,7 @@ export interface UpsertProjectRule {
   lastAlertPrice?: number,
   fixedPriceChange?: number | null,
   critFixedPriceChange?: number | null,
+  pctListingChange?: number | null,
   floorAbove?: number | null,
   floorAboveOn?: boolean,
   floorBelow?: number | null,
@@ -53,7 +57,9 @@ export interface UpsertProjectRule {
 
   // stop loss gain
   lastSupport?: number | null,
-  newSupportTest?: number | null,
+  newSupportHighTest?: number | null,
+  newSupportLowTest?: number | null,
+  customSupport?: number | null,
   supportBreakPct?: number | null, // % change to trigger a break in support
   stopPct?: number | null, // % change to trigger a reversion from a break
   supportHistory?: FloorSnap[] | null,

@@ -44,6 +44,11 @@ class ProjectRuleService {
       newSupportTest: null,
       supportBreakPct: null,
       stopPct: null,
+      customSupport: null,
+      newSupportHighTest: null,
+      newSupportLowTest: null,
+      pctListingChange: null,
+      supportHistory: null,
     } as ProjectRule
   }
 

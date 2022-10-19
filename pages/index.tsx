@@ -410,16 +410,40 @@ const Home: NextPage = () => {
 
                                 {/* Stop Loss */}
 
-                                <Stack direction="row" py="1">
+                                <Stack direction="column" py="1">
                                   <Stat>
-                                    <StatLabel>Last Support</StatLabel>
+                                    <StatLabel>Support</StatLabel>
                                     <StatNumber>{ combined.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
                                   </Stat>
 
-                                  <Stat>
-                                    <StatLabel>Testing Support</StatLabel>
-                                    <StatNumber>{ combined.newSupportTest?.toFixed( 2 ) || "N/A" }</StatNumber>
-                                  </Stat>
+                                  <Stack direction="row">
+                                    <Stat>
+                                      <StatLabel> Low</StatLabel>
+                                      <StatNumber>{ combined.newSupportLowTest?.toFixed( 2 ) || "N/A" }</StatNumber>
+                                    </Stat>
+
+                                    <Stat>
+                                      <StatLabel>High</StatLabel>
+                                      <StatNumber>{ combined.newSupportHighTest?.toFixed( 2 ) || "N/A" }</StatNumber>
+                                    </Stat>
+                                  </Stack>
+
+                                  { (combined.supportHistory?.length || 0) > 0 &&
+                                    <FormControl fontSize="sm">
+                                      <Select size="sm"
+                                        fontSize="sm"
+                                        background="white"
+                                        borderRadius="lg"
+                                      >
+                                        <option value="">Support History</option>
+                                        { (combined?.supportHistory || []).map( ({ timestamp, price }) => <option
+                                          key={timestamp}
+                                        >
+                                          { price } @ { Moment( timestamp ).format('MMM D hh:mm a') }
+                                        </option> )}
+                                      </Select>
+                                    </FormControl>
+                                  }
                                 </Stack>
 
                                 <Stack direction="column" fontSize="sm" fontWeight="bold" my="2">
@@ -448,24 +472,16 @@ const Home: NextPage = () => {
                                       onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'stopPct', value )}
                                     />
                                   </Stack>
-                                </Stack>
 
-                                { (combined.supportHistory?.length || 0) > 0 &&
-                                  <FormControl fontSize="sm">
-                                    <Select size="sm"
-                                      fontSize="sm"
-                                      background="white"
-                                      borderRadius="lg"
-                                    >
-                                      <option value="">Support History</option>
-                                      { (combined?.supportHistory || []).map( ({ timestamp, price }) => <option
-                                        key={timestamp}
-                                      >
-                                        { price } @ { Moment( timestamp ).format('MMM D hh:mm a') }
-                                      </option> )}
-                                    </Select>
-                                  </FormControl>
-                                }
+                                  <Stack direction="row">
+                                    <FormLabel fontSize="sm">Custom Support</FormLabel>
+                                    <NumberInput
+                                      thousandSeparator={false}
+                                      value={ combined.customSupport }
+                                      onValueChange={ value => onChangeSwapRule( tokenSwapRule.swapTokenSymbol, idx, 'customSupport', value )}
+                                    />
+                                  </Stack>
+                                </Stack>
 
                                 {/* Execute Buy / Sell  */}
 

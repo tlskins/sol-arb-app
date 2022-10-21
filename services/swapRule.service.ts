@@ -95,9 +95,9 @@ class SwapRuleService {
     }
   }
 
-  checkSwaps = async (): Promise<boolean> => {
+  checkSwaps = async (checkSwaps: boolean, checkProjects: boolean): Promise<boolean> => {
     try {
-      const resp: IResponse<null> = await http.post( `check-swaps` )
+      const resp: IResponse<null> = await http.post( `check-swaps`, { checkSwaps, checkProjects } )
 
       return true
     } catch( err ) {

@@ -32,6 +32,7 @@ import Select from 'react-select'
 import makeAnimated from 'react-select/animated'
 import { ChartRangeFilters } from './nftchart'
 
+import SwapRuleService from '../services/swapRule.service'
 import ProjectRuleService from '../services/projectRule.service'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
@@ -98,6 +99,11 @@ const Home: NextPage = () => {
     isOpen: isBulkPctList,
     onOpen: onBulkPctList,
     onClose: onDidBulkPctList,
+  } = useDisclosure()
+  const {
+    isOpen: isCheckRules,
+    onOpen: onCheckRules,
+    onClose: doneCheckRules,
   } = useDisclosure()
 
   useEffect(() => {
@@ -267,6 +273,14 @@ const Home: NextPage = () => {
     setSelectedRules(undefined)
     onLoadProjRules()
     onSelectMode(ActionsMode)
+  }
+
+  const onCheckProjRules = async () => {
+    onCheckRules()
+    if ( await SwapRuleService.checkSwaps(false, true) ) {
+      onLoadProjRules()
+    }
+    doneCheckRules()
   }
 
   console.log('nfts', projRuleUpdate )
@@ -676,6 +690,16 @@ const Home: NextPage = () => {
                   onClick={onLoadProjRules}
                 >
                   Refresh
+                </Button>
+
+                <Button
+                  isLoading={isCheckRules}
+                  loadingText='Checking...'
+                  colorScheme="teal"
+                  variant='solid'
+                  onClick={onCheckProjRules}
+                >
+                  Check Rules
                 </Button>
               </Stack>
             }

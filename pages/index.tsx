@@ -172,7 +172,7 @@ const Home: NextPage = () => {
 
   const onCheckSwapRules = async () => {
     onChecking()
-    if ( await SwapRuleService.checkSwaps() ) {
+    if ( await SwapRuleService.checkSwaps(true, false) ) {
       onLoadSwapRules()
     }
     onDoneChecking()

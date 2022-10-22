@@ -398,7 +398,7 @@ const Home: NextPage = () => {
                         { entity.name }
                       </Td>
                       <Td isNumeric>{ entity.mentions }</Td>
-                      <Td>{ entity.lastMention ? Moment(entity.lastMention).format('MMM D HH:mm a') : 'N/A' }</Td>
+                      <Td>{ entity.lastMention ? Moment(entity.lastMention).format('dddd, MMMM Do, h:mm a') : 'N/A' }</Td>
                       <Td>
                         <Text>
                           { entity.type }

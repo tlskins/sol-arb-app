@@ -426,7 +426,7 @@ const Home: NextPage = () => {
                         { alias.name }
                       </Td>
                       <Td isNumeric>{ alias.mentions }</Td>
-                      <Td>{ alias.lastMention ? Moment(alias.lastMention).format('MMM D HH:mm a') : 'N/A' }</Td>
+                      <Td>{ alias.lastMention ? Moment(alias.lastMention).format('dddd, MMMM Do, h:mm a') : 'N/A' }</Td>
                       <Td>
                         <Checkbox
                           background="white"

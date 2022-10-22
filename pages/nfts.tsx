@@ -572,7 +572,7 @@ const Home: NextPage = () => {
                             { (combined?.supportHistory || []).map( ({ timestamp, floor }) => <option
                               key={timestamp}
                             >
-                              { floor } @ { moment( timestamp ).format('MMM D hh:mm a') }
+                              { floor } @ { moment( timestamp ).format('dddd, MMMM Do, h:mm a') }
                             </option> )}
                           </SelectOptions>
                         </FormControl>

@@ -411,10 +411,20 @@ const Home: NextPage = () => {
                                 {/* Stop Loss */}
 
                                 <Stack direction="column" py="1">
-                                  <Stat>
-                                    <StatLabel>Support</StatLabel>
-                                    <StatNumber>{ combined.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
-                                  </Stat>
+                                  <Stack direction="row">
+                                    <Stat>
+                                      <StatLabel>Support</StatLabel>
+                                      <StatNumber>{ combined.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
+                                    </Stat>
+
+                                    <Stat>
+                                      <StatLabel color={ combined.brokeSupport ? "red.600" : "green.600" }
+                                        fontWeight="bold"
+                                      >
+                                        { combined.brokeSupport ? "Support BROKEN" : "Within Support" }
+                                      </StatLabel>
+                                    </Stat>
+                                  </Stack>
 
                                   <Stack direction="row">
                                     <Stat>

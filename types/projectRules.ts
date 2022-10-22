@@ -23,6 +23,7 @@ export interface ProjectRule {
   newSupportHighTest: number | null,
   newSupportLowTest: number | null,
   customSupport: number | null,
+  brokeSupport: boolean | null,
   supportBreakPct: number | null, // % change to trigger a break in support
   stopPct: number | null, // % change to trigger a reversion from a break
   supportHistory: FloorSnap[] | null,
@@ -60,6 +61,7 @@ export interface UpsertProjectRule {
   newSupportHighTest?: number | null,
   newSupportLowTest?: number | null,
   customSupport?: number | null,
+  brokeSupport?: boolean | null,
   supportBreakPct?: number | null, // % change to trigger a break in support
   stopPct?: number | null, // % change to trigger a reversion from a break
   supportHistory?: FloorSnap[] | null,

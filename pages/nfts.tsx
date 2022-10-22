@@ -499,7 +499,15 @@ const Home: NextPage = () => {
 
                       <Stack direction="row" py="1">
                         <Stat>
-                          <StatLabel>Last Support</StatLabel>
+                          <StatLabel color={ combined.brokeSupport ? "red.600" : "green.600" }
+                            fontWeight="bold"
+                          >
+                            { combined.brokeSupport ? "Support BROKEN" : "Within Support" }
+                          </StatLabel>
+                        </Stat>
+
+                        <Stat>
+                          <StatLabel>Last</StatLabel>
                           <StatNumber>{ projRule.lastSupport?.toFixed( 2 ) || "N/A" }</StatNumber>
                         </Stat>
 

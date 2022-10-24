@@ -41,6 +41,7 @@ export interface SearchAliasesReq {
   countBelow?: number,
   ignore?: boolean,
   entityType?: string,
+  noEntity?: boolean,
   after?: string,
   before?: string,
   limit?: number,

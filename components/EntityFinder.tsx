@@ -37,6 +37,7 @@ interface TagOption {
 interface EntityTypeOption {
   value: string,
   label: string,
+  name: string,
   isNew: boolean,
 }
 
@@ -203,7 +204,7 @@ const EntityFinder = ({
                     value={{ value: entity?.name || "", label: entity?.name || "" } as TagOption}
                     defaultValue={{ value: "", label: "", entity: null, project: null }}
                     getNewOptionData={(value) => ({
-                      label: `New Tag: ${value}`,
+                      label: `New Entity: ${value}`,
                       value,
                       entity: null,
                       project: null
@@ -246,24 +247,32 @@ const EntityFinder = ({
                       value: entity?.entityTypeId?.toString() || "",
                       label: entity?.newEntityType || entity?.type || "",
                     } as EntityTypeOption}
-                    options={entityTypes.map( type => ({ value: type.id.toString(), label: type.name, isNew: false }))}
+                    options={entityTypes.map( type => ({
+                      value: type.id.toString(),
+                      label: type.name,
+                      name: type.name,
+                      isNew: false,
+                    }))}
                     defaultValue={
                       entityTypes.length > 0 ?
                       { 
                         value: entityTypes[0].id?.toString(),
                         label: entityTypes[0].name,
+                        name: entityTypes[0].name,
                         isNew: false
                       }
                       : 
                       {
                         value: "",
                         label: "",
+                        name: "",
                         isNew: false,
                       }
                     }
                     getNewOptionData={(value) => ({
                       label: `New Type: ${value}`,
                       value,
+                      name: value,
                       isNew: true,
                     } as EntityTypeOption)}
                     onChange={(opt) => {
@@ -277,9 +286,9 @@ const EntityFinder = ({
                       } else {
                         setEntity({
                           ...(entity || getDefaultEntity()),
-                          type: opt.label,
+                          type: opt.name,
                           entityTypeId: opt.isNew ? 0 : parseInt( opt.value ),
-                          newEntityType: opt.value,
+                          newEntityType: opt.isNew ? opt.name : undefined,
                         })
                       }
                     }}

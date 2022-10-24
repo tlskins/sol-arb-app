@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react"
 import React, { useEffect, useState } from 'react'
 import Moment from 'moment-timezone'
 import {
-  Flex,
   Box,
   Button,
   Text,
@@ -12,11 +11,6 @@ import {
   Stack,
   Checkbox,
   useDisclosure,
-  Select as SelectOptions,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
   FormControl,
   Drawer,
   DrawerOverlay,
@@ -38,10 +32,9 @@ import {
   Tfoot,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, EditIcon, LinkIcon } from '@chakra-ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, LinkIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify'
 import DatePicker from "react-datepicker"
-import moment from 'moment-timezone'
 
 import { FilterDateRange, DftFilterDateRanges, filterDateToISOString, OrderOption, OrderDirection } from '../services/helpers'
 import alphaService, { SearchAliasesReq } from '../services/alpha.service'
@@ -121,6 +114,7 @@ const Home: NextPage = () => {
       ...searchEntityAlias,
       before: before && filterDateToISOString( before ),
       after: after && filterDateToISOString( after ),
+      noEntity: true,
     })
     if ( resp ) {
       setEntityAliases(resp)
@@ -241,25 +235,6 @@ const Home: NextPage = () => {
 
               <Box>
                 <FormLabel>Entity Type</FormLabel>
-                {/* <FormControl fontSize="sm">
-                  <Select size="sm"
-                    fontSize="sm"
-                    background="white"
-                    borderRadius="lg"
-                    onChange={ e => setSearchEntityAlias({
-                      ...searchEntityAlias,
-                      entityType: e.target.value === "" ? undefined : e.target.value,
-                    }) }
-                  >
-                    <option value={""}> None </option>
-                    { EntityTypes.map( entityType => <option
-                      key={entityType}
-                      value={entityType}
-                    >
-                      { entityType }
-                    </option> )}
-                  </Select>
-                </FormControl> */}
               </Box>
 
               <Box>

@@ -45,7 +45,7 @@ import moment from 'moment-timezone'
 
 import { FilterDateRange, DftFilterDateRanges, filterDateToISOString, OrderOption, OrderDirection } from '../services/helpers'
 import alphaService, { SearchAliasesReq } from '../services/alpha.service'
-import { EntityType, EntityTypes, IEntityAlias, IMessage, IEntity } from '../types/alpha'
+import { IEntityAlias, IMessage, IEntity } from '../types/alpha'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
@@ -241,7 +241,7 @@ const Home: NextPage = () => {
 
               <Box>
                 <FormLabel>Entity Type</FormLabel>
-                <FormControl fontSize="sm">
+                {/* <FormControl fontSize="sm">
                   <Select size="sm"
                     fontSize="sm"
                     background="white"
@@ -259,7 +259,7 @@ const Home: NextPage = () => {
                       { entityType }
                     </option> )}
                   </Select>
-                </FormControl>
+                </FormControl> */}
               </Box>
 
               <Box>
@@ -426,7 +426,7 @@ const Home: NextPage = () => {
                         { alias.name }
                       </Td>
                       <Td isNumeric>{ alias.mentions }</Td>
-                      <Td>{ alias.lastMention ? Moment(alias.lastMention).format('dddd, MMMM Do, h:mm a') : 'N/A' }</Td>
+                      <Td>{ alias.lastMention ? Moment(alias.lastMention).format('ddd, MMMM Do, h:mm a') : 'N/A' }</Td>
                       <Td>
                         <Checkbox
                           background="white"

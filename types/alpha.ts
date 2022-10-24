@@ -1,25 +1,10 @@
 
-export enum EntityType {
-  Other = "Other",
-  Project = "Project",
-  Premint = "Premint",
-  Trading = "Trading",
-  Alpha = "Alpha",
-}
-
-export const EntityTypes = [
-  EntityType.Other,
-  EntityType.Project,
-  EntityType.Premint,
-  EntityType.Trading,
-  EntityType.Alpha,
-]
-
 export interface INewEntity {
   name: string,
   projectId: string | null,
   hyperspaceUrl: string | null,
-  type: EntityType,
+  entityTypeId: number | null,
+  newEntityType?: string,
 }
 
 export interface IUpdateEntity {
@@ -27,7 +12,8 @@ export interface IUpdateEntity {
   name?: string,
   projectId?: string | null,
   hyperspaceUrl?: string | null,
-  type?: EntityType,
+  entityTypeId?: number,
+  newEntityType?: string,
 }
 
 export interface IEntity {
@@ -35,16 +21,30 @@ export interface IEntity {
   name: string,
   projectId: string | null,
   hyperspaceUrl: string | null,
-  type: EntityType,
+  entityTypeId: number,
   updatedAt: string,
   createdAt: string,
+  // update params
+  newEntityType?: string,
   // associations
   entityAliases: IEntityAlias[] | null | undefined,
   messages: IMessage[] | null | undefined,
   // dynamic
+  type?: string,
   lastMention?: string,
   mentions?: number,
 }
+
+export interface IEntityType {
+  id: number,
+  name: string,
+  updatedAt: string,
+  createdAt: string,
+  // associations
+  entities: IEntity[] | null | undefined,
+  messages: IMessage[] | null | undefined,
+}
+
 
 export interface IEntityAlias {
   id: number,

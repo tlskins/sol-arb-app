@@ -45,6 +45,7 @@ class ProjectRuleService {
       supportBreakPct: null,
       stopPct: null,
       customSupport: null,
+      brokeSupport: null,
       newSupportHighTest: null,
       newSupportLowTest: null,
       pctListingChange: null,

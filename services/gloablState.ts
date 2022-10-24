@@ -1,6 +1,7 @@
 import { createGlobalState,  } from 'react-hooks-global-state'
 
 import { ITokenSwapRules, ISwapRule } from '../types/swapRules'
+import { IEntityType } from '../types/alpha'
 import { IWallet } from '../types/wallet'
 import { ProjectRule } from '../types/projectRules'
 import { Token } from '../types/jupiter'
@@ -18,6 +19,7 @@ const getDefaultState = () => {
     projectRules: [] as ProjectRule[],
     wallets: [] as IWallet[],
     tags: [] as string[],
+    entityTypes: [] as IEntityType[],
     confirmModal: undefined as ConfirmModal | undefined,
   }
 }

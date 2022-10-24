@@ -1,8 +1,13 @@
 import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
-import { IEntity, INewEntity, IUpdateEntity, EntityType, IEntityAlias, IUpdateEntityAlias, IMessage } from '../types/alpha'
+import { IEntity, INewEntity, IUpdateEntity, IEntityAlias, IUpdateEntityAlias, IMessage, IEntityType } from '../types/alpha'
 
 // entity types
+
+interface EntityTypesResp {
+  results: IEntityType[]
+}
+
 export interface SearchEntitiesReq {
   id?: number,
   name?: string,
@@ -77,6 +82,18 @@ interface MessagesResp {
 
 class AlphaService {
 
+  // Entity Types
+
+  getEntityTypes = async (): Promise<IEntityType[] | undefined> => {
+    try {
+      const resp: IResponse<EntityTypesResp> = await http.get( `entity-type` )
+
+      return resp.data.results
+    } catch( err ) {
+      handleError("Error getting entity types", err)
+    }
+  }
+
   // Entities
 
   newEntity = (): INewEntity => {
@@ -84,7 +101,7 @@ class AlphaService {
       name: "",
       projectId: null,
       hyperspaceUrl: null,
-      type: EntityType.Other,
+      entityTypeId: 0,
     } as IEntity
   }
   

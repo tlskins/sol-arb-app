@@ -18,8 +18,11 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import AsyncCreatableSelect from 'react-select/async-creatable'
+import CreatableSelect from 'react-select/creatable'
+import { useSession } from "next-auth/react"
 
-import { EntityTypes, EntityType, IEntity } from '../types/alpha'
+import { useGlobalState } from '../services/gloablState'
+import { IEntityType, IEntity } from '../types/alpha'
 import alphaService from '../services/alpha.service'
 import projectRuleService from '../services/projectRule.service'
 import { ProjectStat } from '../types/projectRules'
@@ -31,11 +34,19 @@ interface TagOption {
   project: ProjectStat | null,
 }
 
+interface EntityTypeOption {
+  value: string,
+  label: string,
+  isNew: boolean,
+}
+
+
 const getDefaultEntity = (): IEntity => {
   return {
     id: 0,
     name: "?",
-    type: EntityType.Project,
+    // type: EntityType.Project,
+    entityTypeId: 0,
     projectId: null,
     hyperspaceUrl: null,
     updatedAt: "",
@@ -58,8 +69,12 @@ const EntityFinder = ({
   onClose: ()=>void,
   onFindEntity?: (arg1: IEntity) => Promise<void>,
 }) => {
+  const { data: _sessionData } = useSession()
+  const sessionData = _sessionData as any
+
+  const [entityTypes, setEntityTypes] = useGlobalState('entityTypes')
   const [entity, setEntity] = useState(undefined as IEntity | undefined)
-  console.log('entity', entity)
+  console.log('isOpen', isOpen)
 
   const {
     isOpen: isSearchingEntity,
@@ -73,10 +88,25 @@ const EntityFinder = ({
   } = useDisclosure()
 
   useEffect(() => {
+    if ( sessionData?.token?.id, isOpen ) {
+      console.log('loading types...')
+      onLoadEntityTypes()
+    }
+  }, [sessionData?.token?.id, isOpen])
+
+
+  useEffect(() => {
     if ( entityId ) {
       onLoadEntity( entityId )
     }
   }, [entityId])
+
+  const onLoadEntityTypes = async (): Promise<void> => {
+    const newEntityTypes = await alphaService.getEntityTypes()
+    if ( newEntityTypes ) {
+      setEntityTypes( newEntityTypes.sort((a,b) => a.name > b.name ? 1 : 0) )
+    }
+  }
 
   const onLoadEntity = async ( entityId: number ): Promise<void> => {
     const entities = await alphaService.searchEntities({ id: entityId })
@@ -126,14 +156,16 @@ const EntityFinder = ({
       result = await alphaService.updateEntity(entity.id, {
         id: entity.id,
         name: entity.name,
-        type: entity.type,
+        entityTypeId: entity.entityTypeId,
+        newEntityType: entity.newEntityType,
         projectId: entity.projectId,
         hyperspaceUrl: entity?.hyperspaceUrl,
       })
     } else {
       result = await alphaService.createEntity({
         name: entity.name,
-        type: entity.type,
+        entityTypeId: entity.entityTypeId,
+        newEntityType: entity.newEntityType,
         projectId: entity.projectId || null,
         hyperspaceUrl: entity.hyperspaceUrl || null,
       })
@@ -146,6 +178,8 @@ const EntityFinder = ({
     }
   }
 
+  console.log('entitytypes', entityTypes)
+
   return(
     <Modal
       onClose={onClose}
@@ -157,11 +191,10 @@ const EntityFinder = ({
         <ModalCloseButton />
         <ModalBody>
           <Stack spacing='24px'>
-
             <Box>
               <FormLabel>Name</FormLabel>
               <FormControl fontSize="sm">
-                { isOpen && 
+                { isOpen ?
                   <AsyncCreatableSelect
                     loadOptions={onSearchEntity}
                     isLoading={isSearchingEntity}
@@ -185,16 +218,19 @@ const EntityFinder = ({
                           ...newEntity,
                           projectId: project.project_id,
                           name: project.project?.display_name || "?",
-                          type: EntityType.Project,
+                          entityTypeId: entityTypes.length > 0 ? entityTypes[0].id : 0,
+                          type: entityTypes.length > 0 ? entityTypes[0].name : undefined,
                         }
                       } else {
                         newEntity.name = value
-                        newEntity.type = EntityType.Other
+                        newEntity.type = entityTypes.length > 0 ? entityTypes[0].name : undefined
                       }
                       if ( entityId ) newEntity.id = entityId
                       setEntity(newEntity)
                     }}
                   />
+                  :
+                  <FormLabel>?</FormLabel>
                 }
               </FormControl>
             </Box>
@@ -202,15 +238,55 @@ const EntityFinder = ({
             <Box>
               <FormLabel>Type</FormLabel>
               <FormControl fontSize="sm">
-                <Select size="sm"
-                  fontSize="sm"
-                  background="white"
-                  borderRadius="lg"
-                  value={ entity?.type || "" }
-                  onChange={ e => setEntity({ ...(entity || getDefaultEntity()), type: e.target.value as EntityType })}
-                >
-                  { EntityTypes.map( entityType => <option value={entityType} key={entityType}> { entityType } </option>) }
-                </Select>
+                { isOpen ?
+                  <CreatableSelect
+                    createOptionPosition="first"
+                    isClearable={true}
+                    value={{
+                      value: entity?.entityTypeId?.toString() || "",
+                      label: entity?.newEntityType || entity?.type || "",
+                    } as EntityTypeOption}
+                    options={entityTypes.map( type => ({ value: type.id.toString(), label: type.name, isNew: false }))}
+                    defaultValue={
+                      entityTypes.length > 0 ?
+                      { 
+                        value: entityTypes[0].id?.toString(),
+                        label: entityTypes[0].name,
+                        isNew: false
+                      }
+                      : 
+                      {
+                        value: "",
+                        label: "",
+                        isNew: false,
+                      }
+                    }
+                    getNewOptionData={(value) => ({
+                      label: `New Type: ${value}`,
+                      value,
+                      isNew: true,
+                    } as EntityTypeOption)}
+                    onChange={(opt) => {
+                      if ( !opt ) {
+                        setEntity({
+                          ...(entity || getDefaultEntity()),
+                          type: undefined,
+                          entityTypeId: 0,
+                          newEntityType: undefined,
+                        })
+                      } else {
+                        setEntity({
+                          ...(entity || getDefaultEntity()),
+                          type: opt.label,
+                          entityTypeId: opt.isNew ? 0 : parseInt( opt.value ),
+                          newEntityType: opt.value,
+                        })
+                      }
+                    }}
+                  />
+                  :
+                  <FormLabel>?</FormLabel>
+                }
               </FormControl>
             </Box>
 

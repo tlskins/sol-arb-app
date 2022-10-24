@@ -40,7 +40,7 @@ import DatePicker from "react-datepicker"
 
 import { FilterDateRange, DftFilterDateRanges, filterDateToISOString, OrderOption, OrderDirection } from '../services/helpers'
 import alphaService, { SearchEntitiesReq } from '../services/alpha.service'
-import { EntityType, EntityTypes, IMessage, IEntity } from '../types/alpha'
+import { IMessage, IEntity } from '../types/alpha'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
@@ -54,7 +54,7 @@ const searchLimit = 25
 const getDefaultSearch = (): SearchEntitiesReq => {
   return {
     limit: searchLimit,
-    type: `${EntityType.Alpha},${EntityType.Premint},${EntityType.Project},${EntityType.Trading}`,
+    // type: `${EntityType.Alpha},${EntityType.Premint},${EntityType.Project},${EntityType.Trading}`,
     offset: 0,
     after: FilterDateRange.Hours6,
     orderBy: OrderOption.COUNT,
@@ -232,7 +232,7 @@ const Home: NextPage = () => {
 
               <Box>
                 <FormLabel>Entity Type</FormLabel>
-                <FormControl fontSize="sm">
+                {/* <FormControl fontSize="sm">
                   <Select size="sm"
                     fontSize="sm"
                     background="white"
@@ -250,7 +250,7 @@ const Home: NextPage = () => {
                       { entityType }
                     </option> )}
                   </Select>
-                </FormControl>
+                </FormControl> */}
               </Box>
 
               <Box>
@@ -398,7 +398,7 @@ const Home: NextPage = () => {
                         { entity.name }
                       </Td>
                       <Td isNumeric>{ entity.mentions }</Td>
-                      <Td>{ entity.lastMention ? Moment(entity.lastMention).format('dddd, MMMM Do, h:mm a') : 'N/A' }</Td>
+                      <Td>{ entity.lastMention ? Moment(entity.lastMention).format('ddd, MMMM Do, h:mm a') : 'N/A' }</Td>
                       <Td>
                         <Text>
                           { entity.type }

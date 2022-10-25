@@ -32,7 +32,7 @@ import {
   Tfoot,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, LinkIcon } from '@chakra-ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, LinkIcon, CloseIcon } from '@chakra-ui/icons'
 import { toast } from 'react-toastify'
 import DatePicker from "react-datepicker"
 
@@ -74,6 +74,7 @@ const Home: NextPage = () => {
   const [viewMsgs, setViewMsgs] = useState([] as IMessage[])
   const [viewMsgsTitle, setViewMsgsTitle] = useState("")
   const [taggingAlias, setTaggingAlias] = useState(undefined as IEntityAlias | undefined)
+  const [selectedAlias, setSelectedAlias] = useState(undefined as IEntityAlias | undefined)
 
   const {
     isOpen: isFilterAliasView,
@@ -379,15 +380,13 @@ const Home: NextPage = () => {
                 <Th>Name</Th>
                 <Th isNumeric>Mentions</Th>
                 <Th>Last Mention</Th>
-                <Th>Ignore</Th>
-                <Th>Tag Entity</Th>
               </Tr>
             </Thead>
             <Tbody py="4">
               { entityAliases.map( alias => {
                 return(
                   <>
-                    <Tr key={alias.id}>
+                    <Tr key={alias.id} onClick={() => setSelectedAlias(alias)}>
                       <Td>
                         <IconButton
                           icon={<ChatIcon/>}
@@ -401,118 +400,132 @@ const Home: NextPage = () => {
                         { alias.name }
                       </Td>
                       <Td isNumeric>{ alias.mentions }</Td>
-                      <Td>{ alias.lastMention ? Moment(alias.lastMention).format('ddd, MMMM Do, h:mm a') : 'N/A' }</Td>
-                      <Td>
-                        <Checkbox
-                          background="white"
-                          isChecked={ !!alias.ignore }
-                          onChange={ e => onUpdateAlias( alias.id, "ignore", e.target.checked ) }
-                          borderRadius="lg"
-                          size="lg"
-                        />
-                      </Td>
-                      <Td>
-                        { alias.entityName ?
-                          <Button
-                            size="xs"
-                            aria-label='Update entity'
-                            colorScheme='teal'
-                            variant='solid'
-                            mr="1"
-                            onClick={() => {
-                              onShowEntityFinder()
-                              setTaggingAlias(alias)
-                            }}
-                          >
-                            { alias.entityName }
-                          </Button>
-                          :
-                          <IconButton
-                            icon={<LinkIcon/>}
-                            size="xs"
-                            aria-label='Link entity to alias'
-                            colorScheme='teal'
-                            variant='solid'
-                            mr="1"
-                            onClick={() => {
-                              onShowEntityFinder()
-                              setTaggingAlias(alias)
-                            }}
-                          />
-                        }
-                      </Td>
+                      <Td>{ alias.lastMention ? Moment(alias.lastMention).format('h:mm a ddd, MMM Do') : 'N/A' }</Td>
                     </Tr>
                   </>
                 )
               })}
             </Tbody>
-            <Tfoot>
-              <Tr>
-                <Th>Total</Th>
-                <Th>{ entityAliases.length }</Th>
-                <Th />
-              </Tr>
-            </Tfoot>
           </Table>
         </TableContainer>
-        
       </main>
 
       <Box className={styles.footer}>
         <Box position="fixed" zIndex="sticky" bottom="0" bg={useColorModeValue('gray.100', 'gray.900')} width="full" pb="4">
-          <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
-            { (searchEntityAlias?.offset || 0) > 0 &&
-              <IconButton
-                icon={<ChevronLeftIcon/>}
+          { selectedAlias ?
+            <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+              <Text fontWeight="bold" fontSize="sm" textDecoration="underline" mr="4">
+                { selectedAlias.name.toUpperCase() }
+              </Text>
+
+              <Button
                 size="xs"
-                aria-label='Prev page'
+                aria-label='Update entity'
                 colorScheme='teal'
                 variant='solid'
                 mr="1"
-                onClick={() => {
-                  setSearchEntityAlias({ ...searchEntityAlias, offset: (searchEntityAlias?.offset || 0) - searchLimit })
-                  onLoadAliases()
+                onClick={ () => {
+                  onUpdateAlias( selectedAlias.id, "ignore", true )
+                  setSelectedAlias( undefined )
                 }}
-              />
-            }
+              >
+                Ignore
+              </Button>
 
-            <Button
-              isLoading={isLoadingAliases}
-              loadingText='Refreshing...'
-              colorScheme='teal'
-              variant='solid'
-              onClick={onLoadAliases}
-            >
-              Refresh
-            </Button>
+              { selectedAlias.entityName ?
+                <Button
+                  size="xs"
+                  aria-label='Update entity'
+                  colorScheme='teal'
+                  variant='solid'
+                  mr="1"
+                  onClick={() => {
+                    onShowEntityFinder()
+                    setTaggingAlias(selectedAlias)
+                  }}
+                >
+                  { selectedAlias.entityName }
+                </Button>
+                :
+                <IconButton
+                  icon={<LinkIcon/>}
+                  size="xs"
+                  aria-label='Link entity to alias'
+                  colorScheme='teal'
+                  variant='solid'
+                  mr="1"
+                  onClick={() => {
+                    onShowEntityFinder()
+                    setTaggingAlias(selectedAlias)
+                  }}
+                />
+              }
 
-            <Text color="teal.800" fontWeight="bold">
-              Page { (((searchEntityAlias?.offset || 0) / searchLimit) + 1).toFixed(0) }
-            </Text>
-
-            <Button
-              colorScheme='teal'
-              variant='solid'
-              onClick={onFilterAliasView}
-            >
-              Filter
-            </Button>
-
-            { (entityAliases.length % searchLimit) === 0 &&
               <IconButton
-                icon={<ChevronRightIcon/>}
+                icon={<CloseIcon/>}
                 size="xs"
-                aria-label='Prev page'
+                aria-label='Unselect alias'
                 colorScheme='teal'
                 variant='solid'
-                mr="1"
-                onClick={() => {
-                  setSearchEntityAlias({ ...searchEntityAlias, offset: (searchEntityAlias?.offset || 0) + searchLimit })
-                  setRefreshSearch(true)
-                }}
+                ml="2"
+                onClick={() => setSelectedAlias(undefined)}
               />
-            }
-          </Stack>
+            </Stack>
+            :
+            <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+              { (searchEntityAlias?.offset || 0) > 0 &&
+                <IconButton
+                  icon={<ChevronLeftIcon/>}
+                  size="xs"
+                  aria-label='Prev page'
+                  colorScheme='teal'
+                  variant='solid'
+                  mr="1"
+                  onClick={() => {
+                    setSearchEntityAlias({ ...searchEntityAlias, offset: (searchEntityAlias?.offset || 0) - searchLimit })
+                    onLoadAliases()
+                  }}
+                />
+              }
+
+              <Button
+                isLoading={isLoadingAliases}
+                loadingText='Refreshing...'
+                colorScheme='teal'
+                variant='solid'
+                onClick={onLoadAliases}
+              >
+                Refresh
+              </Button>
+
+              <Text color="teal.800" fontWeight="bold">
+                Page { (((searchEntityAlias?.offset || 0) / searchLimit) + 1).toFixed(0) }
+              </Text>
+
+              <Button
+                colorScheme='teal'
+                variant='solid'
+                onClick={onFilterAliasView}
+              >
+                Filter
+              </Button>
+
+              { (entityAliases.length % searchLimit) === 0 &&
+                <IconButton
+                  icon={<ChevronRightIcon/>}
+                  size="xs"
+                  aria-label='Prev page'
+                  colorScheme='teal'
+                  variant='solid'
+                  mr="1"
+                  onClick={() => {
+                    setSearchEntityAlias({ ...searchEntityAlias, offset: (searchEntityAlias?.offset || 0) + searchLimit })
+                    setRefreshSearch(true)
+                  }}
+                />
+              }
+            </Stack>
+          }
         </Box>
       </Box>
     </div>

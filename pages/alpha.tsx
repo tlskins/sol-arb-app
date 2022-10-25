@@ -134,7 +134,7 @@ const Home: NextPage = () => {
     onLoadEntities()
   }
 
-  const onLoadEntityMessages = (entityId: number) => async () => {
+  const onLoadEntityMessages = async (entityId: number) => {
     if ( !sessionData ) {
       return
     }
@@ -368,7 +368,8 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <EntitiesByTypeTable
           entities={entities}
-          onSelectEntity={(selected) => setSelectedEntity(selected)}
+          onLoadEntityMessages={onLoadEntityMessages}
+          onEditEntity={onEditEntity}
         />
       </main>
 
@@ -391,7 +392,7 @@ const Home: NextPage = () => {
                 Last Mention:
               </Text>
               <Text>
-                { Moment( selectedEntity.lastMention ).format('ddd, MMMM Do, h:mm a') }
+                { Moment( selectedEntity.lastMention ).format('ddd, MMM Do, h:mm a') }
               </Text>
 
               <Stack direction="row" py="4">
@@ -402,7 +403,7 @@ const Home: NextPage = () => {
                   colorScheme='teal'
                   variant='solid'
                   mx="2"
-                  onClick={onLoadEntityMessages(selectedEntity.id)}
+                  onClick={() => onLoadEntityMessages(selectedEntity.id)}
                 />
 
                 <IconButton

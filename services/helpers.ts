@@ -34,3 +34,14 @@ export enum OrderDirection {
   ASC = "ASC",
   DESC = "DESC",
 }
+
+export const ProjectEntityType = "Project"
+
+export const ListeningProjectIds = [
+  1, // degods
+  2, // FFF
+  32, // monkettes
+  7, // yoots
+  21, // dens
+  17, // tff
+]

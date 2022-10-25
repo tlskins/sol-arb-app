@@ -58,7 +58,7 @@ const EntitiesTable = ({
                     { entity.name }
                   </Td>
                   <Td isNumeric>{ entity.mentions }</Td>
-                  <Td>{ entity.lastMention ? Moment(entity.lastMention).format('ddd, MMMM Do, h:mm a') : 'N/A' }</Td>
+                  <Td>{ entity.lastMention ? Moment(entity.lastMention).format('ddd, MMM Do, h:mm a') : 'N/A' }</Td>
                   <Td>
                     <Text>
                       { entity.type }

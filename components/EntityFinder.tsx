@@ -73,6 +73,7 @@ const EntityFinder = ({
   const { data: _sessionData } = useSession()
   const sessionData = _sessionData as any
 
+  const searchRef = useRef( undefined as NodeJS.Timeout | undefined )
   const [entityTypes, setEntityTypes] = useGlobalState('entityTypes')
   const [entity, setEntity] = useState(undefined as IEntity | undefined)
   console.log('isOpen', isOpen)
@@ -117,36 +118,48 @@ const EntityFinder = ({
     }
   }
 
-  const onSearchEntity = async (search: string): Promise<TagOption[]> => {
-    const getEntityOptions = async (): Promise<TagOption[]> => {
-      const entities = await alphaService.searchEntities({
-        name: search,
-        limit: 20,
-        orderBy: "MENTIONS",
-        orderDirection: "DESC"
-      })
-      if ( !entities ) return []
-      return entities.map( entity => ({
-        label: `Entity: ${entity.name}`,
-        value: entity.name,
-        entity,
-        project: null,
-      }))
+
+  const getEntityOptions = async (search: string): Promise<TagOption[]> => {
+    const entities = await alphaService.searchEntities({
+      name: search,
+      limit: 20,
+      orderBy: "MENTIONS",
+      orderDirection: "DESC"
+    })
+    if ( !entities ) return []
+    return entities.map( entity => ({
+      label: `Entity: ${entity.name}`,
+      value: entity.name,
+      entity,
+      project: null,
+    }))
+  }
+
+  const getProjectOptions = async (search: string): Promise<TagOption[]> => {
+    const projects = await projectRuleService.searchProjects( search )
+    if ( !projects ) return []
+    return projects.map( project => ({
+      label: `New Project: ${project.project?.display_name || "?"} (FP: ${project?.floor_price?.toFixed(2) || "?"})`,
+      value: project.project?.display_name || "?",
+      entity: null,
+      project,
+    }))
+  }
+
+  const onSearchEntity = (search: string, callback: (options: TagOption[]) => void): void => {
+    const loadEntityOptions = async () => {
+      onSearchingEntity()
+      const allOptsPromise = await Promise.all([getEntityOptions(search), getProjectOptions(search)])
+      endSearchingEntity()
+      callback(allOptsPromise.flat())
     }
-    const getProjectOptions = async (): Promise<TagOption[]> => {
-      const projects = await projectRuleService.searchProjects( search )
-      if ( !projects ) return []
-      return projects.map( project => ({
-        label: `New Project: ${project.project?.display_name || "?"} (FP: ${project?.floor_price?.toFixed(2) || "?"})`,
-        value: project.project?.display_name || "?",
-        entity: null,
-        project,
-      }))
+
+    if ( searchRef.current ) {
+      clearTimeout( searchRef.current )
     }
-    onSearchingEntity()
-    const allOptsPromise = await Promise.all([getEntityOptions(), getProjectOptions()])
-    endSearchingEntity()
-    return allOptsPromise.flat()
+    searchRef.current = setTimeout( async () => {
+      loadEntityOptions()
+    }, 850)
   }
 
   const onSaveEntity = async () => {

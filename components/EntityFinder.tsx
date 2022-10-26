@@ -9,7 +9,6 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Select,
   Stack,
   Text,
   Box,
@@ -22,7 +21,7 @@ import CreatableSelect from 'react-select/creatable'
 import { useSession } from "next-auth/react"
 
 import { useGlobalState } from '../services/gloablState'
-import { IEntityType, IEntity } from '../types/alpha'
+import { IEntity } from '../types/alpha'
 import alphaService from '../services/alpha.service'
 import projectRuleService from '../services/projectRule.service'
 import { ProjectStat } from '../types/projectRules'

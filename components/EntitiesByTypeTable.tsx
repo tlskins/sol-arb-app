@@ -10,7 +10,7 @@ import { ChatIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import Moment from 'moment-timezone'
 
 import { IEntity } from '../types/alpha'
-import { ProjectEntityType, ListeningProjectIds } from '../services/helpers'
+import { ListeningProjectIds } from '../services/helpers'
 
 interface IEntitiesByType {
   label: string,

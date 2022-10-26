@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   IconButton,
   Stack,
@@ -229,8 +229,8 @@ const Message = ({ message, isRoot }: { message: IMessage, isRoot: boolean }) =>
               as="span"
               whiteSpace="nowrap"
               borderRadius='full'
-              variant='solid'
-              bgColor="blue.200"
+              variant='subtle'
+              bgColor="teal.100"
               px="1.5"
               py="0.5"
               mr="1"
@@ -252,8 +252,8 @@ const Message = ({ message, isRoot }: { message: IMessage, isRoot: boolean }) =>
             as="span"
             whiteSpace="nowrap"
             borderRadius='full'
-            variant='solid'
-            bgColor="blue.200"
+            variant='subtle'
+            bgColor="teal.200"
             px="1.5"
             py="0.5"
             mr="1"

@@ -57,8 +57,9 @@ const MessageList = ({
     onLoadNeigh()
     const existBranch = msgBranches[branchIdx]
     const rootIdx = existBranch.messages.findIndex( msg => msg.id === root.id )
-    const offset = existBranch.messages.length - rootIdx - 1
+    const offset = isAfter ? existBranch.messages.length - rootIdx - 1 : rootIdx + 1
     const params = { channelIds: root.channel_id, orderBy: "TIMESTAMP", limit: 5, offset } as SearchMessagesReq
+    console.log('load neighbors', rootIdx, offset, params)
     if ( isAfter ) {
       params.after = root.createdAt
       params.orderDirection = "ASC"
@@ -104,29 +105,27 @@ const MessageList = ({
             const isExpanded = expandedMap[branchIdx]
             return(
               <Stack key={branchIdx}
-                p="0.5"
                 border="1px"
-                my="2"
                 borderColor="gray.400"
                 bgColor={isExpanded ? "gray.700" : undefined}
                 borderRadius="md"
+                my="2"
+                p="0.5"
               >
                 <Stack direction="row" width="full" alignItems="center" alignContent="center" justifyContent="center">
-                  { messages.length === 1 &&
-                    <IconButton
-                      size="xs"
-                      aria-label='Load message neighbors'
-                      colorScheme='blue'
-                      icon={<TriangleDownIcon />}
-                      onClick={onLoadAndExpand(branchIdx, true)}
-                    />
-                  }
+                  <IconButton
+                    size="xs"
+                    aria-label='Load message neighbors'
+                    colorScheme='teal'
+                    icon={<TriangleDownIcon />}
+                    onClick={onLoadAndExpand(branchIdx, true)}
+                  />
                   <Tag
                     size="xs"
-                    fontSize="xx-small"
+                    fontSize="xs"
                     borderRadius='full'
-                    variant='solid'
-                    colorScheme='yellow'
+                    variant="subtle"
+                    colorScheme='teal'
                     textColor="black"
                     mr="1"
                     px="1"
@@ -135,24 +134,10 @@ const MessageList = ({
                     { (ChannelsMap.get(root.channel_id)) || "Not Found" }
                   </Tag>
 
-                  <Tag
-                    size="xs"
-                    fontSize="xx-small"
-                    borderRadius='full'
-                    variant='solid'
-                    colorScheme='green'
-                    textColor="black"
-                    mr="1"
-                    px="1"
-                    py="0.5"
-                  >
-                    { Moment( isExpanded ? messages[0].createdAt : root.createdAt ).format('MMM D h:mm:ss a') }
-                  </Tag>
-
                   <IconButton
                     size="xs"
                     aria-label='Load message neighbors'
-                    colorScheme='blue'
+                    colorScheme='teal'
                     icon={<TriangleUpIcon />}
                     onClick={onLoadAndExpand(branchIdx, false)}
                   />
@@ -181,16 +166,16 @@ const MessageList = ({
                     <IconButton
                       size="xs"
                       aria-label='Load message neighbors'
-                      colorScheme='blue'
+                      colorScheme='teal'
                       icon={<TriangleDownIcon />}
                       onClick={onLoadAndExpand(branchIdx, true)}
                     />
                     <Tag
                       size="xs"
-                      fontSize="xx-small"
+                      fontSize="xs"
                       borderRadius='full'
-                      variant='solid'
-                      colorScheme='green'
+                      variant='subtle'
+                      colorScheme='teal'
                       textColor="black"
                       mr="1"
                       px="1"
@@ -284,7 +269,8 @@ const Message = ({ message, isRoot }: { message: IMessage, isRoot: boolean }) =>
           size="xs"
           fontSize="xx-small"
           borderRadius='full'
-          textColor="blue.600"
+          variant="outline"
+          colorScheme='teal'
           fontWeight="bold"
           mr="1"
           px="1"

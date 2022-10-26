@@ -415,7 +415,7 @@ const Home: NextPage = () => {
           { selectedAlias ?
             <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
               <Text fontWeight="bold" fontSize="sm" textDecoration="underline" mr="4">
-                { selectedAlias.name.toUpperCase() }
+                { selectedAlias.name.slice(0, 20).toUpperCase() }
               </Text>
 
               <Button

@@ -44,4 +44,13 @@ export const ListeningProjectIds = [
   7, // yoots
   21, // dens
   17, // tff
+  70, // cubists
 ]
+
+export const ChannelsMap = new Map<string, string>()
+ChannelsMap.set("927396163135631397", "Degods Alpha")
+ChannelsMap.set("899081166999670814", "Famous Fox Alpha")
+ChannelsMap.set("924069784444882964", "Degen Bible Test")
+ChannelsMap.set("915674851090497547", "Monkettes Alpha")
+ChannelsMap.set("911212380292255774", "Cubists Alpha")
+ChannelsMap.set("972492327681654834", "Okay Bears Alpha")

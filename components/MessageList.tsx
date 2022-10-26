@@ -18,7 +18,8 @@ import {
 import Moment from 'moment-timezone'
 import { TriangleDownIcon, TriangleUpIcon, CloseIcon } from '@chakra-ui/icons'
 
-import { IMessage, ChannelsMap } from '../types/alpha'
+import { IMessage } from '../types/alpha'
+import { ChannelsMap } from '../services/helpers'
 import alphaService, { SearchMessagesReq } from '../services/alpha.service'
 
 interface MessageBranch {

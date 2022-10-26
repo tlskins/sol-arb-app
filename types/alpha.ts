@@ -105,9 +105,3 @@ interface DiscordAuthor {
   avatar: string,
 }
 
-export const ChannelsMap = new Map<string, string>()
-ChannelsMap.set("927396163135631397", "Degods Alpha")
-ChannelsMap.set("899081166999670814", "Famous Fox Alpha")
-ChannelsMap.set("924069784444882964", "Degen Bible Test")
-ChannelsMap.set("915674851090497547", "Monkettes Alpha")
-ChannelsMap.set("911212380292255774", "Cubists Alpha")

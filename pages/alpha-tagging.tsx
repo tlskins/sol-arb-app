@@ -9,7 +9,6 @@ import {
   Text,
   FormLabel,
   Stack,
-  Checkbox,
   useDisclosure,
   FormControl,
   Drawer,
@@ -29,7 +28,6 @@ import {
   Tr,
   Tbody,
   Td,
-  Tfoot,
   useColorModeValue,
 } from '@chakra-ui/react'
 import { ChevronLeftIcon, ChevronRightIcon, ChatIcon, LinkIcon, CloseIcon } from '@chakra-ui/icons'
@@ -152,7 +150,7 @@ const Home: NextPage = () => {
       after: searchEntityAlias.after && filterDateToISOString( searchEntityAlias.after ),
       orderBy: "TIMESTAMP",
       orderDirection: "DESC",
-      limit: 10,
+      limit: 15,
     })
     if ( resp ) {
       setAliasMessagesMap({ ...aliasMessagesMap, [aliasId]: resp })

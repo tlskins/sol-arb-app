@@ -10,6 +10,7 @@ export interface ProjectRule {
 
   // alerts
   lastAlertPrice?: number,
+  lastAlertListed?: number,
   fixedPriceChange: number | null,
   critFixedPriceChange: number | null,
   pctListingChange: number | null,

@@ -642,16 +642,18 @@ const Home: NextPage = () => {
                         </Stack>
                       </Stack>
 
-                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2">
-                        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
-                          <FormLabel fontSize="sm">Listing % Change</FormLabel>
-                          <NumberInput
-                            thousandSeparator={true}
-                            value={ combined.pctListingChange }
-                            onValueChange={ value => onChangeProjRule( projRule._id, 'pctListingChange', value )}
-                          />
-                        </Stack>
+                      <Stack direction="row" fontSize="sm" fontWeight="bold" my="2" alignItems="center" alignContent="center" justifyContent="left">
+                        <FormLabel fontSize="sm">Listing % Change</FormLabel>
+                        <NumberInput
+                          thousandSeparator={true}
+                          value={ combined.pctListingChange }
+                          onValueChange={ value => onChangeProjRule( projRule._id, 'pctListingChange', value )}
+                        />
                       </Stack>
+
+                      <Text>
+                        Last listing alert: { combined.lastAlertListed ? `${ combined.lastAlertListed}%` : "none" }
+                      </Text>
 
                       <Button
                         isLoading={isDeleting}

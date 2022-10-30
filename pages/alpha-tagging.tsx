@@ -470,7 +470,14 @@ const Home: NextPage = () => {
               />
             </Stack>
             :
-            <Stack direction="row" alignContent="center" alignItems="center" justifyContent="center" marginTop="4" spacing="4">
+            <Stack
+              direction="row"
+              alignContent="center"
+              alignItems="center"
+              justifyContent="center"
+              marginTop="4"
+              spacing="4"
+            >
               { (searchEntityAlias?.offset || 0) > 0 &&
                 <IconButton
                   icon={<ChevronLeftIcon/>}
@@ -480,7 +487,10 @@ const Home: NextPage = () => {
                   variant='solid'
                   mr="1"
                   onClick={() => {
-                    setSearchEntityAlias({ ...searchEntityAlias, offset: (searchEntityAlias?.offset || 0) - searchLimit })
+                    setSearchEntityAlias({
+                      ...searchEntityAlias,
+                      offset: (searchEntityAlias?.offset || 0) - searchLimit,
+                    })
                     onLoadAliases()
                   }}
                 />

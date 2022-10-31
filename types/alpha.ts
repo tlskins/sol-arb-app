@@ -1,3 +1,4 @@
+import moment from "moment-timezone"
 
 export interface INewEntity {
   name: string,
@@ -31,8 +32,21 @@ export interface IEntity {
   messages: IMessage[] | null | undefined,
   // dynamic
   type?: string,
+  lastDiscordMention?: string,
+  lastTweetMention?: string,
   lastMention?: string,
   mentions?: number,
+}
+
+export const pEntity = (entity: IEntity): IEntity => {
+  let lastMention = entity.lastDiscordMention
+  if ( lastMention == null || entity.lastTweetMention && moment( entity.lastTweetMention ).isAfter( moment( entity.lastDiscordMention ))) {
+    lastMention = entity.lastTweetMention
+  }
+  return {
+    ...entity,
+    lastMention,
+  }
 }
 
 export interface IEntityType {
@@ -105,3 +119,62 @@ interface DiscordAuthor {
   avatar: string,
 }
 
+export interface ITweet {
+  id: number,
+  createdAt: string,
+  updatedAt: string,
+  authorId: string,
+  conversationId: string,
+  tweetedAt: string,
+  twitterEntities: any,
+  geo: any,
+  tweetId: string,
+  possiblySensitive: boolean,
+  retweets: number,
+  replies: number,
+  likes: number,
+  quotes: number,
+  replySettings: string,
+  source: string,
+  text: string,
+  referencedTweetId: string | null,
+  referencedTweetType: string | null,
+
+  cleanedText: string,
+  processed: boolean,
+  processedAt: string | null,
+  entities: any[] | null, // Entity[]
+  entitiesCount: number | null,
+  ignore: boolean,
+  // associations
+  entityAliases: IEntityAlias[] | null | undefined,
+}
+
+export interface ITweetConfig {
+  id: number,
+  createdAt: string,
+  updatedAt: string,
+  active: boolean,
+  authorId: string,
+  authorHandle: string,
+  entityId: number | null,
+  // associations
+  entity: IEntity | null | undefined,
+}
+
+export type PolyMessage = IMessage | ITweet
+
+
+export function isDiscordMsg(toBeDetermined: PolyMessage): toBeDetermined is IMessage {
+  if((toBeDetermined as IMessage).discord_message_id){
+    return true
+  }
+  return false
+}
+
+export function isTweet(toBeDetermined: PolyMessage): toBeDetermined is ITweet {
+  if((toBeDetermined as ITweet).tweetId){
+    return true
+  }
+  return false
+}

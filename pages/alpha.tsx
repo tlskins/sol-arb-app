@@ -31,7 +31,7 @@ import { ChatIcon, CloseIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icon
 
 import { FilterDateRange, DftFilterDateRanges, filterDateToISOString, OrderOption, OrderDirection } from '../services/helpers'
 import alphaService, { SearchEntitiesReq } from '../services/alpha.service'
-import { IMessage, IEntity } from '../types/alpha'
+import { IMessage, IEntity, ITweet, PolyMessage } from '../types/alpha'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
@@ -55,7 +55,7 @@ const getDefaultSearch = (): SearchEntitiesReq => {
 }
 
 interface IEntityMessagesMap {
-  [key: string]: IMessage[] | undefined
+  [key: string]: PolyMessage[] | undefined
 }
 
 const Home: NextPage = () => {
@@ -68,7 +68,7 @@ const Home: NextPage = () => {
   const [selectedEntity, setSelectedEntity] = useState(undefined as IEntity | undefined)
   const [editEntity, setEditEntity] = useState(undefined as IEntity | undefined)
   const [entityMessagesMap, setEntityMessagesMap] = useState({} as IEntityMessagesMap)
-  const [viewMsgs, setViewMsgs] = useState([] as IMessage[])
+  const [viewMsgs, setViewMsgs] = useState([] as PolyMessage[])
   const [viewMsgsTitle, setViewMsgsTitle] = useState("")
 
   const {
@@ -142,17 +142,29 @@ const Home: NextPage = () => {
     setViewMsgsTitle(`Messages containing "${ entity?.name || "?" }"`)
     setViewMsgs(entityMessagesMap[entityId] || [])
     onViewMsgs()
-    const resp = await alphaService.searchMessages({
+    const msgsResp = await alphaService.searchMessages({
       entityIds: entityId.toString(),
       after: searchEntity.after && filterDateToISOString(searchEntity.after),
       before: searchEntity.before && filterDateToISOString(searchEntity.before),
       orderBy: "TIMESTAMP",
       orderDirection: "DESC",
       limit: 10,
-    })
-    if ( resp ) {
-      setEntityMessagesMap({ ...entityMessagesMap, [entityId]: resp })
-      setViewMsgs(resp)
+    }) || []
+    const tweetsResp = await alphaService.searchTweets({
+      entityIds: entityId.toString(),
+      after: searchEntity.after && filterDateToISOString(searchEntity.after),
+      before: searchEntity.before && filterDateToISOString(searchEntity.before),
+      orderBy: "TIMESTAMP",
+      orderDirection: "DESC",
+      limit: 10,
+    }) || []
+    if ( msgsResp ) {
+      const allMsgs = [ ...msgsResp, ...tweetsResp ]
+      setEntityMessagesMap({
+        ...entityMessagesMap,
+        [entityId]: allMsgs,
+      })
+      setViewMsgs(allMsgs)
     }
   }
 

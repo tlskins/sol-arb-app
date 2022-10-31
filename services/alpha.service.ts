@@ -1,6 +1,6 @@
 import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
-import { IEntity, INewEntity, IUpdateEntity, IEntityAlias, IUpdateEntityAlias, IMessage, IEntityType } from '../types/alpha'
+import { IEntity, INewEntity, IUpdateEntity, IEntityAlias, IUpdateEntityAlias, IMessage, IEntityType, ITweet, pEntity, ITweetConfig } from '../types/alpha'
 
 // entity types
 
@@ -80,6 +80,31 @@ interface MessagesResp {
   results: IMessage[]
 }
 
+// tweet types
+
+export interface SearchTweetsReq {
+  entityName?: string,
+  entityType?: string,
+  entityIds?: string,
+  aliasIds?: string,
+  authorIds?: string,
+  after?: string,
+  before?: string,
+  projectId?: string,
+  ids?: string,
+  limit?: number,
+  offset?: number,
+  orderBy?: string,
+  orderDirection?: string,
+}
+
+interface TweetsResp {
+  results: ITweet[]
+}
+
+interface TweetConfigsResp {
+  results: ITweetConfig[]
+}
 
 class AlphaService {
 
@@ -110,7 +135,7 @@ class AlphaService {
     try {
       const resp: IResponse<EntitiesResp> = await http.get( `entity`, { params } )
 
-      return resp.data.results
+      return resp.data.results.map( result => pEntity( result ))
     } catch( err ) {
       handleError("Error getting entities", err)
     }
@@ -120,7 +145,7 @@ class AlphaService {
     try {
       const resp: IResponse<EntityResp> = await http.post( `entity`, req )
 
-      return resp.data.entity
+      return pEntity( resp.data.entity )
     } catch( err ) {
       handleError("Error creating entity", err)
     }
@@ -130,7 +155,7 @@ class AlphaService {
     try {
       const resp: IResponse<EntityResp> = await http.put( `entity/${ id }`, req )
 
-      return resp.data.entity
+      return pEntity( resp.data.entity )
     } catch( err ) {
       handleError("Error updating entity", err)
     }
@@ -170,6 +195,30 @@ class AlphaService {
       return resp.data.results
     } catch( err ) {
       handleError("Error getting messages", err)
+    }
+  }
+
+  // Tweets
+
+  searchTweets = async (params: SearchTweetsReq): Promise<ITweet[] | undefined> => {
+    try {
+      const resp: IResponse<TweetsResp> = await http.get( `tweet`, { params } )
+
+      return resp.data.results
+    } catch( err ) {
+      handleError("Error getting tweets", err)
+    }
+  }
+
+  // TweetConfigs
+
+  getTweetConfigs = async (): Promise<ITweetConfig[] | undefined> => {
+    try {
+      const resp: IResponse<TweetConfigsResp> = await http.get( `tweet-config` )
+
+      return resp.data.results
+    } catch( err ) {
+      handleError("Error getting tweet configs", err)
     }
   }
 }

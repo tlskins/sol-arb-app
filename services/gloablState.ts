@@ -21,6 +21,7 @@ const getDefaultState = () => {
     tags: [] as string[],
     entityTypes: [] as IEntityType[],
     confirmModal: undefined as ConfirmModal | undefined,
+    twitterUserNameMap: undefined as {[key: string]: string} | undefined,
   }
 }
 export const { useGlobalState, setGlobalState } = createGlobalState(getDefaultState())

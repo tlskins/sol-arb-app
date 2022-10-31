@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { AiOutlineTwitter } from 'react-icons/ai'
+import { useSession } from "next-auth/react"
 import {
   IconButton,
   Stack,
@@ -14,17 +16,23 @@ import {
   ModalFooter,
   Button,
   useDisclosure,
+  Icon,
 } from '@chakra-ui/react'
 import Moment from 'moment-timezone'
 import { TriangleDownIcon, TriangleUpIcon, CloseIcon } from '@chakra-ui/icons'
 
-import { IMessage } from '../types/alpha'
+import { IMessage, isDiscordMsg, isTweet, ITweet, ITweetConfig, PolyMessage } from '../types/alpha'
 import { ChannelsMap } from '../services/helpers'
 import alphaService, { SearchMessagesReq } from '../services/alpha.service'
+import { useGlobalState } from '../services/gloablState'
 
 interface MessageBranch {
-  root: IMessage,
-  messages: IMessage[],
+  root: PolyMessage,
+  messages: PolyMessage[],
+}
+
+interface TwitterUserNameMap {
+  [key: string]: string
 }
 
 const MessageList = ({
@@ -34,23 +42,44 @@ const MessageList = ({
   onClose,
 }: {
   title: string,
-  rootMessages: IMessage[],
+  rootMessages: PolyMessage[],
   isOpen: boolean,
   onClose: ()=>void,
 }) => {
+  const { data: _sessionData } = useSession()
+  const sessionData = _sessionData as any
+  const [twitterUserNameMap, setTwitterUserNameMap] = useGlobalState('twitterUserNameMap')
   const [expandedMap, setExpandedMap] = useState({} as {[key: number]: boolean}) // branch idx -> bool
   const [msgBranches, setMsgBranches] = useState([] as MessageBranch[])
+
   const {
     isOpen: isLoadingNeigh,
     onOpen: onLoadNeigh,
     onClose: endLoadNeigh,
   } = useDisclosure()
 
+  useEffect( () => {
+    if ( sessionData?.token?.id && twitterUserNameMap === undefined ) {
+      onLoadUserNamesMap()
+    }
+  }, [sessionData?.token?.id, twitterUserNameMap])
+
   useEffect(() => {
     const sorted = rootMessages.sort((a,b) => Moment(a.createdAt).isBefore(Moment(b.createdAt)) ? 1 : -1 )
     const branches = sorted.map( root => ({ root, messages: [root] }))
     setMsgBranches(branches)
   }, [rootMessages])
+
+  const onLoadUserNamesMap = async () => {
+    const twitterConfigs = await alphaService.getTweetConfigs()
+    if ( twitterConfigs ) {
+      setTwitterUserNameMap( twitterConfigs.reduce((map: TwitterUserNameMap, cfg) => {
+        map[cfg.authorId] = cfg.authorHandle
+
+        return map
+      }, {}))
+    }
+  }
 
   const onLoadNeighbors = ( branchIdx: number, root: IMessage, isAfter: boolean ) => async (): Promise<void> => {
     if ( isLoadingNeigh ) return
@@ -83,6 +112,9 @@ const MessageList = ({
   const onLoadAndExpand = ( branchIdx: number, isAfter: boolean ) => async (): Promise<void> => {
     const branch = msgBranches[branchIdx]
     const { root, messages } = branch
+    if ( isTweet( root ) ) {
+      return
+    }
     const wasExpanded = expandedMap[branchIdx]
     if ( wasExpanded || messages.length === 1 ) {
       await onLoadNeighbors(branchIdx, root, isAfter )()
@@ -102,66 +134,18 @@ const MessageList = ({
         <ModalBody>
           { msgBranches.map( (branch, branchIdx) => {
             const { root, messages } = branch
-            const isExpanded = expandedMap[branchIdx]
-            return(
-              <Stack key={branchIdx}
-                border="1px"
-                borderColor="gray.400"
-                bgColor={isExpanded ? "gray.700" : undefined}
-                borderRadius="md"
-                my="2"
-                p="0.5"
-              >
-                <Stack direction="row" width="full" alignItems="center" alignContent="center" justifyContent="center">
-                  <IconButton
-                    size="xs"
-                    aria-label='Load message neighbors'
-                    colorScheme='teal'
-                    icon={<TriangleDownIcon />}
-                    onClick={onLoadAndExpand(branchIdx, true)}
-                  />
-                  <Tag
-                    size="xs"
-                    fontSize="xs"
-                    borderRadius='full'
-                    variant="subtle"
-                    colorScheme='teal'
-                    textColor="black"
-                    mr="1"
-                    px="1"
-                    py="0.5"
-                  >
-                    { (ChannelsMap.get(root.channel_id)) || "Not Found" }
-                  </Tag>
 
-                  <IconButton
-                    size="xs"
-                    aria-label='Load message neighbors'
-                    colorScheme='teal'
-                    icon={<TriangleUpIcon />}
-                    onClick={onLoadAndExpand(branchIdx, false)}
-                  />
-
-                  { isExpanded &&
-                    <IconButton
-                      size="xs"
-                      aria-label='Close expanded messages'
-                      colorScheme='gray'
-                      icon={<CloseIcon />}
-                      onClick={() => setExpandedMap({ ...expandedMap, [branchIdx]: false })}
-                    />
-                  }
-                </Stack>
-                { branch.messages.map( (message, idx) => {
-                  const isRoot = message.id === root.id
-                  return(
-                    (isExpanded || isRoot) ?
-                    <Message message={message} isRoot={isRoot} />
-                    :
-                    undefined
-                  )
-                })}
-                { isExpanded &&
+            if ( isDiscordMsg( root )) {
+              const isExpanded = expandedMap[branchIdx]
+              return(
+                <Stack key={branchIdx}
+                  border="1px"
+                  borderColor="gray.400"
+                  bgColor={isExpanded ? "gray.700" : undefined}
+                  borderRadius="md"
+                  my="2"
+                  p="0.5"
+                >
                   <Stack direction="row" width="full" alignItems="center" alignContent="center" justifyContent="center">
                     <IconButton
                       size="xs"
@@ -174,26 +158,111 @@ const MessageList = ({
                       size="xs"
                       fontSize="xs"
                       borderRadius='full'
-                      variant='subtle'
+                      variant="subtle"
                       colorScheme='teal'
                       textColor="black"
                       mr="1"
                       px="1"
                       py="0.5"
                     >
-                      { Moment( messages[messages.length-1].createdAt ).format('MMM D h:mm:ss a') }
+                      { (ChannelsMap.get(root.channel_id)) || "Not Found" }
                     </Tag>
+  
                     <IconButton
                       size="xs"
-                      aria-label='Close expanded messages'
-                      colorScheme='gray'
-                      icon={<CloseIcon />}
-                      onClick={() => setExpandedMap({ ...expandedMap, [branchIdx]: false })}
+                      aria-label='Load message neighbors'
+                      colorScheme='teal'
+                      icon={<TriangleUpIcon />}
+                      onClick={onLoadAndExpand(branchIdx, false)}
                     />
+  
+                    { isExpanded &&
+                      <IconButton
+                        size="xs"
+                        aria-label='Close expanded messages'
+                        colorScheme='gray'
+                        icon={<CloseIcon />}
+                        onClick={() => setExpandedMap({ ...expandedMap, [branchIdx]: false })}
+                      />
+                    }
                   </Stack>
-                }
-              </Stack>
-            )
+                  { branch.messages.map( (message, idx) => {
+                    const isRoot = message.id === root.id
+                    return(
+                      (isExpanded || isRoot) ?
+                      <Message message={message as IMessage} isRoot={isRoot} />
+                      :
+                      undefined
+                    )
+                  })}
+                  { isExpanded &&
+                    <Stack direction="row" width="full" alignItems="center" alignContent="center" justifyContent="center">
+                      <IconButton
+                        size="xs"
+                        aria-label='Load message neighbors'
+                        colorScheme='teal'
+                        icon={<TriangleDownIcon />}
+                        onClick={onLoadAndExpand(branchIdx, true)}
+                      />
+                      <Tag
+                        size="xs"
+                        fontSize="xs"
+                        borderRadius='full'
+                        variant='subtle'
+                        colorScheme='teal'
+                        textColor="black"
+                        mr="1"
+                        px="1"
+                        py="0.5"
+                      >
+                        { Moment( messages[messages.length-1].createdAt ).format('MMM D h:mm:ss a') }
+                      </Tag>
+                      <IconButton
+                        size="xs"
+                        aria-label='Close expanded messages'
+                        colorScheme='gray'
+                        icon={<CloseIcon />}
+                        onClick={() => setExpandedMap({ ...expandedMap, [branchIdx]: false })}
+                      />
+                    </Stack>
+                  }
+                </Stack>
+              )
+            } else if ( isTweet( root )) {
+              return(
+                <Stack key={branchIdx}
+                  border="1px"
+                  borderColor="blue.400"
+                  bgColor="blue.300"
+                  borderRadius="md"
+                  my="2"
+                  p="0.5"
+                >
+                  <Stack direction="row" width="full" alignItems="center" alignContent="center" justifyContent="center">
+                    <Tag
+                      size="xs"
+                      fontSize="xs"
+                      borderRadius='full'
+                      variant="subtle"
+                      colorScheme='teal'
+                      textColor="black"
+                      mr="1"
+                      px="1"
+                      py="0.5"
+                    >
+                      { twitterUserNameMap && twitterUserNameMap[root.authorId] || "Not Found" }
+                    </Tag>
+                    <Icon>
+                      <AiOutlineTwitter size="md"/>
+                    </Icon>
+                  </Stack>
+                  <Tweet
+                    tweet={root as ITweet}
+                    userNamesMap={twitterUserNameMap as TwitterUserNameMap}
+                  />
+                </Stack>
+              )
+            }
           })}
         </ModalBody>
         <ModalFooter>
@@ -203,7 +272,6 @@ const MessageList = ({
     </Modal>
   )
 }
-
 
 const Message = ({ message, isRoot }: { message: IMessage, isRoot: boolean }) => {
   return(
@@ -283,6 +351,57 @@ const Message = ({ message, isRoot }: { message: IMessage, isRoot: boolean }) =>
   )
 }
 
+
+const Tweet = ({ tweet, userNamesMap }: { tweet: ITweet, userNamesMap: TwitterUserNameMap }) => {
+  return(
+    <Flex key={tweet.id}
+      flexDirection="column"
+      w="100%"
+      my="2"
+      fontSize="sm"
+      bg="white"
+      borderRadius="md"
+    >
+
+      <Flex
+        color="black"
+        p="1.5"
+      >
+        <Text wordBreak="break-word" fontSize="xs">
+          <Text
+            as="span"
+            whiteSpace="nowrap"
+            borderRadius='full'
+            variant='subtle'
+            bgColor="teal.200"
+            px="1.5"
+            py="0.5"
+            mr="1"
+          >
+            { userNamesMap[tweet.authorId] || "?" }
+          </Text>
+          {tweet.text}
+        </Text>
+      </Flex>
+
+      <Text fontSize="xs" pl="2" pb="0.5"> 
+        <Tag
+          size="xs"
+          fontSize="xx-small"
+          borderRadius='full'
+          variant="outline"
+          colorScheme='teal'
+          fontWeight="bold"
+          mr="1"
+          px="1"
+          py="0.5"
+        >
+          { Moment( tweet.tweetedAt ).format('MMM D h:mm:ss a') }
+        </Tag>
+      </Text>
+    </Flex>
+  )
+}
 
 
 export default MessageList

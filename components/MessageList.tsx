@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AiOutlineTwitter } from 'react-icons/ai'
+import { FaDiscord } from 'react-icons/fa'
 import { useSession } from "next-auth/react"
 import {
   IconButton,
@@ -17,9 +18,10 @@ import {
   Button,
   useDisclosure,
   Icon,
+  Link,
 } from '@chakra-ui/react'
 import Moment from 'moment-timezone'
-import { TriangleDownIcon, TriangleUpIcon, CloseIcon } from '@chakra-ui/icons'
+import { TriangleDownIcon, TriangleUpIcon, CloseIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 
 import { IMessage, isDiscordMsg, isTweet, ITweet, ITweetConfig, PolyMessage } from '../types/alpha'
 import { ChannelsMap } from '../services/helpers'
@@ -154,6 +156,9 @@ const MessageList = ({
                       icon={<TriangleDownIcon />}
                       onClick={onLoadAndExpand(branchIdx, true)}
                     />
+                    <Icon mx="2">
+                      <FaDiscord size="md"/>
+                    </Icon>
                     <Tag
                       size="xs"
                       fontSize="xs"
@@ -239,6 +244,9 @@ const MessageList = ({
                   p="0.5"
                 >
                   <Stack direction="row" width="full" alignItems="center" alignContent="center" justifyContent="center">
+                    <Icon mx="2">
+                      <AiOutlineTwitter size="md"/>
+                    </Icon>
                     <Tag
                       size="xs"
                       fontSize="xs"
@@ -252,9 +260,13 @@ const MessageList = ({
                     >
                       { twitterUserNameMap && twitterUserNameMap[root.authorId] || "Not Found" }
                     </Tag>
-                    <Icon>
-                      <AiOutlineTwitter size="md"/>
-                    </Icon>
+                    { twitterUserNameMap && twitterUserNameMap[root.authorId] &&
+                      <Link href={`https://twitter.com/${twitterUserNameMap[root.authorId]}/status/${root.tweetId}`}
+                        isExternal
+                      >
+                        <ExternalLinkIcon mx='2' mb="1" />
+                      </Link>
+                    }
                   </Stack>
                   <Tweet
                     tweet={root as ITweet}

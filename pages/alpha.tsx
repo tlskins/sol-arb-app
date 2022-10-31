@@ -158,14 +158,12 @@ const Home: NextPage = () => {
       orderDirection: "DESC",
       limit: 10,
     }) || []
-    if ( msgsResp ) {
-      const allMsgs = [ ...msgsResp, ...tweetsResp ]
-      setEntityMessagesMap({
-        ...entityMessagesMap,
-        [entityId]: allMsgs,
-      })
-      setViewMsgs(allMsgs)
-    }
+    const allMsgs = [ ...msgsResp, ...tweetsResp ]
+    setEntityMessagesMap({
+      ...entityMessagesMap,
+      [entityId]: allMsgs,
+    })
+    setViewMsgs(allMsgs)
   }
 
   const onReloadEntity = async (entity: IEntity) => {

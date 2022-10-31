@@ -36,7 +36,7 @@ import DatePicker from "react-datepicker"
 
 import { FilterDateRange, DftFilterDateRanges, filterDateToISOString, OrderOption, OrderDirection } from '../services/helpers'
 import alphaService, { SearchAliasesReq } from '../services/alpha.service'
-import { IEntityAlias, IMessage, IEntity } from '../types/alpha'
+import { IEntityAlias, IMessage, IEntity, PolyMessage } from '../types/alpha'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
@@ -69,7 +69,7 @@ const Home: NextPage = () => {
   const [searchEntityAlias, setSearchEntityAlias] = useState(getDefaultSearch() as SearchAliasesReq)
   const [entityAliases, setEntityAliases] = useState([] as IEntityAlias[])
   const [aliasMessagesMap, setAliasMessagesMap] = useState({} as IAliasMessagesMap)
-  const [viewMsgs, setViewMsgs] = useState([] as IMessage[])
+  const [viewMsgs, setViewMsgs] = useState([] as PolyMessage[])
   const [viewMsgsTitle, setViewMsgsTitle] = useState("")
   const [taggingAlias, setTaggingAlias] = useState(undefined as IEntityAlias | undefined)
   const [selectedAlias, setSelectedAlias] = useState(undefined as IEntityAlias | undefined)
@@ -144,18 +144,25 @@ const Home: NextPage = () => {
     setViewMsgsTitle(`Messages containing "${ alias?.name || "?" }"`)
     setViewMsgs(aliasMessagesMap[aliasId] || [])
     onViewMsgs()
-    const resp = await alphaService.searchMessages({
+    const msgsResp = await alphaService.searchMessages({
       aliasIds: aliasId.toString(),
       before: searchEntityAlias.before && filterDateToISOString( searchEntityAlias.before ),
       after: searchEntityAlias.after && filterDateToISOString( searchEntityAlias.after ),
       orderBy: "TIMESTAMP",
       orderDirection: "DESC",
       limit: 15,
-    })
-    if ( resp ) {
-      setAliasMessagesMap({ ...aliasMessagesMap, [aliasId]: resp })
-      setViewMsgs(resp)
-    }
+    }) || []
+    const tweetsResp = await alphaService.searchTweets({
+      aliasIds: aliasId.toString(),
+      before: searchEntityAlias.before && filterDateToISOString( searchEntityAlias.before ),
+      after: searchEntityAlias.after && filterDateToISOString( searchEntityAlias.after ),
+      orderBy: "TIMESTAMP",
+      orderDirection: "DESC",
+      limit: 15,
+    }) || []
+    const allMsgs = [ ...msgsResp, ...tweetsResp ] as PolyMessage[]
+    setAliasMessagesMap({ ...aliasMessagesMap, [aliasId]: allMsgs })
+    setViewMsgs(allMsgs)
   }
 
   const onFoundEntityAndTag = async (entity: IEntity) => {

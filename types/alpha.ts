@@ -73,9 +73,23 @@ export interface IEntityAlias {
   messages: IMessage[] | null | undefined,
   // dynamic
   entityName?: string,
+  lastDiscordMention?: string,
+  lastTweetMention?: string,
   lastMention?: string,
   mentions?: number,
 }
+
+export const pEntityAlias = (alias: IEntityAlias): IEntityAlias => {
+  let lastMention = alias.lastDiscordMention
+  if ( lastMention == null || alias.lastTweetMention && moment( alias.lastTweetMention ).isAfter( moment( alias.lastDiscordMention ))) {
+    lastMention = alias.lastTweetMention
+  }
+  return {
+    ...alias,
+    lastMention,
+  }
+}
+
 
 export interface IUpdateEntityAlias {
   entityId?: number | null,

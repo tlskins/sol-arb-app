@@ -1,6 +1,6 @@
 import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
-import { IEntity, INewEntity, IUpdateEntity, IEntityAlias, IUpdateEntityAlias, IMessage, IEntityType, ITweet, pEntity, ITweetConfig } from '../types/alpha'
+import { IEntity, INewEntity, IUpdateEntity, IEntityAlias, IUpdateEntityAlias, IMessage, IEntityType, ITweet, pEntity, ITweetConfig, pEntityAlias } from '../types/alpha'
 
 // entity types
 
@@ -168,7 +168,7 @@ class AlphaService {
       console.log('searchAliases', params)
       const resp: IResponse<EntityAliasesResp> = await http.get( `entity-alias`, { params } )
 
-      return resp.data.results
+      return resp.data.results.map( result => pEntityAlias( result ))
     } catch( err ) {
       handleError("Error getting aliases", err)
     }
@@ -180,7 +180,7 @@ class AlphaService {
       const resp: IResponse<EntityAliasesResp> = await http.get( `entity-alias`, { params: { id }} )
       if ( resp.data.results.length === 0 ) return
 
-      return resp.data.results[0]
+      return pEntityAlias( resp.data.results[0] )
     } catch( err ) {
       handleError("Error updating alias", err)
     }

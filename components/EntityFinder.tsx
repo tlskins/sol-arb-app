@@ -49,6 +49,7 @@ const getDefaultEntity = (): IEntity => {
     entityTypeId: 0,
     projectId: null,
     hyperspaceUrl: null,
+    twitterHandle: null,
     updatedAt: "",
     createdAt: "",
     entityAliases: null,

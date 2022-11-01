@@ -236,6 +236,8 @@ const EntityFinder = ({
                           name: project.project?.display_name || "?",
                           entityTypeId: entityTypes.length > 0 ? entityTypes[0].id : 0,
                           type: entityTypes.length > 0 ? entityTypes[0].name : undefined,
+                          twitterHandle: project.project?.twitter || null,
+                          hyperspaceUrl: project.project?.project_slug ? `https://hyperspace.xyz/collection/${project.project?.project_slug}` : null,
                         }
                       } else {
                         newEntity.name = value

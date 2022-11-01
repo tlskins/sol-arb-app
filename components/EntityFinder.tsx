@@ -173,6 +173,7 @@ const EntityFinder = ({
         newEntityType: entity.newEntityType,
         projectId: entity.projectId,
         hyperspaceUrl: entity?.hyperspaceUrl,
+        twitterHandle: entity?.twitterHandle,
       })
     } else {
       result = await alphaService.createEntity({
@@ -181,6 +182,7 @@ const EntityFinder = ({
         newEntityType: entity.newEntityType,
         projectId: entity.projectId || null,
         hyperspaceUrl: entity.hyperspaceUrl || null,
+        twitterHandle: entity.twitterHandle || null,
       })
     }
     endSavingEntity()
@@ -324,6 +326,16 @@ const EntityFinder = ({
                 <Input type="text"
                   value={ entity?.hyperspaceUrl || "" }
                   onChange={ e => setEntity({ ...(entity || getDefaultEntity()), hyperspaceUrl: e.target.value }) }
+                />
+              </FormControl>
+            </Box>
+
+            <Box>
+              <FormLabel>Twitter URL</FormLabel>
+              <FormControl fontSize="sm">
+                <Input type="text"
+                  value={ entity?.twitterHandle || "" }
+                  onChange={ e => setEntity({ ...(entity || getDefaultEntity()), twitterHandle: e.target.value }) }
                 />
               </FormControl>
             </Box>

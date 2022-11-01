@@ -4,6 +4,7 @@ export interface INewEntity {
   name: string,
   projectId: string | null,
   hyperspaceUrl: string | null,
+  twitterHandle: string | null,
   entityTypeId: number | null,
   newEntityType?: string,
 }
@@ -13,6 +14,7 @@ export interface IUpdateEntity {
   name?: string,
   projectId?: string | null,
   hyperspaceUrl?: string | null,
+  twitterHandle?: string | null,
   entityTypeId?: number,
   newEntityType?: string,
 }
@@ -22,6 +24,7 @@ export interface IEntity {
   name: string,
   projectId: string | null,
   hyperspaceUrl: string | null,
+  twitterHandle: string | null,
   entityTypeId: number,
   updatedAt: string,
   createdAt: string,

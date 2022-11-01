@@ -614,7 +614,7 @@ const Navbar = () => {
                       fontWeight="extrabold"
                       onClick={() => router.push('alpha-tagging')}
                     >
-                      Tagging
+                      Discover
                     </MenuItem>
                     <MenuDivider />
 

@@ -35,21 +35,8 @@ export interface IEntity {
   messages: IMessage[] | null | undefined,
   // dynamic
   type?: string,
-  lastDiscordMention?: string,
-  lastTweetMention?: string,
   lastMention?: string,
   mentions?: number,
-}
-
-export const pEntity = (entity: IEntity): IEntity => {
-  let lastMention = entity.lastDiscordMention
-  if ( lastMention == null || entity.lastTweetMention && moment( entity.lastTweetMention ).isAfter( moment( entity.lastDiscordMention ))) {
-    lastMention = entity.lastTweetMention
-  }
-  return {
-    ...entity,
-    lastMention,
-  }
 }
 
 export interface IEntityType {
@@ -76,21 +63,8 @@ export interface IEntityAlias {
   messages: IMessage[] | null | undefined,
   // dynamic
   entityName?: string,
-  lastDiscordMention?: string,
-  lastTweetMention?: string,
   lastMention?: string,
   mentions?: number,
-}
-
-export const pEntityAlias = (alias: IEntityAlias): IEntityAlias => {
-  let lastMention = alias.lastDiscordMention
-  if ( lastMention == null || alias.lastTweetMention && moment( alias.lastTweetMention ).isAfter( moment( alias.lastDiscordMention ))) {
-    lastMention = alias.lastTweetMention
-  }
-  return {
-    ...alias,
-    lastMention,
-  }
 }
 
 

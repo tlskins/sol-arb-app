@@ -1,6 +1,6 @@
 import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
-import { IEntity, INewEntity, IUpdateEntity, IEntityAlias, IUpdateEntityAlias, IMessage, IEntityType, ITweet, pEntity, ITweetConfig, pEntityAlias } from '../types/alpha'
+import { IEntity, INewEntity, IUpdateEntity, IEntityAlias, IUpdateEntityAlias, IMessage, IEntityType, ITweet, ITweetConfig } from '../types/alpha'
 
 // entity types
 
@@ -136,7 +136,7 @@ class AlphaService {
     try {
       const resp: IResponse<EntitiesResp> = await http.get( `entity`, { params } )
 
-      return resp.data.results.map( result => pEntity( result ))
+      return resp.data.results
     } catch( err ) {
       handleError("Error getting entities", err)
     }
@@ -146,7 +146,7 @@ class AlphaService {
     try {
       const resp: IResponse<EntityResp> = await http.post( `entity`, req )
 
-      return pEntity( resp.data.entity )
+      return resp.data.entity
     } catch( err ) {
       handleError("Error creating entity", err)
     }
@@ -156,7 +156,7 @@ class AlphaService {
     try {
       const resp: IResponse<EntityResp> = await http.put( `entity/${ id }`, req )
 
-      return pEntity( resp.data.entity )
+      return resp.data.entity
     } catch( err ) {
       handleError("Error updating entity", err)
     }
@@ -169,7 +169,7 @@ class AlphaService {
       console.log('searchAliases', params)
       const resp: IResponse<EntityAliasesResp> = await http.get( `entity-alias`, { params } )
 
-      return resp.data.results.map( result => pEntityAlias( result ))
+      return resp.data.results
     } catch( err ) {
       handleError("Error getting aliases", err)
     }
@@ -181,7 +181,7 @@ class AlphaService {
       const resp: IResponse<EntityAliasesResp> = await http.get( `entity-alias`, { params: { id }} )
       if ( resp.data.results.length === 0 ) return
 
-      return pEntityAlias( resp.data.results[0] )
+      return resp.data.results[0]
     } catch( err ) {
       handleError("Error updating alias", err)
     }

@@ -42,13 +42,13 @@ class ProjectRuleService {
       floorBelowOn: false,
       lastSupport: null,
       newSupportTest: null,
-      supportBreakPct: null,
-      stopPct: null,
+      supportBreakPct: 20 ,
+      stopPct: 4,
       customSupport: null,
       brokeSupport: null,
       newSupportHighTest: null,
       newSupportLowTest: null,
-      pctListingChange: null,
+      pctListingChange: 5,
       supportHistory: null,
     } as ProjectRule
   }

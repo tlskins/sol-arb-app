@@ -43,6 +43,7 @@ import { pWalletName } from '../presenters/wallets'
 import ProjectRuleService from '../services/projectRule.service'
 import { ProjectStat } from '../types/projectRules'
 import NumberInput from './NumberInput'
+import alphaService from '../services/alpha.service'
 
 interface TagOption {
   value: string,
@@ -97,6 +98,7 @@ const Navbar = () => {
   const searchRef = useRef( undefined as NodeJS.Timeout | undefined )
 
   const [confirmModal, setConfirmModal] = useGlobalState('confirmModal')
+  const [_, setEntityTypes] = useGlobalState('entityTypes')
 
   useEffect(() => {
     if ( sessionStatus === "authenticated" ) {
@@ -111,6 +113,20 @@ const Navbar = () => {
       onCloseConfirmModal()
     }
   }, [confirmModal])
+
+  useEffect(() => {
+    if ( sessionData?.token?.id ) {
+      console.log('loading types...')
+      onLoadEntityTypes()
+    }
+  }, [sessionData?.token?.id])
+
+  const onLoadEntityTypes = async (): Promise<void> => {
+    const newEntityTypes = await alphaService.getEntityTypes()
+    if ( newEntityTypes ) {
+      setEntityTypes( newEntityTypes.sort((a,b) => a.name > b.name ? 1 : 0) )
+    }
+  }
 
   const onSignOut = () => {
     signOut()

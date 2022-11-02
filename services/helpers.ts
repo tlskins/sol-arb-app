@@ -22,6 +22,7 @@ export const filterDateToISOString = (filterDateRange: string): string => {
   const parts = filterDateRange.split(" ")
   const units = parseInt(parts[0])
   const duration = parts[1] as Moment.unitOfTime.DurationConstructor
+  console.log('filterDateToISOString', units, duration, Moment().add(-1 * units, duration).toISOString())
   return Moment().add(-1 * units, duration).toISOString()
 }
 

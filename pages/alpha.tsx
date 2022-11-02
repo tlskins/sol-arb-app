@@ -31,7 +31,7 @@ import { ChatIcon, CloseIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icon
 
 import { FilterDateRange, DftFilterDateRanges, filterDateToISOString, OrderOption, OrderDirection } from '../services/helpers'
 import alphaService, { SearchEntitiesReq } from '../services/alpha.service'
-import { IMessage, IEntity, ITweet, PolyMessage } from '../types/alpha'
+import { IEntity, PolyMessage } from '../types/alpha'
 import { setAccessToken } from '../http-common'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/Navbar'
@@ -40,6 +40,7 @@ import MessageList from '../components/MessageList'
 import EntityFinder from '../components/EntityFinder'
 import EntitiesTable from '../components/EntitiesTable'
 import EntitiesByTypeTable from '../components/EntitiesByTypeTable'
+import { useGlobalState } from '../services/gloablState'
 
 const searchLimit = 25
 
@@ -70,6 +71,7 @@ const Home: NextPage = () => {
   const [entityMessagesMap, setEntityMessagesMap] = useState({} as IEntityMessagesMap)
   const [viewMsgs, setViewMsgs] = useState([] as PolyMessage[])
   const [viewMsgsTitle, setViewMsgsTitle] = useState("")
+  const [entityTypes, setEntityTypes] = useGlobalState('entityTypes')
 
   const {
     isOpen: isFilterView,
@@ -93,12 +95,12 @@ const Home: NextPage = () => {
   } = useDisclosure()
 
   useEffect(() => {
-    if ( sessionData?.token?.id && refreshSearch) {
+    if ( sessionData?.token?.id && refreshSearch && entityTypes.length > 0) {
       setAccessToken( sessionData?.token?.access_token )
       onLoadEntities()
       setRefreshSearch(false)
     }
-  }, [sessionData?.token?.id, refreshSearch])
+  }, [sessionData?.token?.id, refreshSearch, entityTypes])
 
   const onLoadEntities = async () => {
     if ( !sessionData || isLoadingEntities ) {
@@ -106,15 +108,24 @@ const Home: NextPage = () => {
     }
     onLoadingEntities()
     const { before, after } = searchEntity
-    const resp = await alphaService.searchEntities({
+    const coreTypeIds = entityTypes.filter( type => ['Project'].includes( type.name )).map( t => t.id ).join(',')
+    console.log('onLoadEntities', entityTypes, entityTypes.filter( type => ['Project'].includes( type.name )), coreTypeIds)
+    const projEntitiePromise = alphaService.searchEntities({
       ...searchEntity,
+      entityTypeIds: coreTypeIds,
       before: before && filterDateToISOString( before ),
       after: after && filterDateToISOString( after ),
+    }) || []
+    const otherEntitiesPromise = alphaService.searchEntities({
+      ...searchEntity,
+      exclEntityTypeIds: coreTypeIds,
+      before: before && filterDateToISOString( before ),
+      after: after && filterDateToISOString( after ),
+    }) || []
+    await Promise.all([projEntitiePromise, otherEntitiesPromise]).then(([projEntities, otherEntities]) => {
+      setEntities([...(projEntities || []), ...(otherEntities || [])])
     })
     endLoadingEntities()
-    if ( resp ) {
-      setEntities(resp)
-    }
   }
 
   const onEditEntity = (entity: IEntity) => {
@@ -265,20 +276,19 @@ const Home: NextPage = () => {
               <Box>
                 <FormLabel fontSize="sm"> Before </FormLabel>
                 <FormControl>
-                  <DatePicker
-                    className="filter-calendar full-width"
-                    selected={ searchEntity.before ? Moment( searchEntity.before ).toDate() : null }
-                    dateFormat="Pp"
-                    onChange={ date => setSearchEntity({
+                  <Select size="sm"
+                    fontSize="sm"
+                    background="white"
+                    borderRadius="lg"
+                    value={ searchEntity.before }
+                    onChange={ e => setSearchEntity({
                       ...searchEntity,
-                      before: date?.toISOString(),
+                      before: e.target.value === "-" ? undefined : e.target.value,
                     })}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={60}
-                    timeCaption="time"
-                    isClearable
-                  />
+                  >
+                    <option value="-"> - </option>
+                    { DftFilterDateRanges.map( filter => <option value={filter} key={filter}> { filter } </option>) }
+                  </Select>
                 </FormControl>
               </Box>
 
@@ -292,9 +302,10 @@ const Home: NextPage = () => {
                     value={ searchEntity.after }
                     onChange={ e => setSearchEntity({
                       ...searchEntity,
-                      after: e.target.value,
+                      after: e.target.value === "-" ? undefined : e.target.value,
                     })}
                   >
+                    <option value="-"> - </option>
                     { DftFilterDateRanges.map( filter => <option value={filter} key={filter}> { filter } </option>) }
                   </Select>
                 </FormControl>

@@ -118,7 +118,6 @@ const EntityFinder = ({
     }
   }
 
-
   const getEntityOptions = async (search: string): Promise<TagOption[]> => {
     const entities = await alphaService.searchEntities({
       name: search,

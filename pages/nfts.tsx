@@ -111,11 +111,7 @@ const Home: NextPage = () => {
       setAccessToken( sessionData?.token?.access_token )
       onLoadProjRules()
     }
-  }, [sessionData?.token?.id])
-
-  useEffect(() => {
-    onLoadProjRules()
-  }, [tagsFilter])
+  }, [sessionData?.token?.id, tagsFilter])
 
   const onLoadProjRules = async () => {
     if ( !sessionData || isRefreshingProjRules ) {

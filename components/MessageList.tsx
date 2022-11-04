@@ -172,6 +172,14 @@ const MessageList = ({
                     >
                       { (ChannelsMap.get(root.channel_id)) || "Not Found" }
                     </Tag>
+
+                    { root.guild_id && root.channel_id && root.discord_message_id &&
+                      <Link href={`https://discord.com/channels/${root.guild_id}/${root.channel_id}/${root.discord_message_id}`}
+                        isExternal
+                      >
+                        <ExternalLinkIcon mx='2' mb="1" />
+                      </Link>
+                    }
   
                     <IconButton
                       size="xs"

@@ -42,7 +42,7 @@ import EntitiesTable from '../components/EntitiesTable'
 import EntitiesByTypeTable from '../components/EntitiesByTypeTable'
 import { useGlobalState } from '../services/gloablState'
 
-const searchLimit = 25
+const searchLimit = 50
 
 const getDefaultSearch = (): SearchEntitiesReq => {
   return {

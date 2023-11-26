@@ -89,12 +89,12 @@ const EntityFinder = ({
     onClose: endSavingEntity,
   } = useDisclosure()
 
-  useEffect(() => {
-    if ( sessionData?.token?.id, isOpen ) {
-      console.log('loading types...')
-      onLoadEntityTypes()
-    }
-  }, [sessionData?.token?.id, isOpen])
+  // useEffect(() => {
+  //   if ( sessionData?.token?.id, isOpen ) {
+  //     console.log('loading types...')
+  //     onLoadEntityTypes()
+  //   }
+  // }, [sessionData?.token?.id, isOpen])
 
 
   useEffect(() => {

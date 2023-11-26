@@ -114,12 +114,12 @@ const Navbar = () => {
     }
   }, [confirmModal])
 
-  useEffect(() => {
-    if ( sessionData?.token?.id ) {
-      console.log('loading types...')
-      onLoadEntityTypes()
-    }
-  }, [sessionData?.token?.id])
+  // useEffect(() => {
+  //   if ( sessionData?.token?.id ) {
+  //     console.log('loading types...')
+  //     onLoadEntityTypes()
+  //   }
+  // }, [sessionData?.token?.id])
 
   const onLoadEntityTypes = async (): Promise<void> => {
     const newEntityTypes = await alphaService.getEntityTypes()

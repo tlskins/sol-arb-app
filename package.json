@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint"
   },
-  "engines" : { 
+  "engines": {
     "node": "20.x"
   },
   "dependencies": {

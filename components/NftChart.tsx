@@ -109,7 +109,7 @@ const NftChart = (props: NftChartProps) => {
         options={{
           theme: "light2",
           title: {
-            text: `${ projRule?.stats?.project?.display_name || '?' }`
+            text: `${ projRule?.stats?.name || '?' }`
           },
           subtitles: [
             { text: `Floor @ ${ currFloor?.toFixed( 2 ) || "?" }`, fontColor: "blue" },

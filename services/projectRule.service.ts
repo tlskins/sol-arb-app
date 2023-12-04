@@ -33,6 +33,7 @@ class ProjectRuleService {
       _id: "",
       discordId: "",
       projectId: "",
+      tensorSlugsDisplay: "",
       active: true,
       fixedPriceChange: 5,
       critFixedPriceChange: null,
@@ -111,7 +112,7 @@ class ProjectRuleService {
   createRule = async ( rule: ProjectRule ): Promise<ProjectRule | undefined> => {
     try {
       const resp: IResponse<ProjectRule> = await http.post( `project-rule`, {
-        projectId: rule.projectId,
+        tensorSlugsDisplay: rule.tensorSlugsDisplay,
         active: rule.active,
         tags: rule.tags?.join(','),
         fixedPriceChange: rule.fixedPriceChange,

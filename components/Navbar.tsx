@@ -373,35 +373,16 @@ const Navbar = () => {
             <Stack direction="column">
               <FormControl>
                 <FormLabel>
-                  NFT
+                  Tensor Slug Name
                 </FormLabel>
                 <Input type="text"
                   placeholder="Search"
-                  value={ searchProj }
-                  onChange={ e => onSearchProject( e.target.value ) }
+                  value={ createProjRule.tensorSlugsDisplay }
+                  onChange={ e => setCreateProjRule({ ...createProjRule, tensorSlugsDisplay: e.target.value })}
                 />
               </FormControl>
 
-              { searchProjResults.length > 0 &&
-                <Select variant='outline'
-                  size="sm"
-                  background="white"
-                  borderRadius="lg"
-                  value={createProjRule?.projectId}
-                  fontSize="sm"
-                  padding="0.5"
-                  onChange={ e => setCreateProjRule({ ...createProjRule, projectId: e.target.value })}
-                >
-                  <option>Select</option>
-                  { searchProjResults.map( result => (
-                    <option key={result.project_id} value={result.project_id}> 
-                      { result.project?.display_name || "?" } ({ result.floor_price || "?" } FP)
-                    </option>
-                  ))}
-                </Select>
-              }
-
-              { createProjRule.projectId &&
+              { createProjRule.tensorSlugsDisplay &&
                 <>
                   <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
                     <Stack direction="row" alignItems="center" alignContent="center" justifyContent="left">
@@ -446,7 +427,7 @@ const Navbar = () => {
           </ModalBody>
 
           <ModalFooter>
-            { (createProjRule && createProjRule.projectId.length > 0) &&
+            { (createProjRule && createProjRule.tensorSlugsDisplay.length > 0) &&
               <Button
                 isLoading={isCreatingProj}
                 loadingText='Saving...'

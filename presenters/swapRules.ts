@@ -22,3 +22,13 @@ export const pResponseTokenSwapRules = (rules: ISwapRule[]): ITokenSwapRules[] =
 
   return out
 }
+
+export const lamportsToSol = ( lamports: number | string ): number => {
+  if ( lamports === '' ) {
+    return 0
+  }
+  if ( typeof lamports === 'string' ) {
+    lamports = parseFloat(lamports)
+  }
+  return parseFloat((lamports / 1000000000).toFixed(2))
+}

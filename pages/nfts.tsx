@@ -40,6 +40,7 @@ import Navbar from '../components/Navbar'
 import NumberInput from '../components/NumberInput'
 import { ProjectRule, UpsertProjectRule } from '../types/projectRules'
 import { useGlobalState } from '../services/gloablState'
+import { lamportsToSol } from '../presenters/swapRules'
 import moment from 'moment-timezone'
 
 interface TagOption {
@@ -121,7 +122,7 @@ const Home: NextPage = () => {
     const resp = await ProjectRuleService.getProfileStats(tagsFilter.join(','))
     if ( resp ) {
       const { profileStats, tags } = resp
-      setProjectRules( profileStats.sort((a,b) => ((b.stats?.floor_price || 0) - (a.stats?.floor_price || 0))) )
+      setProjectRules( profileStats.sort((a,b) => (lamportsToSol(b.stats?.statsV2.buyNowPriceNetFees || 0) - lamportsToSol(a.stats?.statsV2.buyNowPriceNetFees || 0))) )
       setAvailTags( tags )
     }
     onDoneRefreshingProjRules()
@@ -189,7 +190,7 @@ const Home: NextPage = () => {
   }
 
   const onDelete = (projRule: ProjectRule) => () => {
-    const projName = projRule.stats?.project?.display_name || "?"
+    const projName = projRule.stats?.name || "?"
     setConfirmModal({
       message: `Are you sure you want to delete the rule for ${ projName }?`,
       callback: async () => {
@@ -395,20 +396,21 @@ const Home: NextPage = () => {
             <Accordion minWidth="full" allowMultiple={true} defaultIndex={[]} mt="1">
               { projectRules.map( projRule => {
                 const combined = projRule && projRuleUpdate._id === projRule._id ? { ...projRule, ...projRuleUpdate } : projRule
-                const projName = projRule.stats?.project?.display_name || "?"
+                const projName = projRule.stats?.name || "?"
+                const pctListed = ((projRule.stats?.statsV2.numListed || 0.0) / (projRule.stats?.statsV2.numMints || 0.0)) * 100
                 return(
                   <AccordionItem key={projRule._id}>
                     <AccordionButton _expanded={{ bg: 'blue.500', color: 'white' }} minWidth="full">
                       <Box flex='1' textAlign='left'>
                         { projName }
                       </Box>
-                      { (projRule.stats?.floor_price_1day_change || 0) > 0 ?
+                      { (projRule.stats?.statsV2.floor1h || 0) > 0 ?
                         <IoMdArrowDropup color="green" size="35"/>
                         :
                         <IoMdArrowDropdown color="red" size="35"/>
                       }
 
-                      { projRule.stats?.floor_price?.toFixed(2) || "?" } ({ ((projRule.stats?.percentage_of_token_listed || 0.0) * 100).toFixed(1) }%)
+                      { lamportsToSol( projRule.stats?.statsV2.buyNowPriceNetFees || "0.0" ) } ({ pctListed.toFixed(1) }%)
 
                       { selectedRules &&
                         <Checkbox
@@ -469,27 +471,25 @@ const Home: NextPage = () => {
                       <Stack direction="row" mt="2" mb="1">
                         <Stat>
                           <StatLabel>Floor</StatLabel>
-                          <StatNumber>{ projRule.stats?.floor_price?.toFixed(2) || "?" }</StatNumber>
-                          <StatHelpText>{ projRule.stats?.floor_price_1day_change?.toFixed(2) || "?" } 1 day change</StatHelpText>
+                          <StatNumber>{ lamportsToSol( projRule.stats?.statsV2.buyNowPriceNetFees || "0.0" ) }</StatNumber>
+                          <StatHelpText>{ lamportsToSol( projRule.stats?.statsV2.floor24h || "0.0" ) } 1 day change</StatHelpText>
                         </Stat>
 
                         <Stat>
-                          <StatLabel>Listed ({ ((projRule.stats?.num_of_token_listed || 1) / (projRule.stats?.percentage_of_token_listed || 1)).toFixed() } total)</StatLabel>
-                          <StatNumber>{ ((projRule.stats?.percentage_of_token_listed || 0.0) * 100).toFixed(1) }%</StatNumber>
-                          <StatHelpText>{ projRule.stats?.num_of_token_listed || "?" } listed | { projRule.stats?.num_of_token_holders || "?" } holders</StatHelpText>
+                          <StatLabel>Listed { projRule.stats?.statsV2.numListed || 0.0 }</StatLabel>
+                          <StatNumber>{ pctListed.toFixed(1) }%</StatNumber>
                         </Stat>
                       </Stack>
 
                       <Stack direction="row" py="1">
                         <Stat>
                           <StatLabel>Vol 1Hr</StatLabel>
-                          <StatNumber>{ projRule.stats?.volume_1hr || "?" }</StatNumber>
+                          <StatNumber>{ projRule.stats?.statsV2.sales1h || "?" }</StatNumber>
                         </Stat>
 
                         <Stat>
                           <StatLabel>Vol 1Day</StatLabel>
-                          <StatNumber>{ projRule.stats?.volume_1day }</StatNumber>
-                          <StatHelpText>{ ((projRule.stats?.volume_1day_change || 0.0) * 100).toFixed(1) }% change</StatHelpText>
+                          <StatNumber>{ projRule.stats?.statsV2.sales24h }</StatNumber>
                         </Stat>
                       </Stack>
 

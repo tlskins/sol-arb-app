@@ -4,6 +4,7 @@ export interface ProjectRule {
   // refs
   discordId: string,
   projectId: string,
+  tensorSlugsDisplay: string,
 
   active: boolean,
   tags?: string[],
@@ -29,7 +30,7 @@ export interface ProjectRule {
   stopPct: number | null, // % change to trigger a reversion from a break
   supportHistory: FloorSnap[] | null,
 
-  stats?: ProjectStat
+  stats?: TensorCollectionStat
 }
 
 interface FloorSnap {
@@ -43,6 +44,7 @@ export interface UpsertProjectRule {
   // refs
   discordId?: string,
   projectId?: string,
+  tensorSlugsDisplay?: string,
 
   active?: boolean,
   tags?: string[],
@@ -66,6 +68,38 @@ export interface UpsertProjectRule {
   supportBreakPct?: number | null, // % change to trigger a break in support
   stopPct?: number | null, // % change to trigger a reversion from a break
   supportHistory?: FloorSnap[] | null,
+}
+
+// tensor
+
+export type TensorCollectionStat = {
+  id: string,
+  slug: string,
+  slugMe: string,
+  slugDisplay: string,
+  name: string,
+  firstListDate: number,
+  statsV2: TensorProjectStat,
+}
+
+export type TensorProjectStat = {
+  buyNowPrice: string,
+  buyNowPriceNetFees: string,
+  sellNowPrice: string,
+  sellNowPriceNetFees: string,
+  numListed: number,
+  numMints: number,
+  floor1h: number,
+  floor24h: number,
+  floor7d: number,
+  sales1h: number,
+  sales24h: number,
+  sales7d: number,
+  salesAll: number,
+  volume1h: string,
+  volume24h: string,
+  volume7d: string,
+  volumeAll: string,
 }
 
 // hyperspace

@@ -96,19 +96,18 @@ const EntityFinder = ({
   //   }
   // }, [sessionData?.token?.id, isOpen])
 
-
   useEffect(() => {
     if ( entityId ) {
       onLoadEntity( entityId )
     }
   }, [entityId])
 
-  const onLoadEntityTypes = async (): Promise<void> => {
-    const newEntityTypes = await alphaService.getEntityTypes()
-    if ( newEntityTypes ) {
-      setEntityTypes( newEntityTypes.sort((a,b) => a.name > b.name ? 1 : 0) )
-    }
-  }
+  // const onLoadEntityTypes = async (): Promise<void> => {
+  //   const newEntityTypes = await alphaService.getEntityTypes()
+  //   if ( newEntityTypes ) {
+  //     setEntityTypes( newEntityTypes.sort((a,b) => a.name > b.name ? 1 : 0) )
+  //   }
+  // }
 
   const onLoadEntity = async ( entityId: number ): Promise<void> => {
     const entities = await alphaService.searchEntities({ id: entityId })

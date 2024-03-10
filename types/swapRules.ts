@@ -78,4 +78,6 @@ export interface IUpdateSwapRule {
 export interface ICreateSwapRule {
   baseTokenSym: string, // USDC
   swapTokenSym: string, // DUST
+  active: boolean,
+  walletId?: string,
 }

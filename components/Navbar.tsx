@@ -80,14 +80,15 @@ const Navbar = () => {
   const isSignedIn = !!sessionData?.token
   const userName = sessionData?.token?.username
 
-  const [isCreatingSwap, setIsCreatingSwap] = useState(false)
-  const [createSwapRule, setCreateSwapRule] = useState(SwapRuleService.newSwapRule())
-  const [, setTokenSwapRules] = useGlobalState('tokenSwapRules')
-
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
   const [isShowPrivateKey, setIsShowPrivateKey] = useState(false)
   const [createWallet, setCreateWallet] = useState(WalletService.newWallet())
   const [wallets, setWallets] = useGlobalState('wallets')
+
+  const dftWallet = wallets.length ? wallets[0] : null
+  const [isCreatingSwap, setIsCreatingSwap] = useState(false)
+  const [createSwapRule, setCreateSwapRule] = useState(SwapRuleService.newSwapRule(dftWallet))
+  const [, setTokenSwapRules] = useGlobalState('tokenSwapRules')
 
   const [availTags, setAvailTags] = useGlobalState('tags')
   const [isCreatingProj, setIsCreatingProj] = useState(false)
@@ -138,7 +139,7 @@ const Navbar = () => {
     setIsCreatingSwap(true)
     const resp = await SwapRuleService.create(createSwapRule)
     if ( resp ) {
-      setCreateSwapRule(SwapRuleService.newSwapRule())
+      setCreateSwapRule(SwapRuleService.newSwapRule(dftWallet))
       onCloseCreateSwapModal()
       const rules = await SwapRuleService.getRulesByDiscord()
       if ( rules ) {

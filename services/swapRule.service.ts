@@ -2,6 +2,7 @@ import http, { handleError } from '../http-common'
 import { IResponse } from '../types/service'
 import { ISwapRule, IUpdateSwapRule, ITokenSwapRules, ICreateSwapRule } from '../types/swapRules'
 import { pResponseSwapRule, pResponseTokenSwapRules } from '../presenters/swapRules'
+import { IWallet } from '../types/wallet'
 
 interface SwapRulesResp {
   swapRules: ISwapRule[]
@@ -25,10 +26,12 @@ interface QuickSwapResp {
 }
 
 class SwapRuleService {
-  newSwapRule = (): ICreateSwapRule => {
+  newSwapRule = (wallet: IWallet | null): ICreateSwapRule => {
     return {
-      baseTokenSym: "",
+      baseTokenSym: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
       swapTokenSym: "",
+      active: true,
+      walletId: wallet?._id,
     } as ICreateSwapRule
   }
 
